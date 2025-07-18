@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Mona Sans', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  font-family: 'Mona Sans', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+body.dark {
+  background: #141414;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+} 

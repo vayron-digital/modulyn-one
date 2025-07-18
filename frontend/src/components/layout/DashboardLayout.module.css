@@ -1,0 +1,216 @@
+.dashboardRoot {
+  display: flex;
+  height: 100vh;
+  background: #fff;
+}
+.dashboardRoot.dark {
+  background: #181A20;
+}
+.sidebar {
+  width: 182px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow: 2px 0 8px rgba(24,28,50,0.04);
+  position: relative;
+  z-index: 2;
+  padding: 0;
+  border: none;
+}
+.sidebar.dark {
+  background: #23262F;
+}
+.logoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 22px 0 16px 0;
+  gap: 5px;
+}
+.logoIcon {
+  width: 20px;
+  height: 20px;
+  color: #7F56D9;
+}
+.logoText {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #7F56D9;
+  letter-spacing: 0.5px;
+}
+.navIcons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin-top: 22px;
+  margin-bottom: auto;
+}
+.icon, .iconActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #F8F9FB;
+  box-shadow: 0 1px 2px rgba(16,30,54,0.04);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.icon img, .iconActive img {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+.iconActive {
+  background: #7F56D9;
+  box-shadow: 0 4px 16px rgba(127,86,217,0.12);
+}
+.iconActive img {
+  filter: brightness(0) invert(1);
+}
+.icon:hover {
+  background: #E9D7FE;
+}
+.sidebarFooter {
+  color: #A3AED0;
+  font-size: 0.7rem;
+  margin-bottom: 12px;
+  margin-top: 22px;
+  align-self: flex-start;
+  padding-left: 12px;
+}
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 2rem 0 0 2rem;
+  margin-left: -15px;
+  box-shadow: 0 4px 24px rgba(16,30,54,0.08), 0 1.5px 4px rgba(24,28,50,0.04);
+  z-index: 10;
+}
+.mainContent.dark {
+  background: #181A20;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 18px 28px 12px 28px;
+  border-bottom: 1.5px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(24,28,50,0.04);
+  z-index: 1;
+}
+.topbar.dark {
+  background: #23262F;
+  border-bottom: 1.5px solid #23262F;
+}
+.searchBarWrap {
+  display: flex;
+  align-items: center;
+  background: #F8F9FB;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 0 0 0 11px;
+  max-width: 294px;
+  width: 238px;
+  height: 30px;
+}
+.searchBarIcon {
+  width: 12px;
+  height: 12px;
+  color: #A3AED0;
+  margin-right: 5px;
+}
+.searchBarInput {
+  flex: 1;
+  background: transparent;
+  color: #181C32;
+  border: none;
+  border-radius: 10px;
+  padding: 7px 0 7px 0;
+  font-size: 0.7rem;
+  outline: none;
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.exportBtn {
+  background: #fff;
+  color: #7F56D9;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 7px 15px;
+  font-weight: 500;
+  font-size: 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16,30,54,0.04);
+  transition: background 0.2s;
+}
+.exportBtn:hover {
+  background: #F3F4F6;
+}
+.addBtn {
+  background: #7F56D9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 15px;
+  font-weight: 500;
+  font-size: 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16,30,54,0.04);
+  transition: background 0.2s;
+}
+.addBtn:hover {
+  background: #5B3DB2;
+}
+.userWrap {
+  display: flex;
+  align-items: center;
+  background: #F8F9FB;
+  border-radius: 8px;
+  padding: 4px 11px 4px 7px;
+  gap: 7px;
+  box-shadow: 0 1px 2px rgba(16,30,54,0.04);
+}
+.avatar {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+.userInfo {
+  color: #181C32;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+}
+.userName {
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+.userRole {
+  color: #A3AED0;
+  font-size: 0.6rem;
+}
+.dropdownArrow {
+  color: #A3AED0;
+  font-size: 0.8rem;
+  margin-left: 3px;
+  margin-top: 1px;
+}
+.pageContent {
+  flex: 1;
+  padding: 40px 32px 0 32px;
+  overflow-y: auto;
+} 

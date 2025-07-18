@@ -1,0 +1,36 @@
+flowchart TD
+  %% Frontend
+  subgraph "Frontend (React App)"
+    FE["🖥️ UI Components & Pages"]
+    FECTX["🔄 Contexts & Hooks"]
+    FE -->|"State/Props"| FECTX
+  end
+
+  %% Backend
+  subgraph "Backend (Node.js/Express)"
+    BE["🌐 API Routes"]
+    BESVC["⚙️ Services & Middleware"]
+    BE -->|"Business Logic"| BESVC
+  end
+
+  %% Database
+  subgraph "Database (Postgres/Supabase)"
+    DB["🗄️ Tables & Schemas"]
+  end
+
+  %% External APIs
+  subgraph "External APIs"
+    EXTAPI["🔗 3rd Party Integrations"]
+  end
+
+  %% Data Flow
+  FECTX -- "HTTP Requests (REST/GraphQL)" --> BE
+  BESVC -- "ORM/Queries" --> DB
+  BESVC -- "API Calls" --> EXTAPI
+  DB -- "Data Response" --> BESVC
+  EXTAPI -- "API Response" --> BESVC
+  BESVC -- "API Response (JSON)" --> FECTX
+
+  %% Visual Enhancements
+  classDef highlight fill:#f9f,stroke:#333,stroke-width:2px;
+  FE,FECTX,BE,BESVC,DB,EXTAPI:::highlight 

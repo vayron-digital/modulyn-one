@@ -1,0 +1,12 @@
+{
+  "name": "crm-platform-root",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix backend",
+    "heroku-postbuild": "npm run build --prefix backend",
+    "start": "npm start --prefix backend"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

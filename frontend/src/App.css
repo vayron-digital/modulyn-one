@@ -1,0 +1,26 @@
+/* Custom styles can be added here */
+/* Most styling is handled by Tailwind CSS */
+
+/* Add a subtle transition for hover effects */
+button, a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add a subtle shadow to cards */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Add a subtle animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+} 
