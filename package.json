@@ -8,5 +8,9 @@
   },
   "engines": {
     "node": "18.x"
+  },
+  "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
+    "framer-motion": "^12.23.6"
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +61,26 @@ export default function TaskList() {
     assignedTo: ''
   });
 
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
+  const handleFilterChange = useCallback((key: keyof typeof filters, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleTaskClick = useCallback((taskId: string) => {
+    navigate(`/tasks/${taskId}`);
+  }, [navigate]);
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => 
+      task.title.toLowerCase().includes(search.toLowerCase()) ||
+      task.description?.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [tasks, search]);
+
   useEffect(() => {
     fetchTasks();
   }, [filters]);
@@ -95,18 +115,26 @@ export default function TaskList() {
       const { data, error } = await query;
       if (error) throw error;
 
-      setTasks(data || []);
+      // Transform the data to match the Task interface
+      const transformedTasks = (data || []).map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        due_date: task.due_date,
+        assigned_to: task.assigned_to?.[0] || { id: '', name: 'Unassigned', avatar_url: '' },
+        created_by: task.created_by?.[0] || { id: '', name: 'Unknown' },
+        tags: task.tags || []
+      }));
+
+      setTasks(transformedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const filteredTasks = tasks.filter(task => 
-    task.title.toLowerCase().includes(search.toLowerCase()) ||
-    task.description?.toLowerCase().includes(search.toLowerCase())
-  );
 
   if (loading) {
     return (
@@ -135,13 +163,13 @@ export default function TaskList() {
             <Input
               placeholder="Search tasks..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-10"
             />
           </div>
           <Select
             value={filters.status}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+            onValueChange={(value) => handleFilterChange('status', value)}
           >
             <option value="">All Status</option>
             <option value="todo">To Do</option>
@@ -151,7 +179,7 @@ export default function TaskList() {
           </Select>
           <Select
             value={filters.priority}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value }))}
+            onValueChange={(value) => handleFilterChange('priority', value)}
           >
             <option value="">All Priorities</option>
             <option value="low">Low</option>
@@ -161,7 +189,7 @@ export default function TaskList() {
           </Select>
           <Select
             value={filters.assignedTo}
-            onValueChange={(value) => setFilters(prev => ({ ...prev, assignedTo: value }))}
+            onValueChange={(value) => handleFilterChange('assignedTo', value)}
           >
             <option value="">All Assignees</option>
             {/* Add user options here */}
@@ -172,7 +200,7 @@ export default function TaskList() {
       {/* Task List */}
       <div className="space-y-4">
         {filteredTasks.map((task) => (
-          <Card key={task.id} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/tasks/${task.id}`)}>
+          <Card key={`task-${task.id}`} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => handleTaskClick(task.id)}>
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-medium">{task.title}</h3>
@@ -197,7 +225,7 @@ export default function TaskList() {
               <div className="mt-2 flex items-center gap-2">
                 <Tag className="h-4 w-4 text-gray-400" />
                 {task.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
+                  <Badge key={`tag-${tag}`} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
                 ))}

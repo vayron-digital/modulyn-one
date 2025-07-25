@@ -98,8 +98,15 @@ export default function MobileMenu() {
       <SheetContent side="left" className="w-64 p-0">
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="flex items-center space-x-2">
-            <Building className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg">Fortune CRM</span>
+            <img 
+              src="/logo.png" 
+              alt="Modulyn One" 
+              style={{ 
+                height: '32px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto py-4">

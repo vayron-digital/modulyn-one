@@ -131,7 +131,9 @@ This document outlines the strategic redesign of the Modulyn One Dashboard, tran
 - [x] Scaffolded the grid and widget system in code. DashboardV2 now uses the Widget component for all dashboard sections, enabling modularity.
 - [x] Built the widget registry and created the first modular widget (NewLeadsWidget). DashboardV2 now uses this modular widget for New Leads.  
 - [x] Modularized OverdueTasksWidget and registered it. Both left-column widgets are now modular.  
-  _Next: Refactor the KPI cards in the center column into modular widgets and expand the registry._
+- [x] Modularized all main KPI widgets (TotalLeadsWidget, ActiveTasksWidget, PropertiesWidget) and registered them. All main KPI cards are now modular.  
+- [x] Modularized all remaining dashboard widgets (RevenueLeadsChartWidget, RecentActivityWidget, SalesPipelineWidget, TodoListWidget) and registered them. The dashboard is now fully composed of modular, registry-driven widgets.  
+  _Next: Implement role-based default layouts and KPIs for Founder, Sales Manager, and Support Agent views._
 - [ ] Implement role-based default layouts and KPIs for Founder, Sales Manager, and Support Agent views.
 - [ ] Integrate real-time data using Supabase subscriptions for KPIs, activity, chat, and notifications.
 - [ ] Add customization features: drag-and-drop, widget library, and settings panel for dashboard personalization.

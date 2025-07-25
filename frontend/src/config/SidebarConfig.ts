@@ -1,5 +1,5 @@
 // SidebarConfig.ts
-import { HomeIcon, BuildingOfficeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, ChartBarIcon, CogIcon, UserIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftRightIcon, BellAlertIcon, PhoneArrowUpRightIcon, CalendarDaysIcon, PuzzlePieceIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BuildingOfficeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, ChartBarIcon, CogIcon, UserIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftRightIcon, BellAlertIcon, PhoneArrowUpRightIcon, CalendarDaysIcon, PuzzlePieceIcon, PlusCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { DESIGN } from '../lib/design';
 
 export interface SidebarNavItem {
@@ -17,6 +17,8 @@ export interface SidebarNavItem {
 export const SIDEBAR_NAV: SidebarNavItem[] = [
   { name: 'Dashboard', href: '/', icon: HomeIcon, featureKey: 'dashboard' },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon, featureKey: 'leads', quickAction: true, children: [
+    { name: 'All Leads', href: '/leads', icon: UserGroupIcon },
+    { name: 'Dumped Leads', href: '/leads/dumped', icon: UserIcon },
     { name: 'New Lead', href: '/leads/new', icon: PlusCircleIcon, quickAction: true },
   ] },
   { name: 'Properties', href: '/properties', icon: BuildingOfficeIcon, featureKey: 'properties', quickAction: true, children: [

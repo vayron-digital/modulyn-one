@@ -1,35 +1,46 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
-  HomeIcon,
-  UserGroupIcon,
-  BuildingOfficeIcon,
-  CalendarIcon,
-  ChartBarIcon,
-  CogIcon,
   Bars3Icon,
   XMarkIcon,
   BellIcon,
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  HomeIcon,
+  UserGroupIcon,
+  BuildingOfficeIcon,
+  ClipboardDocumentListIcon,
+  CalendarIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
-import { supabase } from '../lib/supabase';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon },
   { name: 'Properties', href: '/properties', icon: BuildingOfficeIcon },
-  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
+  { name: 'Tasks', href: '/tasks', icon: ClipboardDocumentListIcon },
+  { name: 'Calendar', href: '/scheduler', icon: CalendarIcon },
+  { name: 'Documents', href: '/documents', icon: DocumentTextIcon },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon },
-  { name: 'Settings', href: '/settings', icon: CogIcon },
+  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -39,7 +50,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4">
-            <span className="text-xl font-semibold text-gray-900">Fortune CRM</span>
+            <img 
+              src="/logo.png" 
+              alt="Modulyn One" 
+              style={{ 
+                height: '32px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
             <button
               type="button"
               className="text-gray-500 hover:text-gray-600"
@@ -78,7 +97,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white">
           <div className="flex h-16 items-center px-4">
-            <span className="text-xl font-semibold text-gray-900">Fortune CRM</span>
+            <img 
+              src="/logo.png" 
+              alt="Modulyn One" 
+              style={{ 
+                height: '32px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {

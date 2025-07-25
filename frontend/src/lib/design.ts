@@ -7,7 +7,7 @@ export const DESIGN = {
     title: '18px',
   },
   colors: {
-    primary: '#BB86FC', // Material purple 200
+    primary: '#0b090d', // Material purple 200
     accent: '#03DAC6',  // Material teal 200
     background: '#FFFFFF',
     backgroundDark: '#121212', // Material dark bg

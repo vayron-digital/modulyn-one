@@ -1,0 +1,331 @@
+{
+    "designSystemProfile": {
+      "name": "Modulyn One Travel-Inspired CRM Design System",
+      "version": "1.0",
+      "description": "A clean, modern travel app-inspired design system adapted for real estate CRM with focus on clarity, efficiency, and user engagement",
+      
+      "colorPalette": {
+        "primary": {
+          "orange": "#FF6B35",
+          "description": "Vibrant orange for CTAs, highlights, and primary actions"
+        },
+        "secondary": {
+          "blue": "#4A90E2",
+          "lightBlue": "#87CEEB",
+          "description": "Trust-building blues for secondary actions and informational elements"
+        },
+        "neutrals": {
+          "white": "#FFFFFF",
+          "lightGray": "#F8F9FA",
+          "mediumGray": "#E5E7EB",
+          "darkGray": "#6B7280",
+          "charcoal": "#374151",
+          "description": "Clean neutral palette for backgrounds, text, and borders"
+        },
+        "accent": {
+          "green": "#10B981",
+          "red": "#EF4444",
+          "yellow": "#F59E0B",
+          "description": "Status indicators and feedback colors"
+        }
+      },
+  
+      "typography": {
+        "fontFamily": {
+          "primary": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "description": "Modern, clean sans-serif for excellent readability"
+        },
+        "fontWeights": {
+          "light": 300,
+          "regular": 400,
+          "medium": 500,
+          "semibold": 600,
+          "bold": 700
+        },
+        "scale": {
+          "xs": "0.75rem",
+          "sm": "0.875rem",
+          "base": "1rem",
+          "lg": "1.125rem",
+          "xl": "1.25rem",
+          "2xl": "1.5rem",
+          "3xl": "1.875rem",
+          "4xl": "2.25rem"
+        },
+        "hierarchy": {
+          "pageTitle": {
+            "size": "2xl",
+            "weight": "bold",
+            "color": "charcoal"
+          },
+          "sectionHeading": {
+            "size": "lg",
+            "weight": "semibold",
+            "color": "charcoal"
+          },
+          "cardTitle": {
+            "size": "base",
+            "weight": "medium",
+            "color": "charcoal"
+          },
+          "bodyText": {
+            "size": "sm",
+            "weight": "regular",
+            "color": "darkGray"
+          },
+          "caption": {
+            "size": "xs",
+            "weight": "regular",
+            "color": "mediumGray"
+          }
+        }
+      },
+  
+      "spacing": {
+        "scale": {
+          "xs": "0.25rem",
+          "sm": "0.5rem",
+          "md": "1rem",
+          "lg": "1.5rem",
+          "xl": "2rem",
+          "2xl": "3rem",
+          "3xl": "4rem"
+        },
+        "containerPadding": "1.5rem",
+        "cardPadding": "1rem",
+        "buttonPadding": "0.75rem 1.5rem"
+      },
+  
+      "borderRadius": {
+        "small": "4px",
+        "medium": "8px",
+        "large": "12px",
+        "xl": "16px",
+        "full": "9999px"
+      },
+  
+      "shadows": {
+        "card": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+        "elevated": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        "dropdown": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+      },
+  
+      "layoutStructure": {
+        "sidebar": {
+          "width": "280px",
+          "backgroundColor": "white",
+          "borderRight": "1px solid mediumGray",
+          "sections": [
+            {
+              "type": "userProfile",
+              "elements": ["avatar", "name", "role"]
+            },
+            {
+              "type": "primaryAction",
+              "style": "prominentButton",
+              "color": "orange"
+            },
+            {
+              "type": "navigation",
+              "grouping": true,
+              "categories": ["main", "discover", "general"]
+            }
+          ]
+        },
+        "mainContent": {
+          "backgroundColor": "lightGray",
+          "padding": "xl",
+          "structure": [
+            {
+              "type": "header",
+              "elements": ["greeting", "searchBar", "userActions"]
+            },
+            {
+              "type": "contentGrid",
+              "layout": "responsive",
+              "gaps": "lg"
+            }
+          ]
+        },
+        "rightPanel": {
+          "width": "320px",
+          "backgroundColor": "white",
+          "sections": ["quickInfo", "statusCards", "actionItems"]
+        }
+      },
+  
+      "componentPatterns": {
+        "cards": {
+          "default": {
+            "backgroundColor": "white",
+            "borderRadius": "large",
+            "shadow": "card",
+            "padding": "cardPadding",
+            "border": "none"
+          },
+          "hover": {
+            "shadow": "elevated",
+            "transform": "translateY(-1px)",
+            "transition": "all 0.2s ease"
+          }
+        },
+        "buttons": {
+          "primary": {
+            "backgroundColor": "orange",
+            "color": "white",
+            "borderRadius": "medium",
+            "padding": "buttonPadding",
+            "fontWeight": "medium",
+            "border": "none",
+            "hoverState": "darken by 10%"
+          },
+          "secondary": {
+            "backgroundColor": "white",
+            "color": "charcoal",
+            "border": "1px solid mediumGray",
+            "borderRadius": "medium",
+            "padding": "buttonPadding"
+          }
+        },
+        "navigation": {
+          "groupHeaders": {
+            "textTransform": "uppercase",
+            "fontSize": "xs",
+            "fontWeight": "semibold",
+            "color": "darkGray",
+            "marginBottom": "sm"
+          },
+          "navItems": {
+            "padding": "sm md",
+            "borderRadius": "medium",
+            "activeState": {
+              "backgroundColor": "lightGray",
+              "color": "charcoal"
+            },
+            "hoverState": {
+              "backgroundColor": "rgba(0,0,0,0.05)"
+            }
+          }
+        },
+        "statusIndicators": {
+          "badges": {
+            "borderRadius": "full",
+            "padding": "xs sm",
+            "fontSize": "xs",
+            "fontWeight": "medium"
+          },
+          "dots": {
+            "size": "8px",
+            "borderRadius": "full",
+            "positioning": "absolute top-right"
+          }
+        }
+      },
+  
+      "iconography": {
+        "style": "outline",
+        "strokeWidth": "1.5px",
+        "size": {
+          "small": "16px",
+          "medium": "20px",
+          "large": "24px"
+        },
+        "color": "inherit from parent"
+      },
+  
+      "dataVisualization": {
+        "charts": {
+          "colorScheme": ["orange", "blue", "green", "yellow"],
+          "gridLines": "lightGray",
+          "fontSize": "sm"
+        },
+        "metrics": {
+          "layout": "card-based",
+          "emphasizeNumbers": true,
+          "includePercentageChange": true,
+          "trendIndicators": true
+        }
+      },
+  
+      "interactions": {
+        "transitions": {
+          "default": "all 0.2s ease",
+          "slow": "all 0.3s ease",
+          "fast": "all 0.15s ease"
+        },
+        "hoverEffects": {
+          "cards": "lift and shadow",
+          "buttons": "color change",
+          "navItems": "background change"
+        },
+        "loadingStates": {
+          "skeleton": true,
+          "spinners": "minimal",
+          "progressBars": "linear with orange accent"
+        }
+      },
+  
+      "responsiveness": {
+        "breakpoints": {
+          "mobile": "768px",
+          "tablet": "1024px",
+          "desktop": "1280px"
+        },
+        "sidebarBehavior": {
+          "mobile": "overlay drawer",
+          "desktop": "persistent sidebar"
+        },
+        "gridAdaptation": {
+          "mobile": "single column",
+          "tablet": "2 columns",
+          "desktop": "3-4 columns"
+        }
+      },
+  
+      "realEstateAdaptations": {
+        "leadStatusColors": {
+          "new": "blue",
+          "contacted": "yellow",
+          "qualified": "orange",
+          "closed": "green",
+          "lost": "red"
+        },
+        "propertyImageTreatment": {
+          "aspectRatio": "16:9",
+          "borderRadius": "medium",
+          "overlay": "gradient for text readability"
+        },
+        "agentProfileCards": {
+          "includeAvatar": true,
+          "showPerformanceMetrics": true,
+          "statusIndicator": true
+        },
+        "callLogInterface": {
+          "timelineView": true,
+          "outcomeColors": {
+            "answered": "green",
+            "voicemail": "yellow",
+            "busy": "orange",
+            "noAnswer": "red"
+          }
+        }
+      },
+  
+      "accessibilityConsiderations": {
+        "colorContrast": "WCAG AA compliant",
+        "focusStates": "visible and high contrast",
+        "keyboardNavigation": "full support",
+        "screenReaderSupport": "semantic HTML and ARIA labels"
+      },
+  
+      "implementationNotes": {
+        "cssFramework": "Tailwind CSS recommended",
+        "componentLibrary": "Headless UI or Radix UI for accessibility",
+        "stateManagement": "Context API or Zustand for simple state",
+        "animations": "Framer Motion for complex animations, CSS transitions for simple ones",
+        "icons": "Lucide React or Heroicons",
+        "buildSystem": "Vite or Next.js",
+        "deployment": "Vercel or similar for optimal performance"
+      }
+    }
+  }

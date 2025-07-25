@@ -35,7 +35,7 @@ import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addDays } from 'date-fns';
 import { Table, TableHeader, TableBody, TableCell, TableHead, TableRow } from '../../components/ui/table';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'react-hot-toast';
 import { saveAs } from 'file-saver';
 import { Badge } from '../../components/ui/badge';

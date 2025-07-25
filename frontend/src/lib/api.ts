@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ApiResponse, User, Lead, Project, Property, Task, Call, Role, Department, TeamMember, Document, Comment, CallNote } from '../types/api';
+import { supabase } from '../lib/supabase'; // Add this import
 
 console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
 export const api = axios.create({
@@ -10,8 +11,10 @@ export const api = axios.create({
 });
 
 // Add request interceptor to include auth token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+api.interceptors.request.use(async (config) => {
+  // Use Supabase session token
+  const session = await supabase.auth.getSession();
+  const token = session.data?.session?.access_token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -126,8 +129,24 @@ export const teamApi = {
   deleteDepartment: (id: string) => api.delete<ApiResponse<void>>(`/team/departments/${id}`),
 };
 
+export const journeysApi = {
+  getAll: () => api.get('/dashboard/journeys'),
+  create: (data: { name: string; description?: string }) => api.post('/dashboard/journeys', data),
+  update: (id: string, data: { name?: string; description?: string }) => api.put(`/dashboard/journeys/${id}`, data),
+  delete: (id: string) => api.delete(`/dashboard/journeys/${id}`),
+};
+
 export const dashboardApi = {
   getKPIs: () => api.get('/dashboard/kpis'),
+  getJourneyCards: (journeyId: string) => api.get(`/dashboard/journey-cards?journeyId=${journeyId}`),
+};
+
+export const journeyColumnsApi = {
+  getAll: (journeyId: string) => api.get(`/dashboard/journeys/${journeyId}/columns`),
+  create: (journeyId: string, data: { name: string; position?: number }) => api.post(`/dashboard/journeys/${journeyId}/columns`, data),
+  update: (journeyId: string, columnId: string, data: { name?: string; position?: number }) => api.put(`/dashboard/journeys/${journeyId}/columns/${columnId}`, data),
+  delete: (journeyId: string, columnId: string) => api.delete(`/dashboard/journeys/${journeyId}/columns/${columnId}`),
+  reorder: (journeyId: string, newOrder: string[]) => api.patch(`/dashboard/journeys/${journeyId}/columns/reorder`, { newOrder }),
 };
 
 export default api;

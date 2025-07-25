@@ -593,7 +593,7 @@ const ChatPage: React.FC = () => {
               if (msg.type === 'lead') {
                 const lead = JSON.parse(msg.content);
                 return (
-                  <div key={msg.id || idx} className="flex gap-3 items-end group cursor-pointer max-w-[70%] hover:bg-sidebar p-2 rounded-xl transition" onClick={() => navigate(`/leads/${lead.id}`)} title="View Lead Details">
+                  <div key={`lead-${msg.id || idx}`} className="flex gap-3 items-end group cursor-pointer max-w-[70%] hover:bg-sidebar p-2 rounded-xl transition" onClick={() => navigate(`/leads/${lead.id}`)} title="View Lead Details">
                     <img src={sender.profile_image_url || '/default-avatar.png'} alt="avatar" className="w-8 h-8 rounded-full" />
                     <div className={`${isMine ? 'bg-primary text-white' : 'bg-[#E8C77B] text-gray-900'} rounded-2xl px-4 py-2 shadow min-w-[180px]`}>
                       <div className="text-sm font-medium mb-1 flex items-center gap-2">

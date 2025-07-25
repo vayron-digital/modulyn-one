@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
 import { FaBed, FaBath, FaRulerCombined, FaRegHeart, FaShareAlt, FaBalanceScale } from 'react-icons/fa';
 import { PropertyType } from '../../utils/propertyTypes';
 import { getCurrencyDisplay, useCurrencyStore } from '../../utils/currency';
+import LazyImage from '../common/LazyImage';
+import { motion } from 'framer-motion';
+import { Badge } from '../ui/badge';
 
 interface PropertyCardProps {
   id: string;
@@ -34,56 +37,77 @@ const statusColors: Record<string, string> = {
   'Under Offer': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
 };
 
-const PropertyCard: React.FC<PropertyCardProps> = ({
+const getStatusBadgeColor = (status: string) => {
+  switch (status) {
+    case 'Available':
+      return 'default';
+    case 'Sold':
+      return 'destructive';
+    case 'Under Offer':
+      return 'secondary';
+    default:
+      return 'default';
+  }
+};
+
+const PropertyCard: React.FC<PropertyCardProps> = React.memo(({
   id, refNo, title, price, type, location, bedrooms, bathrooms, area, status, listingDate, owner, image, onFavorite, onShare, onCompare, onClick
 }) => {
-  const { primaryCurrency, secondary_currencies } = useCurrencyStore();
+  const handleClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
+
+  const { currency: primaryCurrency, secondary_currencies } = useCurrencyStore();
   const currencyDisplay = getCurrencyDisplay(price ?? 0, primaryCurrency);
   return (
-    <Card
-      className="group cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-200 border border-border dark:border-border-dark rounded-2xl overflow-hidden min-w-[300px] max-w-[500px] w-full h-full bg-card dark:bg-card-dark"
-      onClick={onClick}
-      style={{ minHeight: 420 }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+      onClick={handleClick}
     >
-      <div className="relative w-full aspect-[16/9] bg-muted dark:bg-muted-dark flex items-center justify-center overflow-hidden">
-        <img
+      <div className="relative h-48 overflow-hidden">
+        <LazyImage
           src={image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80'}
           alt={title}
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-          style={{ minHeight: 180 }}
+          className="w-full h-full object-cover"
+          placeholder="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
         />
-        <span className={`absolute top-3 left-3 px-2 py-1 text-xs font-semibold rounded ${statusColors[status] || 'bg-muted dark:bg-muted-dark text-foreground dark:text-foreground-dark'}`}>{status}</span>
+        <div className="absolute top-2 right-2">
+          <Badge variant={getStatusBadgeColor(status)}>
+            {status}
+          </Badge>
+        </div>
       </div>
-      <CardHeader className="pb-2 pt-6 px-6">
-        <CardTitle className="text-xl font-bold text-foreground dark:text-foreground-dark truncate">{title}</CardTitle>
-        <div className="text-xs text-muted-foreground dark:text-muted-foreground-dark font-medium">Ref: {refNo}</div>
-        <div className="text-base font-semibold text-primary dark:text-primary-dark mt-1">{currencyDisplay.primary}</div>
-        <div className="text-xs text-muted-foreground dark:text-muted-foreground-dark space-y-0.5">
-          {currencyDisplay.secondary.map((display, idx) => (
-            <div key={idx}>{display}</div>
-          ))}
+      
+      <div className="p-4">
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{location}</p>
+        
+        <div className="flex items-center justify-between">
+          <div className="text-lg font-bold text-primary">
+            {currencyDisplay.primary}
+          </div>
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <span><FaBed className="inline-block" /> {typeof bedrooms === 'string' ? bedrooms : formatNumber(bedrooms)}</span>
+            <span>•</span>
+            <span><FaBath className="inline-block" /> {typeof bathrooms === 'string' ? bathrooms : formatNumber(bathrooms)}</span>
+            <span>•</span>
+            <span><FaRulerCombined className="inline-block" /> {typeof area === 'string' ? area : formatNumber(area)} sqft</span>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0 px-6 pb-4">
-        <div className="text-sm text-gray-600 mb-2 truncate">{location}</div>
-        <div className="flex items-center gap-4 text-gray-500 text-sm mb-2">
-          <span className="flex items-center gap-1"><FaBed className="inline-block" /> {typeof bedrooms === 'string' ? bedrooms : formatNumber(bedrooms)}</span>
-          <span className="flex items-center gap-1"><FaBath className="inline-block" /> {typeof bathrooms === 'string' ? bathrooms : formatNumber(bathrooms)}</span>
-          <span className="flex items-center gap-1"><FaRulerCombined className="inline-block" /> {typeof area === 'string' ? area : formatNumber(area)} sqft</span>
-        </div>
-        <div className="flex justify-between text-xs text-gray-400">
-          <span>Type: <span className="font-medium text-gray-700">{type}</span></span>
-          <span>Listed: {listingDate}</span>
-        </div>
-        <div className="text-xs text-gray-400 mt-1">Owner: <span className="font-medium text-gray-700">{owner}</span></div>
-      </CardContent>
+      </div>
       <CardFooter className="flex justify-between gap-2 pt-2 px-6 pb-6">
         <Button size="icon" variant="ghost" className="hover:bg-pink-100" onClick={e => { e.stopPropagation(); onFavorite && onFavorite(); }}><FaRegHeart /></Button>
         <Button size="icon" variant="ghost" className="hover:bg-blue-100" onClick={e => { e.stopPropagation(); onShare && onShare(); }}><FaShareAlt /></Button>
         <Button size="icon" variant="ghost" className="hover:bg-yellow-100" onClick={e => { e.stopPropagation(); onCompare && onCompare(); }}><FaBalanceScale /></Button>
       </CardFooter>
-    </Card>
+    </motion.div>
   );
-};
+});
+
+PropertyCard.displayName = 'PropertyCard';
 
 export default PropertyCard;

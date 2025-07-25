@@ -7,7 +7,9 @@ import {
   ChartBarIcon,
   CogIcon,
   UserIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  SparklesIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 import { useFeatures } from '../hooks/useFeatures';
 import { DESIGN } from '../lib/design';
@@ -41,6 +43,18 @@ export const navigationItems: NavigationItem[] = [
     name: 'Leads',
     href: '/leads',
     icon: UserGroupIcon,
+    children: [
+      {
+        name: 'All Leads',
+        href: '/leads',
+        icon: UserGroupIcon,
+      },
+      {
+        name: 'Dumped Leads',
+        href: '/leads/dumped',
+        icon: UserIcon,
+      },
+    ],
   },
   {
     name: 'Tasks',
@@ -83,7 +97,7 @@ export const userNavigation: UserNavigationItem[] = [
   },
 ]; 
 
-export function getNavigationItems(features) {
+export function getNavigationItems(features: any) {
   return [
     features.dashboard !== false && {
       name: 'Dashboard',
@@ -99,6 +113,18 @@ export function getNavigationItems(features) {
       name: 'Leads',
       href: '/leads',
       icon: UserGroupIcon,
+      children: [
+        {
+          name: 'All Leads',
+          href: '/leads',
+          icon: UserGroupIcon,
+        },
+        {
+          name: 'Dumped Leads',
+          href: '/leads/dumped',
+          icon: UserIcon,
+        },
+      ],
     },
     features.tasks !== false && {
       name: 'Tasks',

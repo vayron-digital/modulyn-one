@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Button, Input, FormGroup } from '@/components/ui';
 
@@ -39,77 +39,74 @@ function Todos() {
     }
   }
 
-  async function addTodo(e: React.FormEvent) {
-    e.preventDefault();
-    
-    if (!newTodo.trim()) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('todos')
-        .insert([{ title: newTodo, completed: false }])
-        .select();
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        setTodos([...data, ...todos]);
-        setNewTodo('');
-      }
-    } catch (error) {
-      console.error('Error adding todo:', error);
-    }
-  }
-
-  async function toggleTodo(id: number, completed: boolean) {
+  // Memoize event handlers to prevent unnecessary re-renders
+  const toggleTodo = useCallback(async (id: string, completed: boolean) => {
     try {
       const { error } = await supabase
         .from('todos')
         .update({ completed: !completed })
         .eq('id', id);
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
-      setTodos(todos.map(todo => 
+      setTodos(prev => prev.map(todo => 
         todo.id === id ? { ...todo, completed: !completed } : todo
       ));
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error('Error toggling todo:', error);
     }
-  }
+  }, []);
 
-  async function deleteTodo(id: number) {
+  const deleteTodo = useCallback(async (id: string) => {
     try {
       const { error } = await supabase
         .from('todos')
         .delete()
         .eq('id', id);
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
-      setTodos(todos.filter(todo => todo.id !== id));
+      setTodos(prev => prev.filter(todo => todo.id !== id));
     } catch (error) {
       console.error('Error deleting todo:', error);
     }
-  }
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTodo.trim()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .insert([{ title: newTodo.trim() }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      setTodos(prev => [...prev, data]);
+      setNewTodo('');
+    } catch (error) {
+      console.error('Error adding todo:', error);
+    }
+  }, [newTodo]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTodo(e.target.value);
+  }, []);
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-8">
       <h2 className="text-2xl font-bold mb-6 text-center">Todo List</h2>
       
-      <form onSubmit={addTodo} className="mb-6">
+      <form onSubmit={handleSubmit} className="mb-6">
         <div className="flex">
           <FormGroup label="Add a new todo...">
             <Input
               type="text"
               value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Add a new todo..."
             />
           </FormGroup>
@@ -138,14 +135,14 @@ function Todos() {
                 <input
                   type="checkbox"
                   checked={todo.completed}
-                  onChange={() => toggleTodo(todo.id, todo.completed)}
+                  onChange={() => toggleTodo(todo.id.toString(), todo.completed)}
                   className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className={`ml-3 ${todo.completed ? 'line-through text-gray-500' : ''}`}>
                   {todo.title}
                 </span>
               </div>
-              <Button onClick={() => deleteTodo(todo.id)} variant="destructive">
+              <Button onClick={() => deleteTodo(todo.id.toString())} variant="destructive">
                 Delete
               </Button>
             </li>

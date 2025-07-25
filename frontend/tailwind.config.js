@@ -20,8 +20,8 @@ export default {
           DEFAULT: '#F5F5F5',
           dark: '#1E1E1E',
         },
-        primary: '#BB86FC',
-        accent: '#03DAC6',
+        primary: '#0b090d',
+        accent: '#091413',
         text: {
           DEFAULT: '#090004',
           dark: 'rgba(255,255,255,0.87)',

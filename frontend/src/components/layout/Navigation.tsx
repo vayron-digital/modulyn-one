@@ -12,8 +12,16 @@ export default function Navigation() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-primary">
-                Fortune4 CRM
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="/logo.png" 
+                  alt="Modulyn One" 
+                  style={{ 
+                    height: '32px', 
+                    width: 'auto',
+                    objectFit: 'contain'
+                  }} 
+                />
               </Link>
             </div>
           </div>

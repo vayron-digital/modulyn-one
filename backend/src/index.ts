@@ -70,7 +70,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/calls', callRoutes);
 app.use('/api/team', requireAuth, teamRoutes);
 app.use('/api/cold-calls', coldCallsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/dashboard', requireAuth, dashboardRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

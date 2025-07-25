@@ -10,6 +10,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  console.log('AuthProvider user:', user, 'loading:', loading, 'error:', error);
   const setCurrency = useCurrencyStore(state => state.setCurrency);
   const setSecondaryCurrencies = useCurrencyStore(state => state.setSecondaryCurrencies);
 
@@ -17,9 +18,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     const initializeAuth = async () => {
+      console.log('Initializing auth...');
       try {
         // Check active sessions and sets the user (Supabase)
-        const { data: { session } } = await supabase.auth.getSession();
+        let session;
+        try {
+          const { data } = await supabase.auth.getSession();
+          session = data.session;
+          console.log('Supabase session:', session);
+        } catch (err) {
+          console.error('Error getting Supabase session:', err);
+        }
         if (!mounted) return;
 
         if (session?.user) {
@@ -28,6 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .select('*')
             .eq('id', session.user.id)
             .single();
+          console.log('Supabase profile:', profile, 'profileError:', profileError);
 
           if (profileError) throw profileError;
 
@@ -96,8 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
           }
         });
-
+        console.log('Auth initialized');
         return () => {
+          console.log('Effect cleanup');
           mounted = false;
           subscription.unsubscribe();
         };

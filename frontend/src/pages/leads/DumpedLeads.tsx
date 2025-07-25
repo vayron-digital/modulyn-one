@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -57,81 +57,42 @@ export default function DumpedLeads() {
     }
   };
 
-  const handleRestore = async (leadId: string) => {
-    try {
-      // Get the lead data
-      const { data: lead, error: fetchError } = await supabase
-        .from('dumped_leads')
-        .select('*')
-        .eq('id', leadId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Insert into active leads
-      const { error: insertError } = await supabase
-        .from('leads')
-        .insert([{
-          name: lead.name,
-          email: lead.email,
-          phone: lead.phone,
-          status: 'New',
-          source: lead.source,
-          notes: lead.notes
-        }]);
-
-      if (insertError) throw insertError;
-
-      // Delete from dumped leads
-      const { error: deleteError } = await supabase
-        .from('dumped_leads')
-        .delete()
-        .eq('id', leadId);
-
-      if (deleteError) throw deleteError;
-
-      toast({
-        title: 'Success',
-        description: 'Lead restored successfully',
-      });
-
-      fetchDumpedLeads();
-    } catch (error: any) {
-      console.error('Error restoring lead:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDelete = async (leadId: string) => {
-    if (!window.confirm('Are you sure you want to permanently delete this lead?')) return;
-
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleRestore = useCallback(async (leadId: string) => {
     try {
       const { error } = await supabase
-        .from('dumped_leads')
+        .from('leads')
+        .update({ dumped_at: null, dumped_by: null })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      setLeads(prev => prev.filter(lead => lead.id !== leadId));
+    } catch (err: any) {
+      console.error('Error restoring lead:', err);
+      setError(err.message);
+    }
+  }, []);
+
+  const handleDelete = useCallback(async (leadId: string) => {
+    try {
+      const { error } = await supabase
+        .from('leads')
         .delete()
         .eq('id', leadId);
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Lead deleted permanently',
-      });
-
-      fetchDumpedLeads();
-    } catch (error: any) {
-      console.error('Error deleting lead:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      setLeads(prev => prev.filter(lead => lead.id !== leadId));
+    } catch (err: any) {
+      console.error('Error deleting lead:', err);
+      setError(err.message);
     }
-  };
+  }, []);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
 
   const filteredLeads = leads.filter(lead =>
     lead.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -161,7 +122,7 @@ export default function DumpedLeads() {
           <Input
             placeholder="Search leads..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
           />
         </FormGroup>
       </div>
@@ -169,7 +130,7 @@ export default function DumpedLeads() {
       {/* Leads List */}
       <div className="grid gap-4">
         {filteredLeads.map((lead) => (
-          <Card key={lead.id}>
+          <Card key={`dumped-lead-${lead.id}`}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
