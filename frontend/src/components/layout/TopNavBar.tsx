@@ -4,13 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const NAV_LINKS = [
   { label: 'Dashboard', path: '/' },
   { label: 'Leads', path: '/leads' },
- // { label: 'Properties', path: '/properties' },
+  { label: 'Properties', path: '/properties' },
   { label: 'Calls', path: '/calls' },
   { label: 'Tasks', path: '/tasks' },
-  { label: 'Team', path: '/team' },
+ // { label: 'Team', path: '/team' },
  // { label: 'Scheduler', path: '/scheduler' },
  // { label: 'Documents', path: '/documents' },
-  { label: 'Reports', path: '/reports' },
+ // { label: 'Reports', path: '/reports' },
  // { label: 'Settings', path: '/settings' },
 ];
 

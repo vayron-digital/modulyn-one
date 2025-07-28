@@ -53,6 +53,11 @@ function UploadDocument() {
       if (userError) throw userError;
       if (!user) throw new Error('No user found');
 
+      // Validate file
+      if (formData.file.size > 50 * 1024 * 1024) { // 50MB limit
+        throw new Error(`File is too large. Maximum size is 50MB.`);
+      }
+
       // Upload file to storage
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
@@ -62,7 +67,10 @@ function UploadDocument() {
         .from('documents')
         .upload(filePath, formData.file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Failed to upload file: ${uploadError.message}`);
+      }
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage

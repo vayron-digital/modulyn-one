@@ -1,632 +1,1038 @@
-import React, { useEffect, useState } from 'react';
-import { DataTable } from '../../components/ui/DataTable';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { FilterBar } from '../../components/ui/FilterBar';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { DialogRoot, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { Progress } from '../../components/ui/progress';
 import {
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '../../components/ui/dialog';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../../components/ui/select';
-import { useAuth } from '../../contexts/AuthContext';
+  Phone, 
+  Plus, 
+  Search, 
+  Filter, 
+  Calendar, 
+  Clock, 
+  User, 
+  Target, 
+  TrendingUp, 
+  TrendingDown,
+  CheckCircle,
+  XCircle,
+  PhoneCall,
+  PhoneMissed,
+  PhoneOutgoing,
+  MessageSquare,
+  Users,
+  BarChart3,
+  RefreshCw,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  Star,
+  AlertCircle,
+  CheckSquare,
+  CalendarDays
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../hooks/useToast';
+import { format } from 'date-fns';
 
-console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-const API_URL = import.meta.env.VITE_API_BASE_URL + '/api/cold-calls';
+interface ColdCall {
+  id: string;
+  phone: string;
+  name?: string;
+  email?: string;
+  source?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  outcome?: string;
+  comments?: string;
+  agent_id: string;
+  agent?: {
+    full_name: string;
+    profile_image_url?: string;
+  };
+  follow_up_date?: string;
+  follow_up_notes?: string;
+  call_duration?: number;
+  call_attempts: number;
+  is_converted: boolean;
+  converted_by?: string;
+  converted_at?: string;
+  created_at: string;
+  updated_at: string;
+}
 
-const FILTERS = [
-  { key: 'agent_id', label: 'Agent', type: 'text' as const, placeholder: 'Agent' },
-  { key: 'source', label: 'Source', type: 'text' as const, placeholder: 'Source' },
-  { key: 'status', label: 'Status', type: 'text' as const, placeholder: 'Status' },
-  { key: 'priority', label: 'Priority', type: 'text' as const, placeholder: 'Priority' },
-  { key: 'date', label: 'Date', type: 'date' as const, placeholder: 'Date' },
+interface AgentStats {
+  agent_id: string;
+  agent_name: string;
+  total_calls: number;
+  completed_calls: number;
+  conversion_rate: number;
+  avg_call_duration: number;
+  today_calls: number;
+  is_online: boolean;
+  last_seen: string;
+}
+
+const CALL_OUTCOMES = [
+  { value: 'interested', label: 'Interested', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  { value: 'not_interested', label: 'Not Interested', color: 'bg-red-100 text-red-800', icon: XCircle },
+  { value: 'call_back', label: 'Call Back Later', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+  { value: 'no_answer', label: 'No Answer', color: 'bg-gray-100 text-gray-800', icon: PhoneMissed },
+  { value: 'wrong_number', label: 'Wrong Number', color: 'bg-orange-100 text-orange-800', icon: AlertCircle },
+  { value: 'busy', label: 'Busy', color: 'bg-blue-100 text-blue-800', icon: PhoneCall },
+  { value: 'voicemail', label: 'Voicemail', color: 'bg-purple-100 text-purple-800', icon: MessageSquare }
 ];
 
-const ColdCalls: React.FC = () => {
+const PRIORITY_LEVELS = [
+  { value: 'urgent', label: 'Urgent', color: 'bg-red-100 text-red-800' },
+  { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800' },
+  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800' }
+];
+
+export default function ColdCalls() {
   const { user } = useAuth();
-  console.log('Current user:', user); // Debug: log user object
-  const isAdmin = user && typeof user.role === 'string' && user.role.toLowerCase().includes('admin');
-  const [coldCalls, setColdCalls] = useState<any[]>([]);
+  const { toast } = useToast();
+  const [calls, setCalls] = useState<ColdCall[]>([]);
+  const [agents, setAgents] = useState<AgentStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [filters, setFilters] = useState<Record<string, any>>({});
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [assignAgentId, setAssignAgentId] = useState<string>('');
-  const [assignLoading, setAssignLoading] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [addForm, setAddForm] = useState({
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showOutcomeModal, setShowOutcomeModal] = useState(false);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [selectedCall, setSelectedCall] = useState<ColdCall | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [agentFilter, setAgentFilter] = useState('all');
+  const [outcomeFilter, setOutcomeFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('calls');
+
+  // Form states
+  const [newCall, setNewCall] = useState({
+    phone: '',
     name: '',
     email: '',
-    phone: '',
-    agent_id: '',
     source: '',
-    status: 'pending',
-    priority: '',
-    comments: '',
-    date: '',
+    priority: 'medium' as const,
+    comments: ''
   });
-  const [addLoading, setAddLoading] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [detailsData, setDetailsData] = useState<any | null>(null);
-  const [convertLoading, setConvertLoading] = useState(false);
-  const [importModalOpen, setImportModalOpen] = useState(false);
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const [showImportGuide, setShowImportGuide] = useState(false);
-  const [profiles, setProfiles] = useState<{ id: string; full_name: string }[]>([]);
 
-  const fetchColdCalls = async () => {
-    setLoading(true);
-    setError(null);
+  const [outcomeForm, setOutcomeForm] = useState({
+    outcome: '',
+    comments: '',
+    call_duration: 0,
+    follow_up_date: '',
+    follow_up_notes: ''
+  });
+
+  const [followUpForm, setFollowUpForm] = useState({
+    follow_up_date: '',
+    follow_up_notes: '',
+    priority: 'medium' as const
+  });
+
+  useEffect(() => {
+    fetchCalls();
+    fetchAgentStats();
+    setupRealtimeSubscription();
+  }, []);
+
+  const setupRealtimeSubscription = () => {
+    const subscription = supabase
+      .channel('cold_calls_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cold_calls' }, () => {
+        fetchCalls();
+        fetchAgentStats();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'presence' }, () => {
+        fetchAgentStats();
+      })
+      .subscribe();
+
+    return () => subscription.unsubscribe();
+  };
+
+  const fetchCalls = async () => {
     try {
-      // Add filter query params
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v) params.append(k, v);
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('cold_calls')
+        .select(`
+          *,
+          agent:profiles!agent_id(full_name, profile_image_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCalls(data || []);
+    } catch (error: any) {
+      console.error('Error fetching calls:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load cold calls",
+        variant: "destructive",
       });
-      const res = await fetch(`${API_URL}${params.toString() ? '?' + params.toString() : ''}`);
-      if (!res.ok) throw new Error('Failed to fetch cold calls');
-      const json = await res.json();
-      setColdCalls(json.data.coldCalls || []);
-    } catch (err: any) {
-      setError(err.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchColdCalls();
-    // eslint-disable-next-line
-  }, [JSON.stringify(filters)]);
-
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      const { data, error } = await supabase
+  const fetchAgentStats = async () => {
+    try {
+      // Get all agents
+      const { data: agentsData, error: agentsError } = await supabase
         .from('profiles')
-        .select('id, full_name')
-        .order('full_name');
-      if (!error) setProfiles(data || []);
-    };
-    fetchProfiles();
-  }, []);
+        .select('id, full_name, profile_image_url')
+        .eq('role', 'agent');
 
-  const handleSelectionChange = (ids: string[]) => {
-    setSelectedRows(ids);
+      if (agentsError) throw agentsError;
+
+      // Get presence data
+      const { data: presenceData, error: presenceError } = await supabase
+        .from('presence')
+        .select('*');
+
+      if (presenceError) throw presenceError;
+
+      // Calculate stats for each agent
+      const agentStats = await Promise.all(
+        agentsData.map(async (agent) => {
+          const { data: agentCalls, error: callsError } = await supabase
+            .from('cold_calls')
+            .select('*')
+            .eq('agent_id', agent.id);
+
+          if (callsError) throw callsError;
+
+          const totalCalls = agentCalls?.length || 0;
+          const completedCalls = agentCalls?.filter(call => call.status === 'completed').length || 0;
+          const convertedCalls = agentCalls?.filter(call => call.is_converted).length || 0;
+          const todayCalls = agentCalls?.filter(call => 
+            new Date(call.created_at).toDateString() === new Date().toDateString()
+          ).length || 0;
+
+          const avgDuration = agentCalls?.length > 0 
+            ? agentCalls.reduce((sum, call) => sum + (call.call_duration || 0), 0) / agentCalls.length
+            : 0;
+
+          const presence = presenceData?.find(p => p.user_id === agent.id);
+          const isOnline = presence?.status === 'online';
+          const lastSeen = presence?.last_seen || '';
+
+          return {
+            agent_id: agent.id,
+            agent_name: agent.full_name,
+            total_calls: totalCalls,
+            completed_calls: completedCalls,
+            conversion_rate: totalCalls > 0 ? (convertedCalls / totalCalls) * 100 : 0,
+            avg_call_duration: avgDuration,
+            today_calls: todayCalls,
+            is_online: isOnline,
+            last_seen: lastSeen
+          };
+        })
+      );
+
+      setAgents(agentStats);
+    } catch (error: any) {
+      console.error('Error fetching agent stats:', error);
+    }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedRows.length === 0) return;
-    setActionLoading(true);
+  const handleAddCall = async () => {
     try {
-      const res = await fetch(`${API_URL}/bulk-delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedRows }),
+      if (!newCall.phone.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Phone number is required",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('cold_calls')
+        .insert([{
+          ...newCall,
+          agent_id: user?.id,
+          status: 'pending',
+          call_attempts: 0
+        }]);
+
+      if (error) throw error;
+
+      setShowAddModal(false);
+      setNewCall({ phone: '', name: '', email: '', source: '', priority: 'medium', comments: '' });
+      fetchCalls();
+      toast({
+        title: "Success",
+        description: "Cold call added successfully",
       });
-      if (!res.ok) throw new Error('Failed to delete cold calls');
-      setSelectedRows([]);
-      await fetchColdCalls();
-    } catch (err) {
-      alert('Bulk delete failed');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleExport = async () => {
-    setActionLoading(true);
-    try {
-      let url = `${API_URL}/export/csv`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to export CSV');
-      const blob = await res.blob();
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = 'cold_calls_export.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      alert('Export failed');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleFilterChange = (newFilters: Record<string, any>) => {
-    setFilters(newFilters);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({});
-  };
-
-  const handleAssignAgent = async () => {
-    if (!assignAgentId || selectedRows.length === 0) return;
-    setAssignLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/assign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedRows, agentId: assignAgentId }),
+    } catch (error: any) {
+      console.error('Error adding call:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
-      if (!res.ok) throw new Error('Failed to assign agent');
-      setAssignModalOpen(false);
-      setAssignAgentId('');
-      setSelectedRows([]);
-      await fetchColdCalls();
-    } catch (err) {
-      alert('Assign agent failed');
-    } finally {
-      setAssignLoading(false);
     }
   };
 
-  const handleAddChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setAddForm({ ...addForm, [e.target.name]: e.target.value });
-  };
+  const handleUpdateOutcome = async () => {
+    if (!selectedCall || !outcomeForm.outcome) return;
 
-  const handleAddColdCall = async () => {
-    setAddLoading(true);
-    setAddError(null);
     try {
-      const res = await fetch(`${API_URL}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addForm),
+      const updates: any = {
+        outcome: outcomeForm.outcome,
+        status: 'completed',
+        call_duration: outcomeForm.call_duration,
+        comments: outcomeForm.comments,
+        updated_at: new Date().toISOString()
+      };
+
+      if (outcomeForm.follow_up_date) {
+        updates.follow_up_date = outcomeForm.follow_up_date;
+        updates.follow_up_notes = outcomeForm.follow_up_notes;
+      }
+
+      const { error } = await supabase
+        .from('cold_calls')
+        .update(updates)
+        .eq('id', selectedCall.id);
+
+      if (error) throw error;
+
+      setShowOutcomeModal(false);
+      setSelectedCall(null);
+      setOutcomeForm({ outcome: '', comments: '', call_duration: 0, follow_up_date: '', follow_up_notes: '' });
+      fetchCalls();
+      toast({
+        title: "Success",
+        description: "Call outcome updated successfully",
       });
-      if (!res.ok) throw new Error('Failed to add cold call');
-      setAddModalOpen(false);
-      setAddForm({ name: '', email: '', phone: '', agent_id: '', source: '', status: 'pending', priority: '', comments: '', date: '' });
-      await fetchColdCalls();
-    } catch (err: any) {
-      setAddError(err.message || 'Add failed');
-    } finally {
-      setAddLoading(false);
+    } catch (error: any) {
+      console.error('Error updating outcome:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleRowClick = (item: any) => {
-    setDetailsData(item);
-    setDetailsModalOpen(true);
-  };
+  const handleFollowUp = async () => {
+    if (!selectedCall || !followUpForm.follow_up_date) return;
 
-  const handleConvertToLead = async () => {
-    if (!detailsData) return;
-    setConvertLoading(true);
     try {
-      const res = await fetch(`${API_URL}/${detailsData.id}/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ convertedBy: 'admin' }), // TODO: use real user id
+      const { error } = await supabase
+        .from('cold_calls')
+        .update({
+          follow_up_date: followUpForm.follow_up_date,
+          follow_up_notes: followUpForm.follow_up_notes,
+          priority: followUpForm.priority,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedCall.id);
+
+      if (error) throw error;
+
+      setShowFollowUpModal(false);
+      setSelectedCall(null);
+      setFollowUpForm({ follow_up_date: '', follow_up_notes: '', priority: 'medium' });
+      fetchCalls();
+      toast({
+        title: "Success",
+        description: "Follow-up scheduled successfully",
       });
-      if (!res.ok) throw new Error('Failed to convert');
-      setDetailsModalOpen(false);
-      setDetailsData(null);
-      await fetchColdCalls();
-    } catch (err) {
-      alert('Convert failed');
-    } finally {
-      setConvertLoading(false);
+    } catch (error: any) {
+      console.error('Error scheduling follow-up:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleSampleDownload = () => {
-    // Implementation of handleSampleDownload
-  };
-
-  const handleImportCSV = async () => {
-    setImportLoading(true);
-    setImportError(null);
+  const handleConvertToLead = async (callId: string) => {
     try {
-      if (!importFile) throw new Error('No file selected');
-      const formData = new FormData();
-      formData.append('file', importFile, importFile.name);
-      const res = await fetch(`${API_URL}/import/csv`, {
-        method: 'POST',
-        body: formData,
+      const call = calls.find(c => c.id === callId);
+      if (!call) return;
+
+      // Create lead from cold call
+      const { data: lead, error: leadError } = await supabase
+        .from('leads')
+        .insert([{
+          first_name: call.name?.split(' ')[0] || 'Unknown',
+          last_name: call.name?.split(' ').slice(1).join(' ') || 'Lead',
+          email: call.email,
+          phone: call.phone,
+          source: call.source || 'cold_call',
+          status: 'new',
+          assigned_to: call.agent_id,
+          notes: `Converted from cold call. ${call.comments || ''}`,
+          created_by: call.agent_id
+        }])
+        .select()
+        .single();
+
+      if (leadError) throw leadError;
+
+      // Mark cold call as converted
+      const { error: updateError } = await supabase
+        .from('cold_calls')
+        .update({
+          is_converted: true,
+          converted_by: user?.id,
+          converted_at: new Date().toISOString()
+        })
+        .eq('id', callId);
+
+      if (updateError) throw updateError;
+
+      fetchCalls();
+      toast({
+        title: "Success",
+        description: "Cold call converted to lead successfully",
       });
-      if (!res.ok) throw new Error('Failed to import CSV');
-      setImportModalOpen(false);
-      setImportFile(null);
-      await fetchColdCalls();
-    } catch (err: any) {
-      setImportError(err.message || 'Import failed');
-    } finally {
-      setImportLoading(false);
+    } catch (error: any) {
+      console.error('Error converting to lead:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleImportClick = () => {
-    setShowImportGuide(true);
+  const filteredCalls = calls.filter(call => {
+    const matchesSearch = !searchTerm || 
+      call.phone.includes(searchTerm) ||
+      call.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      call.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || call.status === statusFilter;
+    const matchesAgent = agentFilter === 'all' || call.agent_id === agentFilter;
+    const matchesOutcome = outcomeFilter === 'all' || call.outcome === outcomeFilter;
+
+    return matchesSearch && matchesStatus && matchesAgent && matchesOutcome;
+  });
+
+  const getOutcomeConfig = (outcome: string) => {
+    return CALL_OUTCOMES.find(o => o.value === outcome) || CALL_OUTCOMES[0];
   };
 
-  const columns = [
-    { key: 'name', header: 'Name' },
-    { key: 'email', header: 'Email' },
-    { key: 'phone', header: 'Phone' },
-    ...(isAdmin ? [
-      {
-        key: 'agent',
-        header: 'Agent',
-        render: (item: any) => (
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            value={item.agent_id || ''}
-            onClick={e => e.stopPropagation()}
-            onChange={async (e) => {
-              const newAgentId = e.target.value;
-              await fetch(`${API_URL}/assign`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: [item.id], agentId: newAgentId }),
-              });
-              fetchColdCalls();
-            }}
-          >
-            <option value="">Unassigned</option>
-            {profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>{profile.full_name}</option>
-            ))}
-          </select>
-        ),
-      },
-    ] : []),
-    { key: 'source', header: 'Source' },
-    { key: 'status', header: 'Status', render: (item: any) => <Badge>{item.status}</Badge> },
-    { key: 'priority', header: 'Priority' },
-    { key: 'comments', header: 'Comments' },
-    { key: 'date', header: 'Date' },
-  ];
+  const getPriorityConfig = (priority: string) => {
+    return PRIORITY_LEVELS.find(p => p.value === priority) || PRIORITY_LEVELS[2];
+  };
+
+  const totalCalls = calls.length;
+  const completedCalls = calls.filter(c => c.status === 'completed').length;
+  const conversionRate = totalCalls > 0 ? (calls.filter(c => c.is_converted).length / totalCalls) * 100 : 0;
+  const todayCalls = calls.filter(c => 
+    new Date(c.created_at).toDateString() === new Date().toDateString()
+  ).length;
 
   return (
-    <div className="p-8 min-h-screen flex justify-center items-start">
-      {/* Artificial Loading Screen with Guide */}
-      {showImportGuide && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{
-            width: '100vw',
-            height: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'auto',
-          }}>
-            <div style={{
-              background: '#fff',
-              color: '#18181b',
-              width: '90vw',
-              maxWidth: 1100,
-              minHeight: 340,
-              maxHeight: '90vh',
-              borderRadius: 18,
-              boxShadow: '0 8px 32px 0 rgba(99,102,241,0.10)',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-              position: 'relative',
-              border: '1.5px solid #e5e7eb',
-              overflow: 'hidden',
-            }}>
-              {/* Left: Illustration, Logos, Spinner */}
-              <div style={{ flex: '0 0 320px', background: 'linear-gradient(135deg, #e0e7ff 0%, #f5f7fa 100%)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36, borderRight: '1.5px solid #e5e7eb' }}>
-                {/* SVG Illustration */}
-                <div style={{ marginBottom: 24 }}>
-                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="20" width="60" height="40" rx="8" fill="#6366f1"/>
-                    <rect x="18" y="28" width="44" height="24" rx="4" fill="#fff"/>
-                    <circle cx="24" cy="40" r="4" fill="#6366f1"/>
-                    <rect x="32" y="38" width="20" height="4" rx="2" fill="#a5b4fc"/>
-                    <rect x="32" y="46" width="16" height="4" rx="2" fill="#a5b4fc"/>
-                    <circle cx="56" cy="40" r="4" fill="#6366f1"/>
-                  </svg>
-                </div>
-                {/* Spinner */}
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ width: 32, height: 32, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{
-                      width: 24,
-                      height: 24,
-                      border: '3px solid #a5b4fc',
-                      borderTop: '3px solid #6366f1',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite',
-                    }} />
-                  </div>
-                </div>
-                {/* Logos */}
-                <div style={{ display: 'flex', gap: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/512px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png" alt="Excel" style={{ height: 22, width: 22, objectFit: 'contain', opacity: 0.7 }} />
-                  <img src="https://mailmeteor.com/logos/assets/PNG/Google_Sheets_Logo_512px.png" alt="Google Sheets" style={{ height: 22, width: 22, objectFit: 'contain', opacity: 0.7 }} />
-                  <img src="https://cdn.worldvectorlogo.com/logos/numbers-ios.svg" alt="Apple Numbers" style={{ height: 22, width: 22, objectFit: 'contain', borderRadius: 6, opacity: 0.7 }} />
-                </div>
-              </div>
-              {/* Right: Content */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36, height: '100%', overflow: 'hidden' }}>
-                <h2 className="text-2xl font-bold mb-2" style={{ textAlign: 'center', marginBottom: 6 }}>You're almost there! Let's prep your CSV.</h2>
-                <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginBottom: 18 }}>We play nice with Excel, Google Sheets, and Numbers. Here's your quick import checklist:</div>
-                <div style={{ width: '100%', height: 1, background: '#ececec', margin: '0 0 18px 0' }} />
-                <ul style={{ maxWidth: 440, margin: '0 auto', fontSize: 15, color: '#52525b', marginBottom: 18, padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 18, justifyContent: 'center' }}>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Name</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Email</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Phone</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Agent ID</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Source</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Status</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Priority</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Comments</li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}><span style={{ color: '#22c55e', marginRight: 10, fontSize: 20 }}>✔️</span> Date</li>
-                </ul>
-                <div className="mb-2 text-base font-semibold" style={{ textAlign: 'center', fontSize: 15, marginBottom: 6 }}>Sample row:</div>
-                <div className="mb-4 p-2 bg-gray-100 rounded text-xs font-mono border" style={{ maxWidth: 420, margin: '0 auto', fontSize: 13, color: '#18181b', marginBottom: 18 }}>John Doe, john@example.com, 1234567890, 1, Google, pending, High, "Interested in 2BHK", 2024-06-01</div>
-                <div className="mb-2 text-base font-semibold" style={{ textAlign: 'center', fontSize: 15, marginBottom: 6 }}>Pro tips:</div>
-                <ul style={{ maxWidth: 440, margin: '0 auto', fontSize: 14, color: '#6366f1', marginBottom: 24, padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 18, justifyContent: 'center' }}>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 180 }}><span style={{ marginRight: 10, fontSize: 18 }}>📅</span> Date must be <b>YYYY-MM-DD</b></li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 180 }}><span style={{ marginRight: 10, fontSize: 18 }}>⚡</span> Status: <b>pending</b>, <b>converted</b>, or <b>invalid</b></li>
-                  <li style={{ display: 'flex', alignItems: 'center', minWidth: 180 }}><span style={{ marginRight: 10, fontSize: 18 }}>🚫</span> No empty rows!</li>
-                </ul>
-                <div className="mt-6 text-center" style={{ width: '100%' }}>
-                  <button
-                    className="bg-indigo-600 text-white px-8 py-3 rounded-full text-base font-semibold hover:bg-indigo-700 transition"
-                    style={{ minWidth: 180, boxShadow: '0 2px 8px 0 rgba(99,102,241,0.10)' }}
-                    onClick={() => { setShowImportGuide(false); setImportModalOpen(true); }}
-                  >
-                    I Understand
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cold Calling Tracker</h1>
+          <p className="text-gray-600 dark:text-gray-400">Track cold calls, outcomes, and team performance</p>
         </div>
-      )}
-      <Card className="w-full max-w-7xl bg-white dark:bg-black border-black dark:border-white text-black dark:text-white shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-3xl font-bold">Cold Calls</CardTitle>
-          <div className="flex gap-2 flex-wrap">
-            {isAdmin && (
-              <>
-                <Button variant="outline" disabled={actionLoading} onClick={handleImportClick}>Import CSV</Button>
-                <Button variant="outline" disabled={actionLoading} onClick={handleExport}>Export</Button>
-                <DialogPrimitive.Root open={assignModalOpen} onOpenChange={setAssignModalOpen}>
-                  <DialogPrimitive.Trigger asChild>
-                    <Button variant="outline" disabled={selectedRows.length === 0 || actionLoading}>Assign Agent</Button>
-                  </DialogPrimitive.Trigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Assign Agent</DialogTitle>
-                      <DialogDescription>
-                        Assign the selected cold calls to an agent.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="my-4">
-                      <Select value={assignAgentId} onValueChange={setAssignAgentId}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select agent" />
+        <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add Cold Call
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Calls</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalCalls}</p>
+                </div>
+              <Phone className="h-8 w-8 text-blue-500" />
+                  </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{completedCalls}</p>
+                </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+                </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Conversion Rate</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{conversionRate.toFixed(1)}%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-purple-500" />
+                </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Calls</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{todayCalls}</p>
+              </div>
+              <CalendarDays className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="calls">Cold Calls</TabsTrigger>
+          <TabsTrigger value="agents">Team Performance</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        {/* Cold Calls Tab */}
+        <TabsContent value="calls" className="space-y-6">
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label>Search</Label>
+                  <Input
+                    placeholder="Search by phone, name, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                    </SelectContent>
+                  </Select>
+          </div>
+                <div>
+                  <Label>Agent</Label>
+                  <Select value={agentFilter} onValueChange={setAgentFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Agents</SelectItem>
+                      {agents.map(agent => (
+                        <SelectItem key={agent.agent_id} value={agent.agent_id}>
+                          {agent.agent_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+        </div>
+                <div>
+                  <Label>Outcome</Label>
+                  <Select value={outcomeFilter} onValueChange={setOutcomeFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {profiles.map((profile) => (
-                            <SelectItem key={profile.id} value={profile.id}>{profile.full_name}</SelectItem>
+                      <SelectItem value="all">All Outcomes</SelectItem>
+                      {CALL_OUTCOMES.map(outcome => (
+                        <SelectItem key={outcome.value} value={outcome.value}>
+                          {outcome.label}
+                        </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setAssignModalOpen(false)} disabled={assignLoading}>Cancel</Button>
-                      <Button variant="default" onClick={handleAssignAgent} disabled={!assignAgentId || assignLoading}>
-                        {assignLoading ? 'Assigning...' : 'Assign'}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calls List */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Cold Calls ({filteredCalls.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-500">Loading calls...</p>
+                </div>
+              ) : filteredCalls.length === 0 ? (
+                <div className="text-center py-8">
+                  <Phone className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No cold calls found</h3>
+                  <p className="text-gray-500 mb-4">Get started by adding your first cold call</p>
+                  <Button onClick={() => setShowAddModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Cold Call
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </DialogPrimitive.Root>
-                <Button variant="destructive" disabled={selectedRows.length === 0 || actionLoading} onClick={handleBulkDelete}>Bulk Delete</Button>
-              </>
-            )}
-            <DialogPrimitive.Root open={addModalOpen} onOpenChange={setAddModalOpen}>
-              <DialogPrimitive.Trigger asChild>
-                <Button variant="default" disabled={actionLoading}>Add New Cold Call</Button>
-              </DialogPrimitive.Trigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Cold Call</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details to add a new cold call lead.
-                  </DialogDescription>
-                </DialogHeader>
-                <form className="space-y-4" onSubmit={e => { e.preventDefault(); handleAddColdCall(); }}>
-                  <input className="w-full p-2 border rounded" name="name" placeholder="Name" value={addForm.name} onChange={handleAddChange} required />
-                  <input className="w-full p-2 border rounded" name="email" placeholder="Email" value={addForm.email} onChange={handleAddChange} />
-                  <input className="w-full p-2 border rounded" name="phone" placeholder="Phone" value={addForm.phone} onChange={handleAddChange} required />
-                  <input className="w-full p-2 border rounded" name="agent_id" placeholder="Agent ID" value={addForm.agent_id} onChange={handleAddChange} />
-                  <input className="w-full p-2 border rounded" name="source" placeholder="Source" value={addForm.source} onChange={handleAddChange} />
-                  <select className="w-full p-2 border rounded" name="status" value={addForm.status} onChange={handleAddChange}>
-                    <option value="pending">Pending</option>
-                    <option value="converted">Converted</option>
-                    <option value="invalid">Invalid</option>
-                  </select>
-                  <input className="w-full p-2 border rounded" name="priority" placeholder="Priority" value={addForm.priority} onChange={handleAddChange} />
-                  <textarea className="w-full p-2 border rounded" name="comments" placeholder="Comments" value={addForm.comments} onChange={handleAddChange} />
-                  <input className="w-full p-2 border rounded" name="date" type="date" placeholder="Date" value={addForm.date} onChange={handleAddChange} />
-                  {addError && <div className="text-red-500 text-sm">{addError}</div>}
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setAddModalOpen(false)} disabled={addLoading}>Cancel</Button>
-                    <Button variant="default" type="submit" disabled={addLoading}>{addLoading ? 'Adding...' : 'Add'}</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </DialogPrimitive.Root>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredCalls.map((call) => (
+                    <div key={call.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage src={call.agent?.profile_image_url} />
+                            <AvatarFallback>{call.agent?.full_name?.[0] || 'A'}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-medium text-gray-900 dark:text-white">
+                                {call.name || 'Unknown Contact'}
+                              </h3>
+                              <Badge className={getPriorityConfig(call.priority).color}>
+                                {getPriorityConfig(call.priority).label}
+                              </Badge>
+                              {call.is_converted && (
+                                <Badge className="bg-green-100 text-green-800">
+                                  Converted
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {call.phone} • {call.agent?.full_name}
+                            </p>
+                            {call.email && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{call.email}</p>
+                            )}
+                          </div>
           </div>
-          {/* Render Import CSV modal for admins only, but outside the button group so it always appears if open */}
-          {isAdmin && importModalOpen && (
-            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{
-                width: '100vw',
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'auto',
-              }}>
-                <div style={{
-                  background: '#fff',
-                  color: '#18181b',
-                  width: '90vw',
-                  maxWidth: 1100,
-                  minHeight: 340,
-                  maxHeight: '90vh',
-                  borderRadius: 18,
-                  boxShadow: '0 8px 32px 0 rgba(99,102,241,0.10)',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  position: 'relative',
-                  border: '1.5px solid #e5e7eb',
-                  overflow: 'hidden',
-                }}>
-                  {/* Left: Illustration, Logos, Spinner */}
-                  <div style={{ flex: '0 0 320px', background: 'linear-gradient(135deg, #e0e7ff 0%, #f5f7fa 100%)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36, borderRight: '1.5px solid #e5e7eb' }}>
-                    {/* SVG Illustration */}
-                    <div style={{ marginBottom: 24 }}>
-                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="10" y="20" width="60" height="40" rx="8" fill="#6366f1"/>
-                        <rect x="18" y="28" width="44" height="24" rx="4" fill="#fff"/>
-                        <circle cx="24" cy="40" r="4" fill="#6366f1"/>
-                        <rect x="32" y="38" width="20" height="4" rx="2" fill="#a5b4fc"/>
-                        <rect x="32" y="46" width="16" height="4" rx="2" fill="#a5b4fc"/>
-                        <circle cx="56" cy="40" r="4" fill="#6366f1"/>
-                      </svg>
+                        <div className="flex items-center space-x-2">
+                          {call.outcome ? (
+                            <Badge className={getOutcomeConfig(call.outcome).color}>
+                              {getOutcomeConfig(call.outcome).label}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">No Outcome</Badge>
+                          )}
+                          <div className="flex space-x-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedCall(call);
+                                setShowOutcomeModal(true);
+                              }}
+                            >
+                              <CheckSquare className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedCall(call);
+                                setShowFollowUpModal(true);
+                              }}
+                            >
+                              <Calendar className="h-4 w-4" />
+                            </Button>
+                            {!call.is_converted && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleConvertToLead(call.id)}
+                              >
+                                <User className="h-4 w-4" />
+                              </Button>
+                            )}
                     </div>
-                    {/* Spinner (shows only when loading) */}
-                    {importLoading && (
-                      <div style={{ marginBottom: 18 }}>
-                        <div style={{ width: 32, height: 32, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{
-                            width: 24,
-                            height: 24,
-                            border: '3px solid #a5b4fc',
-                            borderTop: '3px solid #6366f1',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite',
-                          }} />
                         </div>
                       </div>
-                    )}
-                    {/* Logos */}
-                    <div style={{ display: 'flex', gap: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/512px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png" alt="Excel" style={{ height: 22, width: 22, objectFit: 'contain', opacity: 0.7 }} />
-                      <img src="https://mailmeteor.com/logos/assets/PNG/Google_Sheets_Logo_512px.png" alt="Google Sheets" style={{ height: 22, width: 22, objectFit: 'contain', opacity: 0.7 }} />
-                      <img src="https://cdn.worldvectorlogo.com/logos/numbers-ios.svg" alt="Apple Numbers" style={{ height: 22, width: 22, objectFit: 'contain', borderRadius: 6, opacity: 0.7 }} />
+                      {call.comments && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{call.comments}</p>
+                      )}
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                        <span>Attempts: {call.call_attempts}</span>
+                        <span>Created: {format(new Date(call.created_at), 'MMM dd, yyyy')}</span>
+                      </div>
                     </div>
-                  </div>
-                  {/* Right: Import Form */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 36, height: '100%', overflow: 'hidden' }}>
-                    <h2 className="text-2xl font-bold mb-2" style={{ textAlign: 'center', marginBottom: 6 }}>Import Cold Calls (CSV)</h2>
-                    <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginBottom: 18 }}>Upload a CSV file exported from Excel, Google Sheets, or Numbers.</div>
-                    <div style={{ width: '100%', height: 1, background: '#ececec', margin: '0 0 18px 0' }} />
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={e => setImportFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-black mb-2"
-                      style={{ marginBottom: 18, maxWidth: 320 }}
-                    />
-                    {importError && <div className="text-red-500 mt-2 text-sm" style={{ marginBottom: 12 }}>{importError}</div>}
-                    <div className="flex gap-2 mt-4 justify-center" style={{ width: '100%' }}>
-                      <button
-                        className="bg-gray-200 text-black px-6 py-2 rounded font-semibold hover:bg-gray-300 transition"
-                        style={{ minWidth: 120 }}
-                        onClick={() => setImportModalOpen(false)}
-                        disabled={importLoading}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="bg-indigo-600 text-white px-8 py-2 rounded-full font-semibold hover:bg-indigo-700 transition"
-                        style={{ minWidth: 140, boxShadow: '0 2px 8px 0 rgba(99,102,241,0.10)' }}
-                        onClick={handleImportCSV}
-                        disabled={!importFile || importLoading}
-                      >
-                        {importLoading ? 'Importing...' : 'Import'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
-          <FilterBar
-            filters={FILTERS}
-            activeFilters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-          />
-          {selectedRows.length > 0 && (
-            <div className="mb-2 text-sm font-semibold text-black dark:text-white">{selectedRows.length} selected</div>
-          )}
-          {loading ? (
-            <div className="text-center py-10 text-lg">Loading...</div>
-          ) : error ? (
-            <div className="text-center py-10 text-red-500">{error}</div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={coldCalls.map((item) => ({ ...item, _rowKey: item.id }))}
-              selectedRows={selectedRows}
-              onSelectionChange={handleSelectionChange}
-              onRowClick={handleRowClick}
-            />
-          )}
-          <DialogPrimitive.Root open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Cold Call Details</DialogTitle>
-              </DialogHeader>
-              {detailsData && (
-                <div className="space-y-2">
-                  <div><b>Name:</b> {detailsData.name}</div>
-                  <div><b>Email:</b> {detailsData.email}</div>
-                  <div><b>Phone:</b> {detailsData.phone}</div>
-                  <div><b>Agent:</b> {detailsData.agent_id}</div>
-                  <div><b>Source:</b> {detailsData.source}</div>
-                  <div><b>Status:</b> <Badge>{detailsData.status}</Badge></div>
-                  <div><b>Priority:</b> {detailsData.priority}</div>
-                  <div><b>Comments:</b> {detailsData.comments}</div>
-                  <div><b>Date:</b> {detailsData.date}</div>
-                  {detailsData.is_converted && (
-                    <div className="text-green-600 font-bold">Converted</div>
-                  )}
+                  ))}
                 </div>
               )}
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDetailsModalOpen(false)} disabled={convertLoading}>Close</Button>
-                {!detailsData?.is_converted && (
-                  <Button variant="default" onClick={handleConvertToLead} disabled={convertLoading}>
-                    {convertLoading ? 'Converting...' : 'Convert to Lead'}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Team Performance Tab */}
+        <TabsContent value="agents" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Performance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {agents.map((agent) => (
+                  <Card key={agent.agent_id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Avatar>
+                          <AvatarFallback>{agent.agent_name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900 dark:text-white">{agent.agent_name}</h3>
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-2 h-2 rounded-full ${agent.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {agent.is_online ? 'Online' : 'Offline'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Total Calls</span>
+                          <span className="font-medium">{agent.total_calls}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+                          <span className="font-medium">{agent.completed_calls}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Conversion Rate</span>
+                          <span className="font-medium">{agent.conversion_rate.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Today's Calls</span>
+                          <span className="font-medium">{agent.today_calls}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Avg Duration</span>
+                          <span className="font-medium">{Math.round(agent.avg_call_duration)}m</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progress</span>
+                          <span>{agent.completed_calls}/{agent.total_calls}</span>
+                        </div>
+                        <Progress value={agent.total_calls > 0 ? (agent.completed_calls / agent.total_calls) * 100 : 0} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Outcome Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {CALL_OUTCOMES.map((outcome) => {
+                    const count = calls.filter(c => c.outcome === outcome.value).length;
+                    const percentage = totalCalls > 0 ? (count / totalCalls) * 100 : 0;
+                    return (
+                      <div key={outcome.value} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <outcome.icon className="h-4 w-4" />
+                          <span className="text-sm">{outcome.label}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium">{count}</span>
+                          <span className="text-sm text-gray-500">({percentage.toFixed(1)}%)</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Weekly Calls</span>
+                    <span className="font-medium">
+                      {calls.filter(c => {
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        return new Date(c.created_at) > weekAgo;
+                      }).length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Monthly Conversion</span>
+                    <span className="font-medium">
+                      {calls.filter(c => {
+                        const monthAgo = new Date();
+                        monthAgo.setMonth(monthAgo.getMonth() - 1);
+                        return new Date(c.created_at) > monthAgo && c.is_converted;
+                      }).length}
+                    </span>
+                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Avg Call Duration</span>
+                    <span className="font-medium">
+                      {Math.round(calls.reduce((sum, c) => sum + (c.call_duration || 0), 0) / Math.max(calls.length, 1))}m
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Add Call Modal */}
+      <DialogRoot open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Cold Call</DialogTitle>
+            <DialogDescription>Add a new cold call to track</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="phone">Phone Number *</Label>
+              <Input
+                id="phone"
+                value={newCall.phone}
+                onChange={(e) => setNewCall({ ...newCall, phone: e.target.value })}
+                placeholder="+1234567890"
+              />
+            </div>
+            <div>
+              <Label htmlFor="name">Contact Name</Label>
+              <Input
+                id="name"
+                value={newCall.name}
+                onChange={(e) => setNewCall({ ...newCall, name: e.target.value })}
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newCall.email}
+                onChange={(e) => setNewCall({ ...newCall, email: e.target.value })}
+                placeholder="john@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="source">Source</Label>
+              <Input
+                id="source"
+                value={newCall.source}
+                onChange={(e) => setNewCall({ ...newCall, source: e.target.value })}
+                placeholder="Website, Referral, etc."
+              />
+            </div>
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <Select value={newCall.priority} onValueChange={(value: any) => setNewCall({ ...newCall, priority: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_LEVELS.map(priority => (
+                    <SelectItem key={priority.value} value={priority.value}>
+                      {priority.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="comments">Comments</Label>
+              <Textarea
+                id="comments"
+                value={newCall.comments}
+                onChange={(e) => setNewCall({ ...newCall, comments: e.target.value })}
+                placeholder="Any additional notes..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddCall}>
+              Add Call
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
+
+      {/* Outcome Modal */}
+      <DialogRoot open={showOutcomeModal} onOpenChange={setShowOutcomeModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Call Outcome</DialogTitle>
+            <DialogDescription>Record the outcome of the cold call</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Outcome *</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {CALL_OUTCOMES.map((outcome) => (
+                  <Button
+                    key={outcome.value}
+                    variant={outcomeForm.outcome === outcome.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setOutcomeForm({ ...outcomeForm, outcome: outcome.value })}
+                    className="justify-start"
+                  >
+                    <outcome.icon className="h-4 w-4 mr-2" />
+                    {outcome.label}
                   </Button>
-                )}
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="duration">Call Duration (minutes)</Label>
+              <Input
+                id="duration"
+                type="number"
+                value={outcomeForm.call_duration}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, call_duration: parseInt(e.target.value) || 0 })}
+                min="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="comments">Comments</Label>
+              <Textarea
+                id="comments"
+                value={outcomeForm.comments}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, comments: e.target.value })}
+                placeholder="Call notes and details..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="follow_up_date">Follow-up Date</Label>
+              <Input
+                id="follow_up_date"
+                type="date"
+                value={outcomeForm.follow_up_date}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, follow_up_date: e.target.value })}
+              />
+            </div>
+            {outcomeForm.follow_up_date && (
+              <div>
+                <Label htmlFor="follow_up_notes">Follow-up Notes</Label>
+                <Textarea
+                  id="follow_up_notes"
+                  value={outcomeForm.follow_up_notes}
+                  onChange={(e) => setOutcomeForm({ ...outcomeForm, follow_up_notes: e.target.value })}
+                  placeholder="What to follow up on..."
+                  rows={2}
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOutcomeModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateOutcome} disabled={!outcomeForm.outcome}>
+              Update Outcome
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
+
+      {/* Follow-up Modal */}
+      <DialogRoot open={showFollowUpModal} onOpenChange={setShowFollowUpModal}>
+        <DialogContent className="max-w-md">
+              <DialogHeader>
+            <DialogTitle>Schedule Follow-up</DialogTitle>
+            <DialogDescription>Schedule a follow-up for this cold call</DialogDescription>
+              </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="follow_up_date">Follow-up Date *</Label>
+              <Input
+                id="follow_up_date"
+                type="date"
+                value={followUpForm.follow_up_date}
+                onChange={(e) => setFollowUpForm({ ...followUpForm, follow_up_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="follow_up_notes">Follow-up Notes</Label>
+              <Textarea
+                id="follow_up_notes"
+                value={followUpForm.follow_up_notes}
+                onChange={(e) => setFollowUpForm({ ...followUpForm, follow_up_notes: e.target.value })}
+                placeholder="What to follow up on..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <Select value={followUpForm.priority} onValueChange={(value: any) => setFollowUpForm({ ...followUpForm, priority: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_LEVELS.map(priority => (
+                    <SelectItem key={priority.value} value={priority.value}>
+                      {priority.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+                </div>
+              <DialogFooter>
+            <Button variant="outline" onClick={() => setShowFollowUpModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleFollowUp} disabled={!followUpForm.follow_up_date}>
+              Schedule Follow-up
+                  </Button>
               </DialogFooter>
             </DialogContent>
-          </DialogPrimitive.Root>
-        </CardContent>
-        {actionLoading && <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white text-xl">Processing...</div></div>}
-      </Card>
+      </DialogRoot>
     </div>
   );
-};
-
-export default ColdCalls; 
+} 

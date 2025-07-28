@@ -84,6 +84,7 @@ const DeveloperDetails = React.lazy(() => import('./pages/developers/DeveloperDe
 const AdminUsersPage = React.lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminNewUserPage = React.lazy(() => import('./pages/admin/AdminNewUserPage'));
 const AdminTeamHierarchyPage = React.lazy(() => import('./pages/admin/AdminTeamHierarchyPage'));
+const StorageTest = React.lazy(() => import('./pages/admin/StorageTest'));
 
 // Wrapper component for Suspense
 const SuspenseWrapper = ({ children, skeletonType }: { children: React.ReactNode; skeletonType?: 'table' | 'card' | 'form' }) => (
@@ -210,6 +211,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/admin/team-hierarchy" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><AdminTeamHierarchyPage /></Suspense></ProtectedRoute>} />
           <Route path="/admin/designations" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><AdminDesignationsPage /></Suspense></ProtectedRoute>} />
           <Route path="/admin/team-revenue" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><AdminTeamRevenuePage /></Suspense></ProtectedRoute>} />
+          <Route path="/admin/storage-test" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><StorageTest /></Suspense></ProtectedRoute>} />
         </Route>
         
         {/* 404 Route */}

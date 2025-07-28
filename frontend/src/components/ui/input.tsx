@@ -4,14 +4,14 @@ import { cn } from "../../lib/utils";
 import { designTokens } from "../../lib/designSystem";
 
 const inputVariants = cva(
-  "flex w-full border bg-background text-foreground shadow-sm transition-all duration-normal file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-normal file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "border-border-light focus:border-primary dark:border-border-light dark:focus:border-secondary",
-        error: "border-danger focus:border-danger dark:border-danger",
-        success: "border-success focus:border-success dark:border-success",
-        warning: "border-warning focus:border-warning dark:border-warning",
+        default: "border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:focus:border-blue-400",
+        error: "border-red-500 focus:border-red-500 dark:border-red-400",
+        success: "border-green-500 focus:border-green-500 dark:border-green-400",
+        warning: "border-yellow-500 focus:border-yellow-500 dark:border-yellow-400",
       },
       size: {
         sm: "h-8 px-3 text-sm rounded-md",
@@ -27,7 +27,7 @@ const inputVariants = cva(
 );
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     VariantProps<typeof inputVariants> {
   error?: boolean;
   success?: boolean;

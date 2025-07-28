@@ -245,6 +245,15 @@ const PropertyForm = () => {
       if (!files) return;
 
       const uploadPromises = Array.from(files).map(async (file) => {
+        // Validate file
+        if (file.size > 20 * 1024 * 1024) { // 20MB limit
+          throw new Error(`File ${file.name} is too large. Maximum size is 20MB.`);
+        }
+        
+        if (!file.type.startsWith('image/')) {
+          throw new Error(`File ${file.name} is not an image. Please upload image files only.`);
+        }
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${user?.id}/${fileName}`;
@@ -253,11 +262,18 @@ const PropertyForm = () => {
           .from('property-images')
           .upload(filePath, file);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('property-images')
           .getPublicUrl(filePath);
+
+        if (!publicUrl) {
+          throw new Error(`Failed to get public URL for ${file.name}`);
+        }
 
         return publicUrl;
       });

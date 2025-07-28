@@ -1164,7 +1164,7 @@ const Tasks = () => {
         {/* Tasks Content */}
         <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-slate-200/50 shadow-lg overflow-hidden">
           {viewMode === 'list' && (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto pb-8">
           <Table>
             <TableHeader>
                   <TableRow className="bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-200">

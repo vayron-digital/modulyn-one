@@ -131,14 +131,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user?.id) {
       // Fetch user_settings and hydrate currency store
       (async () => {
-        const { data: userSettings, error } = await supabase
-          .from('user_settings')
-          .select('currency, secondary_currencies')
-          .eq('user_id', user.id)
-          .single();
-        if (!error && userSettings) {
-          if (userSettings.currency) setCurrency(userSettings.currency);
-          if (userSettings.secondary_currencies) setSecondaryCurrencies(userSettings.secondary_currencies);
+        try {
+          const { data: userSettings, error } = await supabase
+            .from('user_settings')
+            .select('currency, secondary_currencies')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (!error && userSettings) {
+            if (userSettings.currency) setCurrency(userSettings.currency);
+            if (userSettings.secondary_currencies) setSecondaryCurrencies(userSettings.secondary_currencies);
+          } else {
+            // Set defaults if no settings found
+            setCurrency('AED');
+            setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
+          }
+        } catch (error) {
+          console.warn('Error loading user settings:', error);
+          // Set defaults on error
+          setCurrency('AED');
+          setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
         }
       })();
     }

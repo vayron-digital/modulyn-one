@@ -89,7 +89,7 @@ import { PropertyStatus, PROPERTY_STATUSES } from '../../utils/propertyStatuses'
 import { DialogRoot, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectWithSearch } from '../../components/ui/select';
 import { Separator } from '../../components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Label } from '../../components/ui/label';
@@ -1668,21 +1668,18 @@ const Leads = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <Select
+                      <SelectWithSearch
                         value={lead.status}
                         onValueChange={(newStatus) => updateLeadStatus(lead.id, newStatus)}
-                      >
-                        <SelectTrigger className="w-36 bg-slate-50 border-slate-200">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LEAD_STATUSES.map(status => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select status"
+                        searchPlaceholder="Search statuses..."
+                        items={LEAD_STATUSES.map(status => ({
+                          value: status.value,
+                          label: status.label,
+                          description: `Change lead status to ${status.label}`,
+                          icon: <div className={`w-3 h-3 rounded-full ${getStatusBadgeColor(status.value)}`} />
+                        }))}
+                      />
                       <div className="text-right">
                         <span className="text-lg font-bold text-slate-900">{formatCurrency(lead.budget || 0)}</span>
                         <p className="text-xs text-slate-500">Budget</p>

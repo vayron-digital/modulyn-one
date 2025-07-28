@@ -2,49 +2,101 @@
 // This file serves as the single source of truth for all design tokens
 
 export const colors = {
-  primary: "#000000",
-  secondary: "#FFFFFF",
-  accent: "#F0F0F0",
-  danger: "#FF4D4F",
-  success: "#52C41A",
-  warning: "#FAAD14",
-  info: "#1890FF",
+  // Primary brand colors - Blue gradient theme
+  primary: "#3B82F6", // Blue-500
+  primaryGradient: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)", // Blue to Indigo
+  secondary: "#6366F1", // Indigo-500
+  accent: "#8B5CF6", // Violet-500
+  
+  // Status colors
+  danger: "#EF4444", // Red-500
+  success: "#10B981", // Emerald-500
+  warning: "#F59E0B", // Amber-500
+  info: "#3B82F6", // Blue-500
+  
+  // Text colors
   text: {
-    primary: "#111111",
-    secondary: "#666666",
-    muted: "#999999",
+    primary: "#1F2937", // Gray-800
+    secondary: "#6B7280", // Gray-500
+    muted: "#9CA3AF", // Gray-400
     inverse: "#FFFFFF",
+    light: "#F9FAFB", // Gray-50
   },
+  
+  // Background colors
   background: {
     primary: "#FFFFFF",
-    secondary: "#F5F5F5",
-    dark: "#111111",
+    secondary: "#F8FAFC", // Slate-50
+    tertiary: "#F1F5F9", // Slate-100
+    dark: "#0F172A", // Slate-900
+    gradient: "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)", // Slate gradient
   },
+  
+  // Border colors
   border: {
-    light: "#E5E5E5",
-    medium: "#CCCCCC",
-    dark: "#999999",
+    light: "#E2E8F0", // Slate-200
+    medium: "#CBD5E1", // Slate-300
+    dark: "#94A3B8", // Slate-400
   },
+  
+  // Button colors
+  button: {
+    primary: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)",
+    primaryHover: "linear-gradient(135deg, #2563EB 0%, #4F46E5 100%)",
+    secondary: "#F8FAFC",
+    secondaryHover: "#F1F5F9",
+    outline: "#E2E8F0",
+    outlineHover: "#CBD5E1",
+  },
+  
+  // Card colors
+  card: {
+    background: "#FFFFFF",
+    border: "#E2E8F0",
+    shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  },
+  
   // Dark mode variants
   dark: {
-    primary: "#FFFFFF",
-    secondary: "#000000",
-    accent: "#1A1A1A",
+    primary: "#60A5FA", // Blue-400
+    primaryGradient: "linear-gradient(135deg, #60A5FA 0%, #818CF8 100%)",
+    secondary: "#818CF8", // Indigo-400
+    accent: "#A78BFA", // Violet-400
+    
     text: {
-      primary: "#FFFFFF",
-      secondary: "#CCCCCC",
-      muted: "#999999",
-      inverse: "#000000",
+      primary: "#F9FAFB", // Gray-50
+      secondary: "#D1D5DB", // Gray-300
+      muted: "#9CA3AF", // Gray-400
+      inverse: "#1F2937", // Gray-800
     },
+    
     background: {
-      primary: "#000000",
-      secondary: "#111111",
-      dark: "#000000",
+      primary: "#0F172A", // Slate-900
+      secondary: "#1E293B", // Slate-800
+      tertiary: "#334155", // Slate-700
+      dark: "#020617", // Slate-950
+      gradient: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
     },
+    
     border: {
-      light: "#333333",
-      medium: "#555555",
-      dark: "#777777",
+      light: "#334155", // Slate-700
+      medium: "#475569", // Slate-600
+      dark: "#64748B", // Slate-500
+    },
+    
+    button: {
+      primary: "linear-gradient(135deg, #60A5FA 0%, #818CF8 100%)",
+      primaryHover: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)",
+      secondary: "#1E293B",
+      secondaryHover: "#334155",
+      outline: "#334155",
+      outlineHover: "#475569",
+    },
+    
+    card: {
+      background: "#1E293B",
+      border: "#334155",
+      shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
     },
   },
 };
@@ -134,27 +186,89 @@ export const components = {
     borderRadius: borderRadius.md,
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
+    // Button variants
+    variants: {
+      primary: {
+        background: colors.button.primary,
+        color: colors.text.inverse,
+        border: "none",
+        "&:hover": {
+          background: colors.button.primaryHover,
+        },
+      },
+      secondary: {
+        background: colors.button.secondary,
+        color: colors.text.primary,
+        border: `1px solid ${colors.border.light}`,
+        "&:hover": {
+          background: colors.button.secondaryHover,
+        },
+      },
+      outline: {
+        background: "transparent",
+        color: colors.text.primary,
+        border: `1px solid ${colors.button.outline}`,
+        "&:hover": {
+          background: colors.button.outlineHover,
+        },
+      },
+    },
   },
   input: {
     padding: `${spacing.sm} ${spacing.md}`,
     borderRadius: borderRadius.md,
     fontSize: typography.fontSize.base,
     borderWidth: "1px",
+    borderColor: colors.border.light,
+    backgroundColor: colors.background.primary,
+    color: colors.text.primary,
+    "&:focus": {
+      borderColor: colors.primary,
+      outline: "none",
+      boxShadow: `0 0 0 3px ${colors.primary}20`,
+    },
   },
   card: {
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
-    shadow: shadows.md,
+    shadow: colors.card.shadow,
+    backgroundColor: colors.card.background,
+    border: `1px solid ${colors.card.border}`,
   },
   table: {
     borderRadius: borderRadius.md,
     headerPadding: `${spacing.md} ${spacing.lg}`,
     cellPadding: `${spacing.sm} ${spacing.lg}`,
+    headerBackground: colors.background.secondary,
+    borderColor: colors.border.light,
   },
   modal: {
     borderRadius: borderRadius.xl,
     padding: spacing.xl,
-    shadow: shadows.xl,
+    shadow: colors.card.shadow,
+    backgroundColor: colors.card.background,
+    border: `1px solid ${colors.card.border}`,
+  },
+  // New components for CRM
+  hero: {
+    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%)",
+    textColor: colors.text.inverse,
+    padding: `${spacing.xl} ${spacing.lg}`,
+  },
+  tabs: {
+    background: "rgba(255, 255, 255, 0.8)",
+    backdropFilter: "blur(8px)",
+    border: `1px solid ${colors.border.light}`,
+    borderRadius: borderRadius.xl,
+    padding: spacing.sm,
+    shadow: shadows.sm,
+  },
+  stats: {
+    background: colors.card.background,
+    border: `1px solid ${colors.card.border}`,
+    borderRadius: borderRadius.lg,
+    shadow: colors.card.shadow,
+    padding: spacing.md,
   },
 };
 
@@ -168,6 +282,36 @@ export const designTokens = {
   transitions,
   breakpoints,
   components,
+};
+
+// Utility functions for easy access to design tokens
+export const getButtonStyles = (variant: 'primary' | 'secondary' | 'outline' = 'primary') => {
+  return components.button.variants[variant];
+};
+
+export const getCardStyles = () => {
+  return components.card;
+};
+
+export const getInputStyles = () => {
+  return components.input;
+};
+
+export const getHeroStyles = () => {
+  return components.hero;
+};
+
+export const getTabsStyles = () => {
+  return components.tabs;
+};
+
+export const getStatsStyles = () => {
+  return components.stats;
+};
+
+// CSS-in-JS helpers
+export const createStyles = (styles: Record<string, any>) => {
+  return styles;
 };
 
 export default designTokens; 

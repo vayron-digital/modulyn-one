@@ -5,28 +5,28 @@ import { cn } from "../../lib/utils";
 import { designTokens } from "../../lib/designSystem";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-secondary shadow-md hover:bg-primary/90 hover:shadow-lg active:shadow-sm dark:bg-secondary dark:text-primary dark:shadow-md dark:hover:bg-secondary/90",
+          "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg active:shadow-sm dark:from-blue-400 dark:to-indigo-500 dark:hover:from-blue-500 dark:hover:to-indigo-600",
         destructive:
-          "bg-danger text-secondary shadow-md hover:bg-danger/90 hover:shadow-lg active:shadow-sm",
+          "bg-red-500 text-white shadow-md hover:bg-red-600 hover:shadow-lg active:shadow-sm",
         outline:
-          "border-2 border-primary bg-transparent text-primary shadow-sm hover:bg-primary hover:text-secondary dark:border-secondary dark:text-secondary dark:hover:bg-secondary dark:hover:text-primary",
+          "border-2 border-blue-500 bg-transparent text-blue-500 shadow-sm hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-gray-900",
         secondary:
-          "bg-accent text-text-primary shadow-sm hover:bg-accent/80 hover:shadow-md active:shadow-sm dark:bg-accent dark:text-text-inverse dark:hover:bg-accent/80",
+          "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200 hover:shadow-md active:shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
         ghost: 
-          "bg-transparent text-text-primary hover:bg-accent hover:text-text-primary dark:text-text-inverse dark:hover:bg-accent dark:hover:text-text-inverse",
+          "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100",
         link: 
-          "bg-transparent text-primary underline-offset-4 hover:underline dark:text-secondary",
+          "bg-transparent text-blue-500 underline-offset-4 hover:underline dark:text-blue-400",
         success:
-          "bg-success text-secondary shadow-md hover:bg-success/90 hover:shadow-lg active:shadow-sm",
+          "bg-green-500 text-white shadow-md hover:bg-green-600 hover:shadow-lg active:shadow-sm",
         warning:
-          "bg-warning text-text-primary shadow-md hover:bg-warning/90 hover:shadow-lg active:shadow-sm",
+          "bg-yellow-500 text-gray-900 shadow-md hover:bg-yellow-600 hover:shadow-lg active:shadow-sm",
         info:
-          "bg-info text-secondary shadow-md hover:bg-info/90 hover:shadow-lg active:shadow-sm",
+          "bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg active:shadow-sm",
       },
       size: {
         xs: "h-6 px-2 text-xs rounded-sm",

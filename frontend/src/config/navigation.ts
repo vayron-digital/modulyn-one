@@ -11,6 +11,7 @@ import {
   SparklesIcon,
   RocketLaunchIcon
 } from '@heroicons/react/24/outline';
+import { Users, Building, Shield, Zap, Settings } from 'lucide-react';
 import { useFeatures } from '../hooks/useFeatures';
 import { DESIGN } from '../lib/design';
 
@@ -19,6 +20,7 @@ export interface NavigationItem {
   href: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   adminOnly?: boolean;
+  ownerOnly?: boolean;
   children?: NavigationItem[];
 }
 
@@ -76,6 +78,47 @@ export const navigationItems: NavigationItem[] = [
     name: 'Settings',
     href: '/settings',
     icon: CogIcon,
+    children: [
+      {
+        name: 'Profile',
+        href: '/settings?tab=profile',
+        icon: UserIcon,
+      },
+      {
+        name: 'Users',
+        href: '/settings?tab=users',
+        icon: Users,
+        adminOnly: true,
+      },
+      {
+        name: 'Teams',
+        href: '/settings?tab=teams',
+        icon: Building,
+        adminOnly: true,
+      },
+      {
+        name: 'Permissions',
+        href: '/settings?tab=permissions',
+        icon: Shield,
+        ownerOnly: true,
+      },
+      {
+        name: 'Integrations',
+        href: '/settings?tab=integrations',
+        icon: Zap,
+      },
+      {
+        name: 'Preferences',
+        href: '/settings?tab=preferences',
+        icon: Settings,
+      },
+      {
+        name: 'Storage Test',
+        href: '/admin/storage-test',
+        icon: Shield,
+        adminOnly: true,
+      },
+    ],
   },
 ];
 

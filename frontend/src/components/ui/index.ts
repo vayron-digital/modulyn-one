@@ -27,6 +27,7 @@ import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 import { DataTable } from './DataTable';
 import { FilterBar } from './FilterBar';
 import { Skeleton, SkeletonTable } from './skeleton';
+import { Progress } from './progress';
 
 // Dialog/Modal Components
 export {
@@ -75,6 +76,9 @@ export { FilterBar } from './FilterBar';
 // Skeleton Components
 export { Skeleton, SkeletonTable } from './skeleton';
 
+// Progress Component
+export { Progress } from './progress';
+
 // Date Picker Components
 // export { Calendar } from './date-picker/calendar';
 // export { DatePicker } from './date-picker/date-picker';
@@ -111,4 +115,5 @@ export const UIComponents = {
   DataTable,
   FilterBar,
   Skeleton,
+  Progress,
 }; 
