@@ -5,7 +5,7 @@ import { SubscriptionService, SubscriptionPlan, TenantSubscription } from '../..
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { toast } from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 import PaymentManagement from '../../components/settings/PaymentManagement';
 
 interface PlanLimits {
@@ -20,6 +20,7 @@ interface PlanLimits {
 export default function Subscription() {
   const { user } = useAuth();
   const { tenant } = useTenant();
+  const { toast } = useToast();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
   const [limits, setLimits] = useState<PlanLimits | null>(null);
