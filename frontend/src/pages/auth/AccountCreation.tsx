@@ -11,6 +11,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
+import { CompanySelector } from '../../components/auth/CompanySelector';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
@@ -23,6 +24,14 @@ interface UserDetails {
   company: string;
   phone: string;
   jobTitle: string;
+}
+
+interface SelectedTenant {
+  id: string;
+  name: string;
+  logo_url?: string;
+  slug: string;
+  member_count?: number;
 }
 
 const AccountCreation: React.FC = () => {
@@ -39,6 +48,8 @@ const AccountCreation: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [oauthUserData, setOauthUserData] = useState<any>(null);
+  const [companyMode, setCompanyMode] = useState<'create' | 'join'>('create');
+  const [selectedTenant, setSelectedTenant] = useState<SelectedTenant | null>(null);
   
   const [userDetails, setUserDetails] = useState<UserDetails>({
     firstName: '',
@@ -225,6 +236,8 @@ const AccountCreation: React.FC = () => {
         userDetails,
         selectedPlan: plan,
         isUpgrade,
+        companyMode,
+        selectedTenant,
         timestamp: Date.now()
       }));
       
@@ -242,35 +255,47 @@ const AccountCreation: React.FC = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Create tenant and complete account setup
-      const slugify = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-      const now = new Date();
-      const addDays = (date: Date, days: number) => {
-        const d = new Date(date);
-        d.setDate(d.getDate() + days);
-        return d;
-      };
+      let tenantData;
+      
+      if (companyMode === 'join' && selectedTenant) {
+        // Joining existing tenant
+        tenantData = selectedTenant;
+        
+        // TODO: Send join request to tenant admins
+        // For now, we'll add the user directly (you might want approval workflow)
+        console.log('Joining existing tenant:', selectedTenant);
+      } else {
+        // Create new tenant
+        const slugify = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const now = new Date();
+        const addDays = (date: Date, days: number) => {
+          const d = new Date(date);
+          d.setDate(d.getDate() + days);
+          return d;
+        };
 
-      // Create tenant
-      const { data: tenantData, error: tenantError } = await supabase.from('tenants').insert([
-        {
-          name: userDetails.company,
-          slug: slugify(userDetails.company),
-          theme_color: '#6C2EBE',
-          feature_flags: {
-            cold_calls: true,
-            chat: true,
-            documents: false,
+        const { data: newTenantData, error: tenantError } = await supabase.from('tenants').insert([
+          {
+            name: userDetails.company,
+            slug: slugify(userDetails.company),
+            theme_color: '#6C2EBE',
+            feature_flags: {
+              cold_calls: true,
+              chat: true,
+              documents: false,
+            },
+            trial_start: now.toISOString(),
+            trial_ends: addDays(now, 14).toISOString(),
+            industry: 'Real Estate', // Default, can be updated later
+            size: 'Small', // Default, can be updated later
           },
-          trial_start: now.toISOString(),
-          trial_ends: addDays(now, 14).toISOString(),
-          industry: 'Real Estate', // Default, can be updated later
-          size: 'Small', // Default, can be updated later
-        },
-      ]).select().single();
+        ]).select().single();
 
-      if (tenantError || !tenantData) {
-        throw new Error(tenantError?.message || 'Could not create tenant.');
+        if (tenantError || !newTenantData) {
+          throw new Error(tenantError?.message || 'Could not create tenant.');
+        }
+        
+        tenantData = newTenantData;
       }
 
       // Update or create profile with tenant and additional details
@@ -290,7 +315,7 @@ const AccountCreation: React.FC = () => {
           full_name: `${userDetails.firstName} ${userDetails.lastName}`,
           phone: userDetails.phone || null,
           designation: userDetails.jobTitle || null,
-          is_admin: true, // First user is admin
+          is_admin: companyMode === 'create', // Only admin if creating new company
         };
 
         // For OAuth users, also update OAuth fields if missing
@@ -317,7 +342,7 @@ const AccountCreation: React.FC = () => {
           full_name: `${userDetails.firstName} ${userDetails.lastName}`,
           phone: userDetails.phone || null,
           designation: userDetails.jobTitle || null,
-          is_admin: true,
+          is_admin: companyMode === 'create', // Only admin if creating new company
         };
 
         // Add OAuth fields if applicable
@@ -336,10 +361,23 @@ const AccountCreation: React.FC = () => {
         }
       }
 
-      // Process payment via FastSpring
-      const success = await processPayment(selectedPlan, userDetails, tenantData);
-      if (!success) {
-        throw new Error('Payment processing failed. Please try again.');
+      // Handle payment based on mode
+      if (companyMode === 'create') {
+        // New company needs payment
+        const success = await processPayment(selectedPlan, userDetails, tenantData);
+        if (!success) {
+          throw new Error('Payment processing failed. Please try again.');
+        }
+      } else {
+        // Joining existing company - redirect to success or pending approval
+        navigate('/account-creation-success', {
+          state: {
+            paymentSuccess: false,
+            isJoiningCompany: true,
+            companyName: selectedTenant?.name,
+            pendingApproval: true
+          }
+        });
       }
       
     } catch (error: any) {
@@ -489,16 +527,15 @@ const AccountCreation: React.FC = () => {
                       placeholder="Enter your phone number"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Company Name *
-                    </label>
-                    <input
-                      type="text"
+                  <div className="md:col-span-2">
+                    <CompanySelector
                       value={userDetails.company}
-                      onChange={(e) => updateUserDetails('company', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your company name"
+                      onChange={(companyName, tenant) => {
+                        updateUserDetails('company', companyName);
+                        setSelectedTenant(tenant || null);
+                      }}
+                      onModeChange={setCompanyMode}
+                      mode={companyMode}
                     />
                   </div>
                   <div>

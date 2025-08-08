@@ -12,6 +12,7 @@ import callRoutes from './routes/calls';
 import teamRoutes from './routes/team';
 import coldCallsRoutes from './routes/cold_calls';
 import fastspringRoutes from './routes/fastspring';
+import tenantRoutes from './routes/tenants';
 import { NotificationService } from './services/notificationService';
 import path from 'path';
 // --- Socket.IO imports ---
@@ -73,6 +74,7 @@ app.use('/api/team', requireAuth, teamRoutes);
 app.use('/api/cold-calls', coldCallsRoutes);
 app.use('/api/dashboard', requireAuth, dashboardRoutes);
 app.use('/api/fastspring', fastspringRoutes);
+app.use('/api/tenants', tenantRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
