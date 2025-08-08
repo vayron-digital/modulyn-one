@@ -38,8 +38,8 @@ const OAuthCallback: React.FC = () => {
             const userData = await handleOAuthUser(session.user);
             
             if (userData?.needsAccountSetup) {
-              console.log('User needs account setup, redirecting...');
-              navigate('/account-creation');
+              console.log('User needs account setup, redirecting to preview...');
+              navigate('/preview');
             } else {
               console.log('User profile complete, redirecting to dashboard...');
               navigate('/dashboard');
@@ -63,7 +63,7 @@ const OAuthCallback: React.FC = () => {
             const userData = await handleOAuthUser(session.user);
             
             if (userData?.needsAccountSetup) {
-              navigate('/account-creation');
+              navigate('/preview');
             } else {
               navigate('/dashboard');
             }

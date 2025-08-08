@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../components/ui/use-toast';
@@ -274,6 +275,7 @@ const INTEGRATIONS: Integration[] = [
 ];
 
 const Settings = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
@@ -326,12 +328,39 @@ const Settings = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchProfileAndSettings();
-      if (isAdmin) {
-        fetchTeamMembers();
-      }
+      // Check if user is in preview mode (no tenant_id)
+      const checkUserStatus = async () => {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('tenant_id')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error checking profile:', error);
+            return;
+          }
+
+          // If user doesn't have tenant_id, redirect to preview settings
+          if (!profile?.tenant_id) {
+            navigate('/preview/settings');
+            return;
+          }
+
+          // User has full access, load normal settings
+          fetchProfileAndSettings();
+          if (isAdmin) {
+            fetchTeamMembers();
+          }
+        } catch (error) {
+          console.error('Error checking user status:', error);
+        }
+      };
+
+      checkUserStatus();
     }
-  }, [user?.id, location.pathname, isAdmin]);
+  }, [user?.id, location.pathname, isAdmin, navigate]);
 
   // Handle tab from URL query parameter
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import LoadingBoundary from './components/common/LoadingBoundary';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import PreviewProtectedRoute from './components/auth/PreviewProtectedRoute';
 import PageErrorBoundary from './components/common/PageErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -30,6 +31,8 @@ const SignupForm = React.lazy(() => import('./components/signup/SignupForm'));
 const AccountCreation = React.lazy(() => import('./pages/auth/AccountCreation'));
 const AccountCreationSuccess = React.lazy(() => import('./pages/auth/AccountCreationSuccess'));
 const OAuthCallback = React.lazy(() => import('./pages/auth/OAuthCallback'));
+const PreviewSpace = React.lazy(() => import('./pages/auth/PreviewSpace'));
+const PreviewSettings = React.lazy(() => import('./pages/auth/PreviewSettings'));
 
 // Main Pages - Lazy loaded
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
@@ -137,6 +140,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/account-creation" element={<Suspense fallback={<PageLoader />}><AccountCreation /></Suspense>} />
         <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <Navigate to="/dashboard" />} />
         <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallback /></Suspense>} />
+        <Route path="/preview" element={<Suspense fallback={<PageLoader />}><PreviewSpace /></Suspense>} />
+        <Route path="/preview/settings" element={<Suspense fallback={<PageLoader />}><PreviewSettings /></Suspense>} />
         <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <Navigate to="/dashboard" />} />
         <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <Navigate to="/dashboard" />} />
         
@@ -145,28 +150,28 @@ const AppRoutes: React.FC = () => {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <PreviewProtectedRoute>
                 <SuspenseWrapper skeletonType="card" pageName="Dashboard">
                   <Dashboard />
                 </SuspenseWrapper>
-              </ProtectedRoute>
+              </PreviewProtectedRoute>
             }
           />
           <Route
             path="/properties"
             element={
-              <ProtectedRoute>
+              <PreviewProtectedRoute>
                 <SuspenseWrapper skeletonType="table" pageName="Properties">
                   <Properties />
                 </SuspenseWrapper>
-              </ProtectedRoute>
+              </PreviewProtectedRoute>
             }
           />
           <Route path="/properties/:id" element={<SuspenseWrapper skeletonType="card"><PropertyDetails /></SuspenseWrapper>} />
           <Route path="/properties/new" element={<SuspenseWrapper skeletonType="form"><PropertyForm /></SuspenseWrapper>} />
           <Route path="/properties/edit/:id" element={<SuspenseWrapper skeletonType="form"><PropertyForm /></SuspenseWrapper>} />
           <Route path="/properties/add" element={<Navigate to="/properties/new" replace />} />
-          <Route path="/leads" element={<SuspenseWrapper skeletonType="table" pageName="Leads"><Leads /></SuspenseWrapper>} />
+          <Route path="/leads" element={<PreviewProtectedRoute><SuspenseWrapper skeletonType="table" pageName="Leads"><Leads /></SuspenseWrapper></PreviewProtectedRoute>} />
           <Route path="/leads/:id" element={<SuspenseWrapper skeletonType="card"><LeadDetails /></SuspenseWrapper>} />
           <Route path="/leads/add" element={<SuspenseWrapper skeletonType="form"><AddLead /></SuspenseWrapper>} />
           <Route path="/leads/new" element={<SuspenseWrapper skeletonType="form"><LeadForm /></SuspenseWrapper>} />
@@ -174,7 +179,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/leads/form" element={<SuspenseWrapper skeletonType="form"><LeadForm /></SuspenseWrapper>} />
           <Route path="/leads/list" element={<SuspenseWrapper skeletonType="table"><LeadsList /></SuspenseWrapper>} />
           <Route path="/leads/dumped" element={<SuspenseWrapper skeletonType="table"><DumpedLeads /></SuspenseWrapper>} />
-          <Route path="/calls" element={<SuspenseWrapper skeletonType="table"><Calls /></SuspenseWrapper>} />
+          <Route path="/calls" element={<PreviewProtectedRoute><SuspenseWrapper skeletonType="table"><Calls /></SuspenseWrapper></PreviewProtectedRoute>} />
           <Route path="/calls/add" element={<SuspenseWrapper skeletonType="form"><AddCall /></SuspenseWrapper>} />
           <Route path="/calls/list" element={<SuspenseWrapper skeletonType="table"><CallsList /></SuspenseWrapper>} />
           <Route path="/calls/upload" element={<SuspenseWrapper skeletonType="form"><UploadCalls /></SuspenseWrapper>} />
@@ -195,7 +200,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/team" element={<SuspenseWrapper skeletonType="table"><Team /></SuspenseWrapper>} />
           <Route path="/team/management" element={<SuspenseWrapper skeletonType="table"><TeamManagement /></SuspenseWrapper>} />
           <Route path="/team/hierarchy" element={<SuspenseWrapper skeletonType="table"><TeamHierarchy /></SuspenseWrapper>} />
-          <Route path="/settings" element={<SuspenseWrapper skeletonType="form"><Settings /></SuspenseWrapper>} />
+          <Route path="/settings" element={<PreviewProtectedRoute requirePaid={false}><SuspenseWrapper skeletonType="form"><Settings /></SuspenseWrapper></PreviewProtectedRoute>} />
           <Route path="/settings/subscription" element={
             <ProtectedRoute requireAdmin>
               <SuspenseWrapper skeletonType="card" pageName="Subscription">
