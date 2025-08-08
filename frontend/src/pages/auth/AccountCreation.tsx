@@ -39,8 +39,10 @@ interface PaymentDetails {
 const AccountCreation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get('plan') || 'professional';
+  const source = searchParams.get('source'); // 'preview' if coming from preview space
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isPreviewUpgrade = source === 'preview';
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,45 @@ const AccountCreation: React.FC = () => {
               navigate('/dashboard');
               return;
             }
+
+            // Pre-fill company info if profile exists (preview users)
+            if (profile) {
+              setUserDetails(prev => ({
+                ...prev,
+                firstName: profile.full_name?.split(' ')[0] || firstName,
+                lastName: profile.full_name?.split(' ').slice(1).join(' ') || lastName,
+                email: profile.email || session.user.email || '',
+                phone: profile.phone || '',
+                jobTitle: profile.designation || '',
+              }));
+            }
+          }
+        }
+
+        // For non-OAuth users, check if they have an existing profile (preview users)
+        if (!isOAuth && session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile?.tenant_id) {
+            // User already has complete setup, redirect to dashboard
+            navigate('/dashboard');
+            return;
+          }
+
+          // Pre-fill data for existing preview users
+          if (profile) {
+            setUserDetails(prev => ({
+              ...prev,
+              firstName: profile.full_name?.split(' ')[0] || '',
+              lastName: profile.full_name?.split(' ').slice(1).join(' ') || '',
+              email: profile.email || session.user.email || prev.email,
+              phone: profile.phone || prev.phone,
+              jobTitle: profile.designation || prev.jobTitle,
+            }));
           }
         }
 
@@ -224,11 +265,21 @@ const AccountCreation: React.FC = () => {
       
       console.log('Redirecting to FastSpring checkout:', checkoutUrl);
       
+      // Check if this is an upgrade (existing profile) or new signup
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userDetails.userId || user?.id)
+        .single();
+
+      const isUpgrade = !!existingProfile;
+
       // Store the pending state in localStorage for when user returns
       localStorage.setItem('pendingAccountCreation', JSON.stringify({
         tenantId: tenantData.id,
         userDetails,
         selectedPlan: plan,
+        isUpgrade,
         timestamp: Date.now()
       }));
       
@@ -277,39 +328,66 @@ const AccountCreation: React.FC = () => {
         throw new Error(tenantError?.message || 'Could not create tenant.');
       }
 
-      // For OAuth users, create or update profile with tenant and additional details
+      // Update or create profile with tenant and additional details
       const userId = oauthUserData?.id || user?.id;
       
-      if (isOAuthUser && oauthUserData) {
-        // Create profile for OAuth user if it doesn't exist
-        const { error: upsertError } = await supabase.from('profiles').upsert({
-          id: userId,
+      // Check if profile already exists (for preview users)
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (existingProfile) {
+        // Update existing profile (preview users upgrading)
+        const updateData: any = {
           tenant_id: tenantData.id,
-          email: oauthUserData.email,
           full_name: `${userDetails.firstName} ${userDetails.lastName}`,
           phone: userDetails.phone || null,
           designation: userDetails.jobTitle || null,
           is_admin: true, // First user is admin
-          oauth_provider: 'google',
-          oauth_id: oauthUserData.user_metadata?.sub || null,
-          profile_image_url: oauthUserData.user_metadata?.avatar_url || null,
-        });
-        
-        if (upsertError) {
-          throw new Error(upsertError.message);
+        };
+
+        // For OAuth users, also update OAuth fields if missing
+        if (isOAuthUser && oauthUserData) {
+          updateData.oauth_provider = updateData.oauth_provider || 'google';
+          updateData.oauth_id = updateData.oauth_id || oauthUserData.user_metadata?.sub;
+          updateData.profile_image_url = updateData.profile_image_url || oauthUserData.user_metadata?.avatar_url;
         }
-      } else {
-        // Update existing profile for regular users
-        const { error: profileError } = await supabase.from('profiles').update({
-          tenant_id: tenantData.id,
-          full_name: `${userDetails.firstName} ${userDetails.lastName}`,
-          phone: userDetails.phone || null,
-          designation: userDetails.jobTitle || null,
-          is_admin: true, // First user is admin
-        }).eq('id', userId);
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId);
 
         if (profileError) {
           throw new Error(profileError.message);
+        }
+      } else {
+        // Create new profile (fresh signup)
+        const profileData: any = {
+          id: userId,
+          tenant_id: tenantData.id,
+          email: (oauthUserData?.email || user?.email || userDetails.email),
+          full_name: `${userDetails.firstName} ${userDetails.lastName}`,
+          phone: userDetails.phone || null,
+          designation: userDetails.jobTitle || null,
+          is_admin: true,
+        };
+
+        // Add OAuth fields if applicable
+        if (isOAuthUser && oauthUserData) {
+          profileData.oauth_provider = 'google';
+          profileData.oauth_id = oauthUserData.user_metadata?.sub;
+          profileData.profile_image_url = oauthUserData.user_metadata?.avatar_url;
+        }
+
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([profileData]);
+
+        if (insertError) {
+          throw new Error(insertError.message);
         }
       }
 

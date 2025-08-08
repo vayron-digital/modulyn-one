@@ -28,7 +28,7 @@ const PaymentCallback: React.FC = () => {
             throw new Error('No pending account creation found');
           }
 
-          const { tenantId, userDetails, selectedPlan } = JSON.parse(pendingData);
+          const { tenantId, userDetails, selectedPlan, isUpgrade } = JSON.parse(pendingData);
 
           // Update tenant with payment success
           const { error: updateError } = await supabase

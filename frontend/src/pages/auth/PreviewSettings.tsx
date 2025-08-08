@@ -88,7 +88,8 @@ const PreviewSettings: React.FC = () => {
   };
 
   const handleUpgrade = () => {
-    navigate('/account-creation');
+    // Pass context that this is an upgrade from preview space
+    navigate('/account-creation?source=preview');
   };
 
   if (loading) {
