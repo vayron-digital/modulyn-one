@@ -3,10 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
-  Mail, 
-  Lock, 
-  Building, 
-  Phone, 
   CreditCard, 
   Shield, 
   CheckCircle, 
@@ -44,7 +40,7 @@ const AccountCreation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get('plan') || 'professional';
   const navigate = useNavigate();
-  const { user, handleOAuthUser } = useAuth();
+  const { user } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -232,18 +228,40 @@ const AccountCreation: React.FC = () => {
         throw new Error(tenantError?.message || 'Could not create tenant.');
       }
 
-      // Update user profile with tenant and additional details
-      const { error: profileError } = await supabase.from('profiles').update({
-        tenant_id: tenantData.id,
-        full_name: `${userDetails.firstName} ${userDetails.lastName}`,
-        phone: userDetails.phone || null,
-        designation: userDetails.jobTitle || null,
-        is_admin: true, // First user is admin
-        is_active: true,
-      }).eq('id', oauthUserData?.id || user?.id);
+      // For OAuth users, create or update profile with tenant and additional details
+      const userId = oauthUserData?.id || user?.id;
+      
+      if (isOAuthUser && oauthUserData) {
+        // Create profile for OAuth user if it doesn't exist
+        const { error: upsertError } = await supabase.from('profiles').upsert({
+          id: userId,
+          tenant_id: tenantData.id,
+          email: oauthUserData.email,
+          full_name: `${userDetails.firstName} ${userDetails.lastName}`,
+          phone: userDetails.phone || null,
+          designation: userDetails.jobTitle || null,
+          is_admin: true, // First user is admin
+          oauth_provider: 'google',
+          oauth_id: oauthUserData.user_metadata?.sub || null,
+          profile_image_url: oauthUserData.user_metadata?.avatar_url || null,
+        });
+        
+        if (upsertError) {
+          throw new Error(upsertError.message);
+        }
+      } else {
+        // Update existing profile for regular users
+        const { error: profileError } = await supabase.from('profiles').update({
+          tenant_id: tenantData.id,
+          full_name: `${userDetails.firstName} ${userDetails.lastName}`,
+          phone: userDetails.phone || null,
+          designation: userDetails.jobTitle || null,
+          is_admin: true, // First user is admin
+        }).eq('id', userId);
 
-      if (profileError) {
-        throw new Error(profileError.message);
+        if (profileError) {
+          throw new Error(profileError.message);
+        }
       }
 
       // Simulate payment processing

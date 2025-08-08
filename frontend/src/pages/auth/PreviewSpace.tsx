@@ -19,25 +19,29 @@ const PreviewSpace: React.FC = () => {
       }
 
       try {
-        // Get user profile
+        // Get user profile (might not exist for OAuth users)
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
-
-        // If user has tenant_id, they already have full access
+        // If profile exists and user has tenant_id, they already have full access
         if (profile?.tenant_id) {
           navigate('/dashboard');
           return;
         }
 
+        // Set profile (even if null for OAuth users who haven't completed setup)
         setProfile(profile);
       } catch (error) {
         console.error('Error checking user status:', error);
-        navigate('/login');
+        // For OAuth users, profile might not exist yet - that's okay
+        // Don't redirect to login, let them access preview space
+        if (error.code !== 'PGRST116') {
+          navigate('/login');
+          return;
+        }
       } finally {
         setLoading(false);
       }

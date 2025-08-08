@@ -28,7 +28,13 @@ export default function SmartRedirect({ defaultRoute = '/dashboard' }: SmartRedi
           .eq('id', user.id)
           .single();
 
-        if (error) {
+        // Handle the case where profile doesn't exist (OAuth users)
+        if (error && error.code === 'PGRST116') {
+          // No profile exists - OAuth user needs to go to preview
+          setRedirectTo('/preview');
+          setLoading(false);
+          return;
+        } else if (error) {
           console.error('Error checking user profile:', error);
           setRedirectTo('/login');
           setLoading(false);

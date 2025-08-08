@@ -40,24 +40,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
           console.log('Supabase profile:', profile, 'profileError:', profileError);
 
-          // If profile doesn't exist and this is an OAuth user, create it
-          if (profileError && profileError.code === 'PGRST116' && session.user.app_metadata?.provider) {
-            console.log('Creating missing profile for OAuth user...');
-            try {
-              const { error: insertError } = await supabase
-                .from('profiles')
-                .insert([
-                  {
-                    id: session.user.id,
-                    full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'New User',
-                    email: session.user.email,
-                    is_admin: false,
-                    is_active: true,
-                    profile_image_url: session.user.user_metadata?.avatar_url || null,
-                    oauth_provider: session.user.app_metadata.provider,
-                    oauth_id: session.user.user_metadata?.sub || null,
-                  }
-                ]);
+                  // If profile doesn't exist and this is an OAuth user, create it
+        if (profileError && profileError.code === 'PGRST116' && session.user.app_metadata?.provider) {
+          console.log('Creating missing profile for OAuth user...');
+          try {
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert([
+                {
+                  id: session.user.id,
+                  full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'New User',
+                  email: session.user.email,
+                  is_admin: false,
+                  is_active: true,
+                  profile_image_url: session.user.user_metadata?.avatar_url || null,
+                  oauth_provider: session.user.app_metadata.provider,
+                  oauth_id: session.user.user_metadata?.sub || null,
+                  // tenant_id is intentionally omitted - it will be NULL for freemium users
+                }
+              ]);
               
               if (insertError) {
                 console.error('Error creating profile:', insertError);
@@ -157,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                       profile_image_url: session.user.user_metadata?.avatar_url || null,
                       oauth_provider: session.user.app_metadata.provider,
                       oauth_id: session.user.user_metadata?.sub || null,
+                      // tenant_id is intentionally omitted - it will be NULL for freemium users
                     }
                   ]);
                 
@@ -452,6 +454,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           profile_image_url: user.user_metadata?.avatar_url || null,
           oauth_provider: 'google',
           oauth_id: user.user_metadata?.sub || null,
+          // tenant_id is intentionally omitted - it will be NULL for freemium users
         };
         
         console.log('Profile data to insert:', profileData);
