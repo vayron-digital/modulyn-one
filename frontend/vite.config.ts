@@ -25,5 +25,9 @@ export default defineConfig({
         // No manual chunk splitting - let Vite handle it
       }
     }
+  },
+  preview: {
+    port: 4173,
+    host: true
   }
 }) 

@@ -20,8 +20,22 @@
       "dest": "/backend/src/index.ts"
     },
     {
+      "src": "/auth/callback(.*)",
+      "dest": "/frontend/dist/index.html"
+    },
+    {
+      "src": "/preview(.*)",
+      "dest": "/frontend/dist/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/dist/index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api|_next/static|_next/image|favicon.ico).*)",
+      "destination": "/frontend/dist/index.html"
     }
   ],
   "env": {

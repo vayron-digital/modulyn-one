@@ -1,0 +1,5 @@
+[33m7ca3635[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix: auto-create missing profiles for OAuth users
+[33m68a3d0e[m fix: resolve OAuth callback 404 on Vercel deployment
+[33m49c33a5[m fix: ensure returning OAuth users redirect to preview space
+[33ma6873b0[m feat: implement Google OAuth preview space with subscription gating
+[33m7f99536[m fix: OAuth callback session handling and environment variables
