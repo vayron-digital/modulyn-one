@@ -21,20 +21,29 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        // Simplified chunk splitting to avoid dependency issues
+        // Very conservative chunk splitting to avoid React dependency issues
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
-            // Keep React and React-dependent libraries together
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('framer-motion')) {
+            // Keep ALL React and React-dependent libraries together
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('react-router-dom') || 
+                id.includes('framer-motion') ||
+                id.includes('@radix-ui') ||
+                id.includes('lucide-react') ||
+                id.includes('react-chartjs') ||
+                id.includes('react-hot-toast') ||
+                id.includes('react-dropzone') ||
+                id.includes('react-easy-crop') ||
+                id.includes('react-hotkeys-hook') ||
+                id.includes('react-icons') ||
+                id.includes('react-virtualized') ||
+                id.includes('react-window')) {
               return 'react-vendor';
             }
-            // UI libraries
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            // Charts
-            if (id.includes('chart.js') || id.includes('react-chartjs')) {
+            // Charts (non-React)
+            if (id.includes('chart.js')) {
               return 'charts-vendor';
             }
             // Database
