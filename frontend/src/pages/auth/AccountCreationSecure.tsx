@@ -25,7 +25,7 @@ interface UserDetails {
   jobTitle: string;
 }
 
-const AccountCreation: React.FC = () => {
+const AccountCreationSecure: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get('plan') || 'professional';
   const source = searchParams.get('source'); // 'preview' if coming from preview space
@@ -580,4 +580,4 @@ const AccountCreation: React.FC = () => {
   );
 };
 
-export default AccountCreation;
+export default AccountCreationSecure;
