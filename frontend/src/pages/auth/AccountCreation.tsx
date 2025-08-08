@@ -113,6 +113,18 @@ const AccountCreation: React.FC = () => {
             }
           }
         }
+
+        // Check for pending payment (user returned from FastSpring)
+        const pendingData = localStorage.getItem('pendingAccountCreation');
+        if (pendingData) {
+          const { timestamp } = JSON.parse(pendingData);
+          // If pending data is older than 1 hour, clear it
+          if (Date.now() - timestamp > 60 * 60 * 1000) {
+            localStorage.removeItem('pendingAccountCreation');
+          } else {
+            setError('Your payment is being processed. Please wait or contact support if you completed payment.');
+          }
+        }
       } catch (error) {
         console.error('Error checking OAuth user:', error);
       }
@@ -194,6 +206,43 @@ const AccountCreation: React.FC = () => {
     }
   };
 
+  const processPayment = async (plan: string, userDetails: any, tenantData: any): Promise<boolean> => {
+    try {
+      // Generate FastSpring checkout URL
+      const fastspringStoreId = 'usercentraltechnologies_store';
+      const productId = plan === 'professional' ? 'modulyn-one-plus' : 'modulyn-one-pro';
+      
+      const returnUrl = `${window.location.origin}/payment/callback`;
+      const checkoutUrl = `https://sites.fastspring.com/${fastspringStoreId}/product/${productId}?` +
+        `referrer=${encodeURIComponent(userDetails.email)}&` +
+        `customer_email=${encodeURIComponent(userDetails.email)}&` +
+        `customer_id=${tenantData.id}&` +
+        `customer_company=${encodeURIComponent(userDetails.company)}&` +
+        `customer_first_name=${encodeURIComponent(userDetails.firstName)}&` +
+        `customer_last_name=${encodeURIComponent(userDetails.lastName)}&` +
+        `return_url=${encodeURIComponent(returnUrl)}`;
+      
+      console.log('Redirecting to FastSpring checkout:', checkoutUrl);
+      
+      // Store the pending state in localStorage for when user returns
+      localStorage.setItem('pendingAccountCreation', JSON.stringify({
+        tenantId: tenantData.id,
+        userDetails,
+        selectedPlan: plan,
+        timestamp: Date.now()
+      }));
+      
+      // Redirect to FastSpring checkout
+      window.location.href = checkoutUrl;
+      
+      // Return true since we're redirecting (actual payment validation happens on return)
+      return true;
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -264,8 +313,11 @@ const AccountCreation: React.FC = () => {
         }
       }
 
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Process payment via FastSpring
+      const success = await processPayment(selectedPlan, userDetails, tenantData);
+      if (!success) {
+        throw new Error('Payment processing failed. Please try again.');
+      }
       
       // Redirect to success page
       navigate('/account-creation-success', { 

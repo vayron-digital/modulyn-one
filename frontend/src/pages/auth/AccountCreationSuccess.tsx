@@ -20,9 +20,11 @@ interface LocationState {
     email: string;
     company: string;
   };
-  paymentDetails: {
+  paymentDetails?: {
     cardholderName: string;
   };
+  paymentSuccess?: boolean;
+  isOAuthUser?: boolean;
 }
 
 const AccountCreationSuccess: React.FC = () => {
