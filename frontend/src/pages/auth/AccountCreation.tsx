@@ -591,12 +591,35 @@ const AccountCreation: React.FC = () => {
                   <p className="text-slate-600">Please review and accept our terms</p>
                 </div>
 
-                <div className="bg-slate-50 rounded-lg p-6 max-h-96 overflow-y-auto">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Modulyn Terms of Service</h3>
+                <div className="bg-slate-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Legal Agreement</h3>
                   <div className="space-y-4 text-sm text-slate-600">
-                    <p>By using Modulyn, you agree to these terms...</p>
-                    <p>Your privacy and data security are our top priorities...</p>
-                    <p>Payment processing is handled securely by FastSpring...</p>
+                    <p>
+                      By creating an account, you agree to our comprehensive legal terms that govern 
+                      your use of the Modulyn CRM platform.
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      <a 
+                        href="/terms-of-service" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 underline font-medium"
+                      >
+                        View Terms of Service
+                      </a>
+                      <a 
+                        href="/privacy-policy" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 underline font-medium"
+                      >
+                        View Privacy Policy
+                      </a>
+                    </div>
+                    <p className="text-xs">
+                      These documents detail your rights, our responsibilities, data handling practices, 
+                      and the terms governing your subscription.
+                    </p>
                   </div>
                 </div>
 
@@ -609,7 +632,24 @@ const AccountCreation: React.FC = () => {
                     className="mt-1 w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
                   />
                   <label htmlFor="terms" className="text-sm text-slate-700">
-                    I agree to the terms and conditions and privacy policy
+                    I have read and agree to the{' '}
+                    <a 
+                      href="/terms-of-service" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 underline"
+                    >
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a 
+                      href="/privacy-policy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 underline"
+                    >
+                      Privacy Policy
+                    </a>
                   </label>
                 </div>
               </motion.div>

@@ -27,6 +27,10 @@ const Login = React.lazy(() => import('./pages/auth/Login'));
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('./pages/auth/ResetPassword'));
 const Entry = React.lazy(() => import('./pages/auth/Entry'));
+
+// Legal Pages - Lazy loaded
+const PrivacyPolicy = React.lazy(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./pages/legal/TermsOfService'));
 const SignupStepper = React.lazy(() => import('./components/signup/SignupStepper').then(module => ({ default: module.SignupStepper })));
 const SignupForm = React.lazy(() => import('./components/signup/SignupForm'));
 const AccountCreation = React.lazy(() => import('./pages/auth/AccountCreation'));
@@ -238,6 +242,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/admin/team-revenue" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><AdminTeamRevenuePage /></Suspense></ProtectedRoute>} />
           <Route path="/admin/storage-test" element={<ProtectedRoute requireAdmin={true}><Suspense fallback={<PageLoader />}><StorageTest /></Suspense></ProtectedRoute>} />
         </Route>
+        
+        {/* Public Legal Pages */}
+        <Route path="/privacy-policy" element={<Suspense fallback={<PageLoader />}><PrivacyPolicy /></Suspense>} />
+        <Route path="/terms-of-service" element={<Suspense fallback={<PageLoader />}><TermsOfService /></Suspense>} />
         
         {/* 404 Route */}
         <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
