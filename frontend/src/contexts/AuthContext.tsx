@@ -40,18 +40,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
           console.log('Supabase profile:', profile, 'profileError:', profileError);
 
-          if (profileError) throw profileError;
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            is_admin: profile.is_admin,
-            is_active: profile.is_active,
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            full_name: profile.full_name,
-            role: profile.role
-          });
+          // If profile doesn't exist and this is an OAuth user, create it
+          if (profileError && profileError.code === 'PGRST116' && session.user.app_metadata?.provider) {
+            console.log('Creating missing profile for OAuth user...');
+            try {
+              const { error: insertError } = await supabase
+                .from('profiles')
+                .insert([
+                  {
+                    id: session.user.id,
+                    full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'New User',
+                    email: session.user.email,
+                    is_admin: false,
+                    is_active: true,
+                    profile_image_url: session.user.user_metadata?.avatar_url || null,
+                    oauth_provider: session.user.app_metadata.provider,
+                    oauth_id: session.user.user_metadata?.sub || null,
+                  }
+                ]);
+              
+              if (insertError) {
+                console.error('Error creating profile:', insertError);
+                throw insertError;
+              }
+              
+              // Fetch the newly created profile
+              const { data: newProfile, error: newProfileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (newProfileError) throw newProfileError;
+              
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                is_admin: newProfile.is_admin,
+                is_active: newProfile.is_active,
+                created_at: newProfile.created_at,
+                updated_at: newProfile.updated_at,
+                full_name: newProfile.full_name,
+                role: newProfile.role
+              });
+            } catch (error) {
+              console.error('Failed to create profile for OAuth user:', error);
+              // Sign out the user since we can't create their profile
+              await supabase.auth.signOut();
+              setUser(null);
+            }
+          } else if (profileError) {
+            throw profileError;
+          } else {
+            setUser({
+              id: session.user.id,
+              email: session.user.email!,
+              is_admin: profile.is_admin,
+              is_active: profile.is_active,
+              created_at: profile.created_at,
+              updated_at: profile.updated_at,
+              full_name: profile.full_name,
+              role: profile.role
+            });
+          }
         } else {
           // --- Backend token fallback for admin login ---
           const token = localStorage.getItem('token');
@@ -91,18 +142,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .eq('id', session.user.id)
               .single();
 
-            if (profileError) throw profileError;
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email!,
-              is_admin: profile.is_admin,
-              is_active: profile.is_active,
-              created_at: profile.created_at,
-              updated_at: profile.updated_at,
-              full_name: profile.full_name,
-              role: profile.role
-            });
+            // If profile doesn't exist and this is an OAuth user, create it
+            if (profileError && profileError.code === 'PGRST116' && session.user.app_metadata?.provider) {
+              try {
+                const { error: insertError } = await supabase
+                  .from('profiles')
+                  .insert([
+                    {
+                      id: session.user.id,
+                      full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'New User',
+                      email: session.user.email,
+                      is_admin: false,
+                      is_active: true,
+                      profile_image_url: session.user.user_metadata?.avatar_url || null,
+                      oauth_provider: session.user.app_metadata.provider,
+                      oauth_id: session.user.user_metadata?.sub || null,
+                    }
+                  ]);
+                
+                if (insertError) throw insertError;
+                
+                // Fetch the newly created profile
+                const { data: newProfile, error: newProfileError } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
+                  
+                if (newProfileError) throw newProfileError;
+                
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email!,
+                  is_admin: newProfile.is_admin,
+                  is_active: newProfile.is_active,
+                  created_at: newProfile.created_at,
+                  updated_at: newProfile.updated_at,
+                  full_name: newProfile.full_name,
+                  role: newProfile.role
+                });
+              } catch (error) {
+                console.error('Failed to create profile in auth state change:', error);
+                setUser(null);
+              }
+            } else if (profileError) {
+              throw profileError;
+            } else {
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                is_admin: profile.is_admin,
+                is_active: profile.is_active,
+                created_at: profile.created_at,
+                updated_at: profile.updated_at,
+                full_name: profile.full_name,
+                role: profile.role
+              });
+            }
           } else {
             setUser(null);
           }
