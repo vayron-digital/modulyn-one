@@ -1,4 +1,4 @@
-import theme from '../../design-system/modulyn-theme.json'
+import theme from '../../../design-system/modulyn-theme.json'
 
 export const DESIGN = {
   sidebarWidth: 260,
