@@ -7,6 +7,8 @@ import StepPersonalInfo from './steps/StepPersonalInfo';
 import StepContactInfo from './steps/StepContactInfo';
 import StepSecurity from './steps/StepSecurity';
 import StepCompanyInfo from './steps/StepCompanyInfo';
+import StepPayment from './steps/StepPayment';
+import StepSuccess from './steps/StepSuccess';
 import { DESIGN } from '../../lib/design';
 
 const steps = [
@@ -14,6 +16,8 @@ const steps = [
   StepContactInfo,
   StepSecurity,
   StepCompanyInfo,
+  StepPayment,
+  StepSuccess,
 ];
 
 function ProgressBar({ step, total }: { step: number; total: number }) {
@@ -86,70 +90,46 @@ export default function SignupForm() {
           <StepComponent />
         </motion.div>
       </AnimatePresence>
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-8">
-        {!isFirstStep && (
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={prevStep}
-            className="btn-secondary btn-text font-semibold"
-            style={{
-              borderRadius: S.button.borderRadius,
-              color: DESIGN.colors.primary,
-              border: `2px solid ${DESIGN.colors.primary}`,
-              background: S.button.background,
-              fontSize: S.button.fontSize,
-              fontWeight: S.button.fontWeight,
-              padding: S.button.padding,
-              boxShadow: S.button.boxShadow,
-            }}
-            type="button"
-          >
-            Back
-          </motion.button>
-        )}
-        <div className="flex-1" />
-        {!isLastStep ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={nextStep}
-            className="btn-primary btn-text text-white font-semibold"
-            style={{
-              background: S.button.background,
-              borderRadius: S.button.borderRadius,
-              color: S.button.color,
-              fontSize: S.button.fontSize,
-              fontWeight: S.button.fontWeight,
-              padding: S.button.padding,
-              boxShadow: S.button.boxShadow,
-            }}
-            disabled={!canNext || loading}
-            type="button"
-          >
-            Next
-          </motion.button>
-        ) : (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={validateStep}
-            className="btn-primary btn-text text-white font-semibold"
-            style={{
-              background: S.button.background,
-              borderRadius: S.button.borderRadius,
-              color: S.button.color,
-              fontSize: S.button.fontSize,
-              fontWeight: S.button.fontWeight,
-              padding: S.button.padding,
-              boxShadow: S.button.boxShadow,
-            }}
-            disabled={loading}
-            type="button"
-          >
-            {loading ? 'Creating Account...' : 'Create Account (Start Free 14-Day Trial)'}
-          </motion.button>
-        )}
-      </div>
-      {submitted && <div style={{ color: S.error.color, fontSize: S.error.fontSize, marginTop: S.error.marginTop, textAlign: 'center' }}>Signup complete! (Supabase integration coming next)</div>}
+      {/* Navigation Buttons - Only show for non-success steps */}
+      {step < steps.length - 1 && (
+        <div className="flex justify-between mt-8">
+          {!isFirstStep && (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={prevStep}
+              className="btn-secondary btn-text font-semibold"
+              style={{
+                borderRadius: S.button.borderRadius,
+                color: DESIGN.colors.primary,
+                border: `2px solid ${DESIGN.colors.primary}`,
+                background: S.button.background,
+                padding: S.button.padding,
+                fontSize: S.button.fontSize,
+              }}
+            >
+              Back
+            </motion.button>
+          )}
+          <div className="flex-1" />
+          {!isLastStep && (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={nextStep}
+              disabled={!canNext}
+              className="btn-primary btn-text font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                borderRadius: S.button.borderRadius,
+                background: DESIGN.colors.primary,
+                color: S.button.textColor,
+                padding: S.button.padding,
+                fontSize: S.button.fontSize,
+              }}
+            >
+              {step === steps.length - 2 ? 'Complete Setup' : 'Next'}
+            </motion.button>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

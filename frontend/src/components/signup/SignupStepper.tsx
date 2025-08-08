@@ -7,7 +7,7 @@ const SignupContext = createContext<any>(null);
 export function SignupStepper({ children }: { children: React.ReactNode }) {
   const state = useSignupState();
   const { step } = state;
-  const totalSteps = 4;
+  const totalSteps = 6; // Updated to include payment and success steps
   const S = DESIGN.signupPage;
 
   return (
@@ -36,7 +36,7 @@ export function SignupStepper({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col justify-center items-center px-4 py-8 md:py-0" style={{ background: S.rightCol.background }}>
           <div className="w-full mx-auto" style={{ maxWidth: S.rightCol.maxWidth, padding: S.rightCol.padding, borderRadius: S.rightCol.borderRadius, boxShadow: S.rightCol.boxShadow }}>
             <h1 className="font-bold mb-8 text-center" style={{ ...S.header }}>
-              Tell us a little more about yourself and we’ll get the ball rolling.
+              Tell us a little more about yourself and we'll get the ball rolling.
             </h1>
             {children}
             {/* Dot-based Progress Tracker */}

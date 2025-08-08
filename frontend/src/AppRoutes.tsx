@@ -17,6 +17,9 @@ const PageLoader = () => (
   </div>
 );
 
+// Landing Page - Lazy loaded
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+
 // Auth Pages - Lazy loaded
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'));
@@ -119,21 +122,22 @@ const AppRoutes: React.FC = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Public routes */}
-        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <Navigate to="/" />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Suspense fallback={<PageLoader />}><LandingPage /></Suspense>} />
+        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <Navigate to="/dashboard" />} />
         <Route path="/signup" element={!user ? (
           <Suspense fallback={<PageLoader />}>
             <SignupStepper>
               <SignupForm />
             </SignupStepper>
           </Suspense>
-        ) : <Navigate to="/" />} />
-        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <Navigate to="/" />} />
-        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <Navigate to="/" />} />
+        ) : <Navigate to="/dashboard" />} />
+        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <Navigate to="/dashboard" />} />
         
         {/* Protected routes with layout */}
         <Route element={<DashboardLayout />}>
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <SuspenseWrapper skeletonType="card" pageName="Dashboard">
