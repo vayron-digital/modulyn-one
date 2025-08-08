@@ -5,6 +5,7 @@ import LoadingBoundary from './components/common/LoadingBoundary';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PreviewProtectedRoute from './components/auth/PreviewProtectedRoute';
+import SmartRedirect from './components/auth/SmartRedirect';
 import PageErrorBoundary from './components/common/PageErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -128,22 +129,22 @@ const AppRoutes: React.FC = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Public routes */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Suspense fallback={<PageLoader />}><LandingPage /></Suspense>} />
-        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/" element={user ? <SmartRedirect /> : <Suspense fallback={<PageLoader />}><LandingPage /></Suspense>} />
+        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <SmartRedirect />} />
         <Route path="/signup" element={!user ? (
           <Suspense fallback={<PageLoader />}>
             <SignupStepper>
               <SignupForm />
             </SignupStepper>
           </Suspense>
-        ) : <Navigate to="/dashboard" />} />
+        ) : <SmartRedirect />} />
         <Route path="/account-creation" element={<Suspense fallback={<PageLoader />}><AccountCreation /></Suspense>} />
-        <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <SmartRedirect />} />
         <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallback /></Suspense>} />
         <Route path="/preview" element={<Suspense fallback={<PageLoader />}><PreviewSpace /></Suspense>} />
         <Route path="/preview/settings" element={<Suspense fallback={<PageLoader />}><PreviewSettings /></Suspense>} />
-        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <Navigate to="/dashboard" />} />
-        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <SmartRedirect />} />
+        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <SmartRedirect />} />
         
         {/* Protected routes with layout */}
         <Route element={<DashboardLayout />}>

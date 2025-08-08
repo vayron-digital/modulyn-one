@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { CreditCard, Crown, Settings, User, LogOut, Sparkles, Zap, Target } from 'lucide-react';
+import UserStatusDebugger from '../../components/debug/UserStatusDebugger';
 
 const PreviewSpace: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -272,6 +273,9 @@ const PreviewSpace: React.FC = () => {
           </button>
         </div>
       </main>
+      
+      {/* Debug component - remove in production */}
+      {process.env.NODE_ENV === 'development' && <UserStatusDebugger />}
     </div>
   );
 };
