@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
-import { toast } from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 
 interface Developer {
   developer_id: string;
@@ -14,6 +14,7 @@ interface Developer {
 
 const Developers: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [developers, setDevelopers] = useState<Developer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

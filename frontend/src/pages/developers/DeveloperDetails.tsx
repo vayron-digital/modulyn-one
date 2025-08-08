@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Card } from '../../components/ui/card';
 import PropertyCard from '../../components/properties/PropertyCard';
-import { toast } from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 
 const DeveloperDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const devUuid = id;
   const [developer, setDeveloper] = useState<{ developer_id: string; name: string; logo_url?: string } | null>(null);
   const [properties, setProperties] = useState<any[]>([]);
