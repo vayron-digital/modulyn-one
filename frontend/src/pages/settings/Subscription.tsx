@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { toast } from '../../hooks/useToast';
+import PaymentManagement from '../../components/settings/PaymentManagement';
 
 interface PlanLimits {
   maxUsers: number;
@@ -294,6 +295,17 @@ export default function Subscription() {
             </Button>
           </div>
         </Card>
+      )}
+
+      {/* Payment Management */}
+      {subscription?.subscription_status === 'active' && (
+        <div className="mb-8">
+          <PaymentManagement 
+            tenantId={tenant?.id || ''} 
+            customerId={subscription?.fastspring_customer_id}
+            subscriptionId={subscription?.subscription_id}
+          />
+        </div>
       )}
     </div>
   );

@@ -5,6 +5,35 @@ import crypto from 'crypto';
 
 const router = Router();
 
+// FastSpring API credentials
+const FASTSPRING_API_USERNAME = process.env.FASTSPRING_API_USERNAME;
+const FASTSPRING_API_PASSWORD = process.env.FASTSPRING_API_PASSWORD;
+const FASTSPRING_STORE_ID = process.env.FASTSPRING_STORE_ID;
+
+// Helper function to make authenticated API calls to FastSpring
+const fastspringApiCall = async (endpoint: string, method: string = 'GET', body?: any) => {
+  if (!FASTSPRING_API_USERNAME || !FASTSPRING_API_PASSWORD) {
+    throw new Error('FastSpring API credentials not configured');
+  }
+
+  const auth = Buffer.from(`${FASTSPRING_API_USERNAME}:${FASTSPRING_API_PASSWORD}`).toString('base64');
+  
+  const response = await fetch(`https://api.fastspring.com/companies/${FASTSPRING_STORE_ID}${endpoint}`, {
+    method,
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    throw new Error(`FastSpring API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
 // FastSpring webhook signature verification (MD5-based)
 const verifyWebhookSignature = (params: any, privateKey: string): boolean => {
   try {
@@ -326,6 +355,173 @@ router.get('/subscription/:tenantId', async (req: Request, res: Response) => {
     res.json({ status: 'success', data: tenant });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Get customer subscription details from FastSpring
+router.get('/customer/:customerId', async (req, res) => {
+  try {
+    const { customerId } = req.params;
+    
+    const customerData = await fastspringApiCall(`/customers/${customerId}`);
+    
+    res.json({
+      status: 'success',
+      data: customerData
+    });
+  } catch (error: any) {
+    console.error('Error fetching customer data:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch customer data'
+    });
+  }
+});
+
+// Get subscription details from FastSpring
+router.get('/subscription/:subscriptionId', async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+    
+    const subscriptionData = await fastspringApiCall(`/subscriptions/${subscriptionId}`);
+    
+    res.json({
+      status: 'success',
+      data: subscriptionData
+    });
+  } catch (error: any) {
+    console.error('Error fetching subscription data:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch subscription data'
+    });
+  }
+});
+
+// Update subscription status in FastSpring
+router.put('/subscription/:subscriptionId', async (req, res) => {
+  try {
+    const { subscriptionId } = req.params;
+    const { status, reason } = req.body;
+    
+    const updateData = await fastspringApiCall(`/subscriptions/${subscriptionId}`, 'PUT', {
+      status,
+      reason
+    });
+    
+    res.json({
+      status: 'success',
+      data: updateData
+    });
+  } catch (error: any) {
+    console.error('Error updating subscription:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to update subscription'
+    });
+  }
+});
+
+// Get all customers from FastSpring
+router.get('/customers', async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    
+    const customersData = await fastspringApiCall(`/customers?page=${page}&limit=${limit}`);
+    
+    res.json({
+      status: 'success',
+      data: customersData
+    });
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch customers'
+    });
+  }
+});
+
+// Get all subscriptions from FastSpring
+router.get('/subscriptions', async (req, res) => {
+  try {
+    const { page = 1, limit = 50, status } = req.query;
+    
+    let endpoint = `/subscriptions?page=${page}&limit=${limit}`;
+    if (status) {
+      endpoint += `&status=${status}`;
+    }
+    
+    const subscriptionsData = await fastspringApiCall(endpoint);
+    
+    res.json({
+      status: 'success',
+      data: subscriptionsData
+    });
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch subscriptions'
+    });
+  }
+});
+
+// Sync tenant with FastSpring customer data
+router.post('/sync-tenant/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    
+    // Get tenant from database
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', tenantId)
+      .single();
+    
+    if (tenantError || !tenant) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Tenant not found'
+      });
+    }
+    
+    if (!tenant.fastspring_customer_id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Tenant has no FastSpring customer ID'
+      });
+    }
+    
+    // Get customer data from FastSpring
+    const customerData: any = await fastspringApiCall(`/customers/${tenant.fastspring_customer_id}`);
+    
+    // Update tenant with latest FastSpring data
+    const { error: updateError } = await supabase
+      .from('tenants')
+      .update({
+        subscription_status: customerData.subscription?.status || 'trial',
+        subscription_plan: customerData.subscription?.product || 'trial',
+        subscription_metadata: customerData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', tenantId);
+    
+    if (updateError) {
+      throw updateError;
+    }
+    
+    res.json({
+      status: 'success',
+      message: 'Tenant synced with FastSpring data',
+      data: customerData
+    });
+  } catch (error) {
+    console.error('Error syncing tenant:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to sync tenant'
+    });
   }
 });
 

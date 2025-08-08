@@ -67,6 +67,10 @@ SUPABASE_SERVICE_KEY=your_supabase_service_key_here
 FASTSPRING_PRIVATE_KEY=f7a9803577c7f08fd04d5550ea0c51f5
 FASTSPRING_STORE_ID=usercentraltechnologies_store
 
+# FastSpring API Credentials (NEW!)
+FASTSPRING_API_USERNAME=GWKCY0EYR9M7OTGXFA9DSG
+FASTSPRING_API_PASSWORD=djadImxaTYaIhV2lUsJBLg
+
 # Frontend Environment Variables
 VITE_SUPABASE_URL=your_supabase_url_here
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here

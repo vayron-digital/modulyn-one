@@ -1,230 +1,207 @@
 # FastSpring Integration Setup Guide
 
-This guide will walk you through setting up FastSpring for your Modulyn One+ CRM subscription management.
+Complete guide for setting up FastSpring subscription management in your Modulyn CRM.
 
 ## 🚀 Quick Setup Overview
 
-1. **FastSpring Account Setup** ✅ (You've done this)
-2. **Product Configuration** ✅ (You've created "Modulyn One+")
-3. **Fulfillment Configuration** (This guide)
-4. **Webhook Setup** (This guide)
-5. **Environment Variables** (This guide)
-6. **Database Migration** (This guide)
-7. **Testing** (This guide)
+1. **Environment Variables** ✅ (Updated with API credentials)
+2. **Database Migration** ✅ (Ready)
+3. **Backend Integration** ✅ (Ready)
+4. **Frontend Integration** ✅ (Ready)
+5. **FastSpring Configuration** ✅ (Ready)
+6. **Testing** (This guide)
 
-## 📋 Step-by-Step Setup
+## 🔧 Environment Variables Setup
 
-### 1. FastSpring Fulfillment Configuration
-
-**About the Generator question:** Yes, it's essential! Choose "Webhook" as the generator for SaaS products.
-
-1. In your FastSpring dashboard, go to **Products** → **Modulyn One+**
-2. Click on **Fulfillment** tab
-3. Select **SaaS** from the dropdown
-4. Choose **Webhook** as the Generator
-5. Configure the webhook URL: `https://your-domain.com/api/fastspring/webhook`
-6. Set the webhook secret (you'll use this in environment variables)
-
-### 2. Environment Variables Setup
-
-Add these to your backend `.env` file:
+Add these to your Vercel environment variables:
 
 ```env
 # FastSpring Configuration
 FASTSPRING_PRIVATE_KEY=f7a9803577c7f08fd04d5550ea0c51f5
-FASTSPRING_STORE_ID=your_store_id_here
+FASTSPRING_STORE_ID=usercentraltechnologies_store
 
-# Frontend FastSpring Store ID
-VITE_FASTSPRING_STORE_ID=your_store_id_here
+# FastSpring API Credentials (NEW!)
+FASTSPRING_API_USERNAME=GWKCY0EYR9M7OTGXFA9DSG
+FASTSPRING_API_PASSWORD=djadImxaTYaIhV2lUsJBLg
+
+# Frontend FastSpring
+VITE_FASTSPRING_STORE_ID=usercentraltechnologies_store
 ```
 
-**Important**: The `FASTSPRING_PRIVATE_KEY` is the private key shown in your FastSpring configuration (f7a9803577c7f08fd04d5550ea0c51f5).
+## 📋 FastSpring Dashboard Configuration
 
-### 3. Database Migration
+### 1. Product Configuration ✅ (Done)
+- **Product Name**: Modulyn One+
+- **Price**: $9/month
+- **Fulfillment**: SaaS
 
-Run the subscription migration:
+### 2. Fulfillment Configuration ✅ (Done)
+- **Generator**: Remote Server Request
+- **URL**: `https://modulyn.vayronhq.com/api/fastspring/webhook`
+- **Method**: HTTP POST
+- **Encoding**: UTF-8
+- **Output Format**: Single License Only
+- **Private Key**: `f7a9803577c7f08fd04d5550ea0c51f5`
 
-```sql
--- Run this in your Supabase SQL Editor
--- File: db-migrations/048_add_subscription_fields.sql
+### 3. Webhook Events to Configure
+
+In FastSpring dashboard, configure these webhook events:
+
+#### Required Events:
+- ✅ `order.completed` (Already configured via Remote Server Request)
+- 🔄 `subscription.activated`
+- 🔄 `subscription.deactivated`
+- 🔄 `subscription.updated`
+- 🔄 `subscription.cancelled`
+- 🔄 `subscription.charge.completed`
+- 🔄 `subscription.charge.failed`
+
+#### Webhook URL for Events:
+```
+https://modulyn.vayronhq.com/api/fastspring/webhook
 ```
 
-This creates:
-- Subscription fields in `tenants` table
-- `subscription_events` table for webhook tracking
-- `subscription_plans` table with default plans
-- Helper functions for subscription management
+## 🔐 API Integration (Enhanced)
 
-### 4. FastSpring Product Configuration
+With your API credentials, you can now:
 
-In your FastSpring dashboard:
+### 1. Fetch Customer Data
+```javascript
+// Get customer subscription details
+const customer = await fetch(`https://api.fastspring.com/companies/usercentraltechnologies_store/customers/${customerId}`, {
+  headers: {
+    'Authorization': 'Basic ' + btoa('GWKCY0EYR9M7OTGXFA9DSG:djadImxaTYaIhV2lUsJBLg')
+  }
+});
+```
 
-1. **Product ID**: Set to `modulyn-one-plus` (matches our plan ID)
-2. **Price**: $9/month (as you've set)
-3. **Billing**: Monthly subscription
-4. **Trial**: 14 days (matches our database default)
+### 2. Manage Subscriptions
+```javascript
+// Update subscription status
+const updateSubscription = await fetch(`https://api.fastspring.com/companies/usercentraltechnologies_store/subscriptions/${subscriptionId}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': 'Basic ' + btoa('GWKCY0EYR9M7OTGXFA9DSG:djadImxaTYaIhV2lUsJBLg'),
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    status: 'active'
+  })
+});
+```
 
-### 5. Webhook Events to Configure
+## 🧪 Testing Your Integration
 
-In FastSpring, enable these webhook events:
-
-- `order.completed` - When customer first purchases
-- `subscription.activated` - When subscription becomes active
-- `subscription.deactivated` - When subscription is deactivated
-- `subscription.updated` - When subscription is modified
-- `subscription.cancelled` - When subscription is cancelled
-- `subscription.charge.completed` - When payment is successful
-- `subscription.charge.failed` - When payment fails
-
-### 6. Testing the Integration
-
-#### Test Webhook Endpoint
-
+### 1. Test Webhook Endpoint
 ```bash
-# Test webhook endpoint
-curl -X POST https://your-domain.com/api/fastspring/webhook \
+# Test webhook locally
+curl -X POST http://localhost:3000/api/fastspring/webhook \
   -H "Content-Type: application/json" \
-  -H "x-fs-signature: test_signature" \
   -d '{
-    "id": "test_event_123",
-    "type": "order.completed",
-    "customer": "test_customer_123",
+    "email": "test@example.com",
     "product": "modulyn-one-plus",
-    "subscription": "test_sub_123",
-    "status": "active",
-    "total": 9.00,
-    "currency": "USD"
+    "reference": "TEST-ORDER-123",
+    "security_request_hash": "test-hash"
+  }'
+
+# Test webhook on production
+curl -X POST https://modulyn.vayronhq.com/api/fastspring/webhook \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "product": "modulyn-one-plus",
+    "reference": "TEST-ORDER-123",
+    "security_request_hash": "test-hash"
   }'
 ```
 
-#### Test Subscription Plans API
+### 2. Test FastSpring Checkout
+1. **Go to your CRM**: `https://modulyn.vayronhq.com/settings/subscription`
+2. **Click "Upgrade"** on any plan
+3. **Complete test purchase** in FastSpring
+4. **Check webhook delivery** in Vercel logs
 
+### 3. Test API Integration
 ```bash
-# Get available plans
-curl https://your-domain.com/api/fastspring/plans
+# Test API credentials
+curl -u "GWKCY0EYR9M7OTGXFA9DSG:djadImxaTYaIhV2lUsJBLg" \
+  https://api.fastspring.com/companies/usercentraltechnologies_store/customers
 ```
 
-### 7. Frontend Integration
+## 📊 Monitoring & Debugging
 
-The subscription management page is available at:
-- **URL**: `/settings/subscription`
-- **Access**: Admin users only
-- **Features**: 
-  - View current plan and usage
-  - Upgrade/downgrade plans
-  - Manage subscription
-  - View billing information
+### Vercel Function Logs
+1. **Go to Vercel Dashboard**
+2. **Select your project**
+3. **Click "Functions"**
+4. **View logs** for `/api/fastspring/webhook`
 
-### 8. Subscription Flow
+### FastSpring Dashboard
+1. **Orders**: Monitor test purchases
+2. **Subscriptions**: Track subscription status
+3. **Webhooks**: Check delivery status
 
-#### New Customer Flow:
-1. User signs up → Gets 14-day trial
-2. User upgrades → Redirected to FastSpring checkout
-3. Payment successful → Webhook updates tenant subscription
-4. User gets access to paid features
-
-#### Existing Customer Flow:
-1. User visits subscription page
-2. Can upgrade/downgrade → Redirected to FastSpring
-3. Changes processed via webhooks
-4. Feature access updated automatically
-
-### 9. Feature Access Control
-
-The system automatically controls feature access based on:
-
-```typescript
-// Check if user has access to a feature
-const hasAccess = await SubscriptionService.hasFeatureAccess(tenantId, 'chat');
-
-// Check plan limits
-const limits = await SubscriptionService.getPlanLimits(tenantId);
-```
-
-### 10. Plan Limits Enforcement
-
-The system enforces limits for:
-- **Users**: Max users per plan
-- **Leads**: Max leads per plan  
-- **Properties**: Max properties per plan
-- **Features**: Feature flags per plan
-
-### 11. Troubleshooting
-
-#### Common Issues:
-
-1. **Webhook not receiving events**
-   - Check webhook URL is accessible
-   - Verify webhook secret matches
-   - Check server logs for errors
-
-2. **Subscription not updating**
-   - Verify tenant has `fastspring_customer_id`
-   - Check webhook event processing
-   - Review subscription_events table
-
-3. **Feature access issues**
-   - Check tenant subscription status
-   - Verify plan features configuration
-   - Review trial expiration dates
-
-#### Debug Commands:
-
+### Database Monitoring
 ```sql
--- Check subscription status
-SELECT * FROM tenants WHERE id = 'your_tenant_id';
+-- Check subscription events
+SELECT * FROM subscription_events ORDER BY created_at DESC LIMIT 10;
 
--- Check webhook events
-SELECT * FROM subscription_events 
-WHERE tenant_id = 'your_tenant_id' 
-ORDER BY created_at DESC;
-
--- Check plan details
-SELECT * FROM subscription_plans WHERE plan_id = 'modulyn-one-plus';
+-- Check tenant subscriptions
+SELECT id, name, subscription_status, subscription_plan, is_paid 
+FROM tenants 
+WHERE subscription_status != 'trial';
 ```
 
-### 12. Monitoring
+## 🚨 Troubleshooting
 
-Monitor these metrics:
-- Webhook delivery success rate
-- Subscription conversion rate
-- Trial to paid conversion
-- Churn rate
-- Revenue per customer
+### Webhook Not Receiving Events?
+1. **Check URL**: Ensure `https://modulyn.vayronhq.com/api/fastspring/webhook`
+2. **Check Vercel logs**: Look for function errors
+3. **Test endpoint**: Use curl to verify it's working
+4. **Check FastSpring**: Verify webhook is configured
 
-### 13. Security Considerations
+### Signature Verification Failing?
+1. **Verify private key**: `f7a9803577c7f08fd04d5550ea0c51f5`
+2. **Check MD5 hash**: Ensure using MD5, not SHA256
+3. **Test signature**: Use FastSpring's test tools
 
-1. **Webhook Signature Verification**: Always verify FastSpring signatures
-2. **HTTPS Only**: Use HTTPS for all webhook endpoints
-3. **Rate Limiting**: Implement rate limiting on webhook endpoints
-4. **Logging**: Log all webhook events for audit trail
+### API Calls Failing?
+1. **Verify credentials**: `GWKCY0EYR9M7OTGXFA9DSG:djadImxaTYaIhV2lUsJBLg`
+2. **Check permissions**: Ensure API access is enabled
+3. **Test authentication**: Use curl with basic auth
 
-### 14. Production Checklist
+### Subscription Not Updating?
+1. **Check database**: Verify `subscription_events` table
+2. **Check tenant update**: Verify `tenants` table updates
+3. **Check webhook processing**: Look for errors in logs
 
-- [ ] Webhook endpoint is publicly accessible
-- [ ] Environment variables are set
-- [ ] Database migration is applied
-- [ ] FastSpring products are configured
-- [ ] Webhook events are enabled
-- [ ] Test webhook delivery
-- [ ] Test subscription flow
-- [ ] Monitor error logs
-- [ ] Set up alerts for webhook failures
+## 🎯 Complete Flow Testing
 
-## 🎯 Next Steps
+### 1. User Signup Flow
+1. **User signs up** → Gets 14-day trial
+2. **Trial expires** → User sees upgrade prompt
+3. **User clicks upgrade** → Redirected to FastSpring
+4. **User completes purchase** → Webhook received
+5. **Subscription activated** → User gets paid features
 
-1. **Deploy the changes** to your production environment
-2. **Test the complete flow** with a test customer
-3. **Monitor webhook delivery** for the first few days
-4. **Set up monitoring** for subscription events
-5. **Train your team** on subscription management
+### 2. Subscription Management Flow
+1. **User visits subscription page** → Sees current plan
+2. **User upgrades/downgrades** → Redirected to FastSpring
+3. **User manages billing** → Uses FastSpring customer portal
+4. **Subscription changes** → Webhook updates CRM
 
-## 📞 Support
+## 📞 Support Resources
 
-If you encounter issues:
-1. Check the troubleshooting section above
-2. Review server logs for errors
-3. Verify FastSpring configuration
-4. Test webhook endpoints manually
+- **FastSpring Documentation**: [docs.fastspring.com](https://docs.fastspring.com)
+- **FastSpring API Reference**: [api.fastspring.com](https://api.fastspring.com)
+- **Vercel Function Logs**: Check deployment dashboard
+- **Database Queries**: Use Supabase dashboard
 
-The integration is designed to be robust and handle edge cases automatically. The webhook system ensures your CRM stays in sync with FastSpring subscription changes.
+## 🔒 Security Notes
+
+- **Keep API credentials secure** - Store in environment variables only
+- **Never commit credentials** to git
+- **Rotate credentials** periodically
+- **Monitor webhook security** - Verify signatures always
+
+Your FastSpring integration is now complete with API access! 🚀
