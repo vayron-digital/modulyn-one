@@ -299,6 +299,88 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+      // The redirect will happen automatically
+      return data;
+    } catch (error) {
+      setError(error as string);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuthUser = async (user: any) => {
+    try {
+      // Check if user has a complete profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      // If no profile exists, create a basic one
+      if (!profile) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: user.id,
+              full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+              email: user.email,
+              is_admin: false,
+              is_active: true,
+              profile_image_url: user.user_metadata?.avatar_url || null,
+              oauth_provider: 'google',
+              oauth_id: user.user_metadata?.sub || null,
+            }
+          ]);
+        
+        if (insertError) throw insertError;
+        
+        // Return user with incomplete profile flag
+        return {
+          ...user,
+          hasCompleteProfile: false,
+          needsAccountSetup: true
+        };
+      }
+
+      // Check if profile is complete (has tenant_id and other required fields)
+      const hasCompleteProfile = profile.tenant_id && profile.full_name && profile.email;
+      
+      return {
+        ...user,
+        hasCompleteProfile,
+        needsAccountSetup: !hasCompleteProfile
+      };
+    } catch (error) {
+      console.error('Error handling OAuth user:', error);
+      throw error;
+    }
+  };
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -307,7 +389,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     logout,
     signOut,
-  }), [user, loading, error, login, register, logout, signOut]);
+    signInWithGoogle,
+    handleOAuthUser,
+  }), [user, loading, error, login, register, logout, signOut, signInWithGoogle, handleOAuthUser]);
 
   return (
     <AuthContext.Provider value={value}>

@@ -1,0 +1,80 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+
+const OAuthCallback: React.FC = () => {
+  const navigate = useNavigate();
+  const { handleOAuthUser } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      try {
+        // Get the session from the URL hash
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('OAuth callback error:', error);
+          setError('Authentication failed. Please try again.');
+          return;
+        }
+
+        if (session?.user) {
+          // Handle OAuth user
+          const userData = await handleOAuthUser(session.user);
+          
+          if (userData.needsAccountSetup) {
+            // User needs to complete account setup
+            navigate('/account-creation');
+          } else {
+            // User has complete profile, go to dashboard
+            navigate('/dashboard');
+          }
+        } else {
+          // No session found, redirect to login
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error handling OAuth callback:', error);
+        setError('Something went wrong. Please try again.');
+      }
+    };
+
+    handleOAuthCallback();
+  }, [navigate, handleOAuthUser]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Authentication Error</h2>
+          <p className="text-slate-600 mb-6">{error}</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+        <div className="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Completing Sign In</h2>
+        <p className="text-slate-600">Please wait while we set up your account...</p>
+      </div>
+    </div>
+  );
+};
+
+export default OAuthCallback;

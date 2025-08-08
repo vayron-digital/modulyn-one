@@ -29,6 +29,7 @@ const SignupStepper = React.lazy(() => import('./components/signup/SignupStepper
 const SignupForm = React.lazy(() => import('./components/signup/SignupForm'));
 const AccountCreation = React.lazy(() => import('./pages/auth/AccountCreation'));
 const AccountCreationSuccess = React.lazy(() => import('./pages/auth/AccountCreationSuccess'));
+const OAuthCallback = React.lazy(() => import('./pages/auth/OAuthCallback'));
 
 // Main Pages - Lazy loaded
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
@@ -133,8 +134,9 @@ const AppRoutes: React.FC = () => {
             </SignupStepper>
           </Suspense>
         ) : <Navigate to="/dashboard" />} />
-        <Route path="/account-creation" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreation /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/account-creation" element={<Suspense fallback={<PageLoader />}><AccountCreation /></Suspense>} />
         <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <Navigate to="/dashboard" />} />
+        <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallback /></Suspense>} />
         <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <Navigate to="/dashboard" />} />
         <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <Navigate to="/dashboard" />} />
         

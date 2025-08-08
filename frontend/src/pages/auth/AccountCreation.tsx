@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -15,6 +15,8 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 interface UserDetails {
   firstName: string;
@@ -42,11 +44,14 @@ const AccountCreation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedPlan = searchParams.get('plan') || 'professional';
   const navigate = useNavigate();
+  const { user, handleOAuthUser } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const [oauthUserData, setOauthUserData] = useState<any>(null);
   
   const [userDetails, setUserDetails] = useState<UserDetails>({
     firstName: '',
@@ -70,6 +75,56 @@ const AccountCreation: React.FC = () => {
     country: ''
   });
 
+  // Check if user came from OAuth and handle accordingly
+  useEffect(() => {
+    const checkOAuthUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Check if this is an OAuth user
+          const isOAuth = session.user.app_metadata?.provider === 'google';
+          
+          if (isOAuth) {
+            setIsOAuthUser(true);
+            setOauthUserData(session.user);
+            
+            // Pre-fill user details from OAuth data
+            const fullName = session.user.user_metadata?.full_name || '';
+            const [firstName = '', lastName = ''] = fullName.split(' ');
+            
+            setUserDetails(prev => ({
+              ...prev,
+              firstName,
+              lastName,
+              email: session.user.email || '',
+              // Don't pre-fill password for OAuth users
+              password: '',
+              confirmPassword: '',
+            }));
+            
+            // Check if user already has a complete profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (profile?.tenant_id) {
+              // User already has complete setup, redirect to dashboard
+              navigate('/dashboard');
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking OAuth user:', error);
+      }
+    };
+    
+    checkOAuthUser();
+  }, [navigate]);
+
   const plans = {
     starter: { name: 'Starter', price: 29, features: ['Up to 5 team members', 'Basic features', 'Email support'] },
     professional: { name: 'Professional', price: 79, features: ['Up to 20 team members', 'Advanced features', 'Priority support'] },
@@ -87,19 +142,27 @@ const AccountCreation: React.FC = () => {
   };
 
   const validateUserDetails = () => {
-    if (!userDetails.firstName || !userDetails.lastName || !userDetails.email || 
-        !userDetails.password || !userDetails.confirmPassword || !userDetails.company) {
+    if (!userDetails.firstName || !userDetails.lastName || !userDetails.email || !userDetails.company) {
       setError('Please fill in all required fields');
       return false;
     }
-    if (userDetails.password !== userDetails.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
+    
+    // Only validate password for non-OAuth users
+    if (!isOAuthUser) {
+      if (!userDetails.password || !userDetails.confirmPassword) {
+        setError('Please fill in all required fields');
+        return false;
+      }
+      if (userDetails.password !== userDetails.confirmPassword) {
+        setError('Passwords do not match');
+        return false;
+      }
+      if (userDetails.password.length < 8) {
+        setError('Password must be at least 8 characters long');
+        return false;
+      }
     }
-    if (userDetails.password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return false;
-    }
+    
     setError('');
     return true;
   };
@@ -138,19 +201,65 @@ const AccountCreation: React.FC = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Simulate account creation and payment processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Create tenant and complete account setup
+      const slugify = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      const now = new Date();
+      const addDays = (date: Date, days: number) => {
+        const d = new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+      };
+
+      // Create tenant
+      const { data: tenantData, error: tenantError } = await supabase.from('tenants').insert([
+        {
+          name: userDetails.company,
+          slug: slugify(userDetails.company),
+          theme_color: '#6C2EBE',
+          feature_flags: {
+            cold_calls: true,
+            chat: true,
+            documents: false,
+          },
+          trial_start: now.toISOString(),
+          trial_ends: addDays(now, 14).toISOString(),
+          industry: 'Real Estate', // Default, can be updated later
+          size: 'Small', // Default, can be updated later
+        },
+      ]).select().single();
+
+      if (tenantError || !tenantData) {
+        throw new Error(tenantError?.message || 'Could not create tenant.');
+      }
+
+      // Update user profile with tenant and additional details
+      const { error: profileError } = await supabase.from('profiles').update({
+        tenant_id: tenantData.id,
+        full_name: `${userDetails.firstName} ${userDetails.lastName}`,
+        phone: userDetails.phone || null,
+        designation: userDetails.jobTitle || null,
+        is_admin: true, // First user is admin
+        is_active: true,
+      }).eq('id', oauthUserData?.id || user?.id);
+
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
+
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Redirect to success page
       navigate('/account-creation-success', { 
         state: { 
           plan: selectedPlan,
           userDetails,
-          paymentDetails 
+          paymentDetails,
+          isOAuthUser
         }
       });
-    } catch (error) {
-      setError('Failed to create account. Please try again.');
+    } catch (error: any) {
+      setError(error.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -162,6 +271,18 @@ const AccountCreation: React.FC = () => {
     { number: 3, title: 'Terms', icon: Shield },
     { number: 4, title: 'Complete', icon: CheckCircle }
   ];
+
+  // Show loading while checking OAuth status
+  if (!oauthUserData && isOAuthUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Setting up your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -327,30 +448,44 @@ const AccountCreation: React.FC = () => {
                       placeholder="Enter your job title"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Password *
-                    </label>
-                    <input
-                      type="password"
-                      value={userDetails.password}
-                      onChange={(e) => updateUserDetails('password', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Create a password"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Confirm Password *
-                    </label>
-                    <input
-                      type="password"
-                      value={userDetails.confirmPassword}
-                      onChange={(e) => updateUserDetails('confirmPassword', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Confirm your password"
-                    />
-                  </div>
+                  {!isOAuthUser && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Password *
+                        </label>
+                        <input
+                          type="password"
+                          value={userDetails.password}
+                          onChange={(e) => updateUserDetails('password', e.target.value)}
+                          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Create a password"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Confirm Password *
+                        </label>
+                        <input
+                          type="password"
+                          value={userDetails.confirmPassword}
+                          onChange={(e) => updateUserDetails('confirmPassword', e.target.value)}
+                          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Confirm your password"
+                        />
+                      </div>
+                    </>
+                  )}
+                  {isOAuthUser && (
+                    <div className="md:col-span-2">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-blue-700 text-sm">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Signed in with Google - No password required</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}

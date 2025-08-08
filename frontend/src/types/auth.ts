@@ -18,4 +18,6 @@ export interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<any>;
+  handleOAuthUser: (user: any) => Promise<any>;
 } 
