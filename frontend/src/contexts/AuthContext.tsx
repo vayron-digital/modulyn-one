@@ -425,6 +425,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleOAuthUser = async (user: any) => {
     try {
+      console.log('handleOAuthUser called with user:', user.id, user.email);
+      
       // Check if user has a complete profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -432,28 +434,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', user.id)
         .single();
 
+      console.log('Profile lookup result:', { profile, profileError });
+
       if (profileError && profileError.code !== 'PGRST116') {
         throw profileError;
       }
 
       // If no profile exists, create a basic one
       if (!profile) {
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: user.id,
-              full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-              email: user.email,
-              is_admin: false,
-              is_active: true,
-              profile_image_url: user.user_metadata?.avatar_url || null,
-              oauth_provider: 'google',
-              oauth_id: user.user_metadata?.sub || null,
-            }
-          ]);
+        console.log('Creating new profile for OAuth user...');
+        const profileData = {
+          id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
+          email: user.email,
+          is_admin: false,
+          is_active: true,
+          profile_image_url: user.user_metadata?.avatar_url || null,
+          oauth_provider: 'google',
+          oauth_id: user.user_metadata?.sub || null,
+        };
         
-        if (insertError) throw insertError;
+        console.log('Profile data to insert:', profileData);
+        
+        const { error: insertError, data: insertData } = await supabase
+          .from('profiles')
+          .insert([profileData])
+          .select();
+        
+        console.log('Profile insert result:', { insertError, insertData });
+        
+        if (insertError) {
+          console.error('Profile creation failed:', insertError);
+          throw insertError;
+        }
         
         // Return user with incomplete profile flag
         return {

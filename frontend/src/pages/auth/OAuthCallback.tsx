@@ -34,15 +34,24 @@ const OAuthCallback: React.FC = () => {
 
           if (session?.user) {
             console.log('OAuth user authenticated:', session.user.email);
-            // Handle OAuth user
-            const userData = await handleOAuthUser(session.user);
-            
-            if (userData?.needsAccountSetup) {
-              console.log('User needs account setup, redirecting to preview...');
+            try {
+              // Handle OAuth user
+              const userData = await handleOAuthUser(session.user);
+              console.log('handleOAuthUser completed, userData:', userData);
+              
+              if (userData?.needsAccountSetup) {
+                console.log('User needs account setup, redirecting to preview...');
+                navigate('/preview');
+              } else {
+                console.log('User profile complete, redirecting to dashboard...');
+                navigate('/dashboard');
+              }
+            } catch (handleError) {
+              console.error('Error in handleOAuthUser:', handleError);
+              // Even if profile creation fails, still redirect to preview space
+              // The auth context will handle creating the profile later
+              console.log('Falling back to preview space despite profile creation error');
               navigate('/preview');
-            } else {
-              console.log('User profile complete, redirecting to dashboard...');
-              navigate('/dashboard');
             }
           } else {
             console.log('No user in session, redirecting to login');
@@ -60,12 +69,19 @@ const OAuthCallback: React.FC = () => {
 
           if (session?.user) {
             console.log('Existing session found, processing...');
-            const userData = await handleOAuthUser(session.user);
-            
-            if (userData?.needsAccountSetup) {
+            try {
+              const userData = await handleOAuthUser(session.user);
+              console.log('handleOAuthUser completed for existing session, userData:', userData);
+              
+              if (userData?.needsAccountSetup) {
+                navigate('/preview');
+              } else {
+                navigate('/dashboard');
+              }
+            } catch (handleError) {
+              console.error('Error in handleOAuthUser for existing session:', handleError);
+              // Fallback to preview space
               navigate('/preview');
-            } else {
-              navigate('/dashboard');
             }
           } else {
             console.log('No session found, redirecting to login');
