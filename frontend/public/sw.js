@@ -7,8 +7,6 @@ const DYNAMIC_CACHE = 'vayron-crm-dynamic-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/src/main.tsx',
-  '/src/index.css',
   '/favicon.png',
   '/logo.png',
   '/default-avatar.png',

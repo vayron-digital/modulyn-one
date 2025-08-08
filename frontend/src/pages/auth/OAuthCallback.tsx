@@ -11,29 +11,66 @@ const OAuthCallback: React.FC = () => {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        // Get the session from the URL hash
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('OAuth callback - processing URL:', window.location.href);
         
-        if (error) {
-          console.error('OAuth callback error:', error);
-          setError('Authentication failed. Please try again.');
-          return;
-        }
-
-        if (session?.user) {
-          // Handle OAuth user
-          const userData = await handleOAuthUser(session.user);
+        // Check if we have OAuth tokens in the URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (accessToken) {
+          console.log('Found access token in URL, processing OAuth session...');
           
-          if (userData.needsAccountSetup) {
-            // User needs to complete account setup
-            navigate('/account-creation');
+          // Set the session from the URL parameters
+          const { data: { session }, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: hashParams.get('refresh_token') || ''
+          });
+          
+          if (error) {
+            console.error('OAuth session error:', error);
+            setError('Authentication failed. Please try again.');
+            return;
+          }
+
+          if (session?.user) {
+            console.log('OAuth user authenticated:', session.user.email);
+            // Handle OAuth user
+            const userData = await handleOAuthUser(session.user);
+            
+            if (userData?.needsAccountSetup) {
+              console.log('User needs account setup, redirecting...');
+              navigate('/account-creation');
+            } else {
+              console.log('User profile complete, redirecting to dashboard...');
+              navigate('/dashboard');
+            }
           } else {
-            // User has complete profile, go to dashboard
-            navigate('/dashboard');
+            console.log('No user in session, redirecting to login');
+            navigate('/login');
           }
         } else {
-          // No session found, redirect to login
-          navigate('/login');
+          // No OAuth tokens, check if we already have a session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Session check error:', error);
+            setError('Authentication failed. Please try again.');
+            return;
+          }
+
+          if (session?.user) {
+            console.log('Existing session found, processing...');
+            const userData = await handleOAuthUser(session.user);
+            
+            if (userData?.needsAccountSetup) {
+              navigate('/account-creation');
+            } else {
+              navigate('/dashboard');
+            }
+          } else {
+            console.log('No session found, redirecting to login');
+            navigate('/login');
+          }
         }
       } catch (error) {
         console.error('Error handling OAuth callback:', error);
