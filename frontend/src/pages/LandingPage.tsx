@@ -54,6 +54,7 @@ const LandingPage: React.FC = () => {
 
   const pricingPlans = [
     {
+      id: "starter",
       name: "Starter",
       price: "$29",
       period: "/month",
@@ -69,6 +70,7 @@ const LandingPage: React.FC = () => {
       action: "Get Started"
     },
     {
+      id: "professional",
       name: "Professional",
       price: "$79",
       period: "/month",
@@ -86,6 +88,7 @@ const LandingPage: React.FC = () => {
       action: "Start Free Trial"
     },
     {
+      id: "enterprise",
       name: "Enterprise",
       price: "$199",
       period: "/month",
@@ -294,7 +297,7 @@ const LandingPage: React.FC = () => {
                   ))}
                 </ul>
                 <button
-                  onClick={() => navigate('/signup')}
+                  onClick={() => navigate(`/account-creation?plan=${plan.id}`)}
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
                     plan.popular
                       ? 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -362,7 +365,7 @@ const LandingPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate('/signup')}
+              onClick={() => navigate('/account-creation?plan=professional')}
               className="bg-white hover:bg-slate-100 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold transition-colors flex items-center justify-center gap-2"
             >
               Start Free Trial
