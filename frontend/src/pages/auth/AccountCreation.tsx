@@ -110,6 +110,88 @@ const AccountCreation: React.FC = () => {
     }
   };
 
+  // Check if user came from OAuth/preview and pre-fill form
+  useEffect(() => {
+    const checkUserAndPreFill = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Check if this is an OAuth user
+          const isOAuth = session.user.app_metadata?.provider === 'google';
+          
+          if (isOAuth) {
+            setIsOAuthUser(true);
+            setOauthUserData(session.user);
+          }
+
+          // Check if user already has a profile (preview users)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+              
+          if (profile?.tenant_id) {
+            // User already has complete setup, redirect to dashboard
+            navigate('/dashboard');
+            return;
+          }
+
+          // Pre-fill form data
+          if (profile) {
+            // Existing preview user - pre-fill from profile
+            const [firstName = '', ...lastNameParts] = (profile.full_name || '').split(' ');
+            const lastName = lastNameParts.join(' ');
+            
+            setUserDetails(prev => ({
+              ...prev,
+              firstName,
+              lastName,
+              email: profile.email || session.user.email || '',
+              phone: profile.phone || '',
+              jobTitle: profile.designation || '',
+              // For OAuth users, no password needed
+              password: isOAuth ? 'oauth-user' : '',
+              confirmPassword: isOAuth ? 'oauth-user' : '',
+            }));
+          } else if (isOAuth) {
+            // New OAuth user - pre-fill from OAuth data
+            const fullName = session.user.user_metadata?.full_name || '';
+            const [firstName = '', ...lastNameParts] = fullName.split(' ');
+            const lastName = lastNameParts.join(' ');
+            
+            setUserDetails(prev => ({
+              ...prev,
+              firstName,
+              lastName,
+              email: session.user.email || '',
+              // OAuth users don't need passwords
+              password: 'oauth-user',
+              confirmPassword: 'oauth-user',
+            }));
+          }
+        }
+
+        // Check for pending payment (user returned from FastSpring)
+        const pendingData = localStorage.getItem('pendingAccountCreation');
+        if (pendingData) {
+          const { timestamp } = JSON.parse(pendingData);
+          // If pending data is older than 1 hour, clear it
+          if (Date.now() - timestamp > 60 * 60 * 1000) {
+            localStorage.removeItem('pendingAccountCreation');
+          } else {
+            setError('Your payment is being processed. Please wait or contact support if you completed payment.');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    };
+    
+    checkUserAndPreFill();
+  }, [navigate]);
+
   const processPayment = async (plan: string, userDetails: any, tenantData: any): Promise<boolean> => {
     try {
       // Generate FastSpring checkout URL
@@ -431,6 +513,30 @@ const AccountCreation: React.FC = () => {
                       placeholder="Enter your job title"
                     />
                   </div>
+                  
+                  {/* OAuth User Notice */}
+                  {isOAuthUser && (
+                    <div className="md:col-span-2">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-blue-700 text-sm">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Signed in with Google - Password not required</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Pre-filled Notice for Preview Users */}
+                  {isPreviewUpgrade && (
+                    <div className="md:col-span-2">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-green-700 text-sm">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Account details pre-filled from your preview profile</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
