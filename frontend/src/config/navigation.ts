@@ -11,7 +11,7 @@ import {
   SparklesIcon,
   RocketLaunchIcon
 } from '@heroicons/react/24/outline';
-import { Users, Building, Shield, Zap, Settings } from 'lucide-react';
+import { Users, Building, Shield, Zap, Settings, CreditCard } from 'lucide-react';
 import { useFeatures } from '../hooks/useFeatures';
 import { DESIGN } from '../lib/design';
 
@@ -106,6 +106,12 @@ export const navigationItems: NavigationItem[] = [
         name: 'Integrations',
         href: '/settings?tab=integrations',
         icon: Zap,
+      },
+      {
+        name: 'Subscription',
+        href: '/settings/subscription',
+        icon: CreditCard,
+        adminOnly: true,
       },
       {
         name: 'Preferences',

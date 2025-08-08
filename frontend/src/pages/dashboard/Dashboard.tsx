@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLayout } from '../../components/layout/DashboardLayout';
 import styles from '../../components/layout/DashboardLayout.module.css';
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthLoading } from '../../hooks/useAuthLoading';
+import LoadingState from '../../components/common/LoadingState';
 import api from '../../lib/api';
 import ColdCallsWidget from '../../widgets/ColdCallsWidget';
 import NewLeadsWidget from '../../widgets/NewLeadsWidget';
@@ -13,7 +14,11 @@ import { dashboardApi } from '../../lib/api';
 import RecentActivityWidget from '../../widgets/RecentActivityWidget';
 import { journeysApi } from '../../lib/api';
 import { journeyColumnsApi } from '../../lib/api';
-import { Plus } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Users, DollarSign, Target, Clock, Calendar, Bell, Settings, BarChart3, Activity, Zap, Brain, ArrowRight, Eye, EyeOff, RefreshCw, Maximize2, Minimize2, Phone, CheckCircle } from 'lucide-react';
+import Widget from '../../components/ui/widget';
+import theme from '../../lib/theme.js';
+
+
 
 interface JourneyCard {
   id: string;
@@ -43,16 +48,28 @@ interface JourneyStage {
 }
 
 const statusColors = {
-  green: '#7be7b0',
-  blue: '#4371c5',
-  red: '#e37e55',
-  yellow: '#f7d794'
+  green: theme.semantic.states.success,
+  blue: theme.semantic.states.info,
+  red: theme.semantic.states.error,
+  yellow: theme.semantic.states.warning
 };
 
 const fadeInKeyframes = `@keyframes fadeInCard { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }`;
 
 const DragHandle = () => (
-  <span style={{ cursor: 'grab', marginRight: 10, fontSize: 20, color: '#bbb', userSelect: 'none', display: 'flex', alignItems: 'center' }} title="Drag">
+  <span 
+    style={{ 
+      cursor: 'grab', 
+      marginRight: theme.spacing.sm, 
+      fontSize: theme.typography.fontSize.xl, 
+      color: theme.functional.onSurface.soft, 
+      userSelect: 'none', 
+      display: 'flex', 
+      alignItems: 'center',
+      fontFamily: theme.typography.fontFamily.body
+    }} 
+    title="Drag"
+  >
     <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="5" cy="5" r="1.5"/><circle cx="5" cy="9" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="13" cy="5" r="1.5"/><circle cx="13" cy="9" r="1.5"/><circle cx="13" cy="13" r="1.5"/></svg>
   </span>
 );
@@ -79,7 +96,7 @@ interface JourneyColumn {
 
 const Dashboard = () => {
   const { setHeader } = useLayout();
-  const { user } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuthLoading();
   
   const [journeyStages, setJourneyStages] = useState<JourneyStage[]>([]);
   const [modalCard, setModalCard] = useState<JourneyCard | null>(null);
@@ -97,6 +114,48 @@ const Dashboard = () => {
   const [tempId, setTempId] = useState(0);
   const [kpis, setKpis] = useState<any>(null);
   const [kpisLoading, setKpisLoading] = useState(true);
+  
+  // Add dashboard layer state
+  const [dashboardLayer, setDashboardLayer] = useState<'overview' | 'analytics' | 'team' | 'automation' | 'insights'>('overview');
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  // Dashboard layer configurations
+  const dashboardLayers = {
+    overview: {
+      title: 'Dashboard Overview',
+      description: 'Your command center for daily operations',
+      icon: '🏠'
+    },
+    analytics: {
+      title: 'Analytics & Reports',
+      description: 'Deep insights and performance metrics',
+      icon: '📊'
+    },
+    team: {
+      title: 'Team Performance',
+      description: 'Team collaboration and productivity',
+      icon: '👥'
+    },
+    automation: {
+      title: 'Automation Hub',
+      description: 'Smart workflows and automation',
+      icon: '⚡'
+    },
+    insights: {
+      title: 'AI Insights',
+      description: 'Predictive analytics and recommendations',
+      icon: '🤖'
+    }
+  };
+
+  // Enhanced sidebar navigation for dashboard
+  const dashboardNavItems = [
+    { id: 'overview', label: 'Overview', icon: '🏠', color: 'blue' },
+    { id: 'analytics', label: 'Analytics', icon: '📊', color: 'purple' },
+    { id: 'team', label: 'Team', icon: '👥', color: 'green' },
+    { id: 'automation', label: 'Automation', icon: '⚡', color: 'orange' },
+    { id: 'insights', label: 'AI Insights', icon: '🤖', color: 'indigo' }
+  ];
   const [kpisError, setKpisError] = useState<string | null>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [recentActivityLoading, setRecentActivityLoading] = useState(true);
@@ -453,24 +512,36 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchKPIs() {
       try {
         setKpisLoading(true);
         setKpisError(null);
         const response = await dashboardApi.getKPIs();
-        if (response.data && response.data.success) {
+        if (mounted && response.data && response.data.success) {
           setKpis(response.data.data);
         }
       } catch (err) {
-        setKpisError('Failed to load analytics.');
+        if (mounted) {
+          setKpisError('Failed to load analytics.');
+        }
       } finally {
-        setKpisLoading(false);
+        if (mounted) {
+          setKpisLoading(false);
+        }
       }
     }
     fetchKPIs();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchRecentActivity() {
       try {
         setRecentActivityLoading(true);
@@ -478,24 +549,34 @@ const Dashboard = () => {
         // TODO: Replace with real API call if available
         // const response = await api.get('/dashboard/recent-activity');
         // setRecentActivity(response.data.data);
-        setRecentActivity([
-          { icon: '🟢', text: 'Lead added: John Doe', time: '2 hours ago', avatar: '/default-avatar.png' },
-          { icon: '📞', text: 'Cold call made: Acme Corp', time: '3 hours ago', avatar: '/default-avatar.png' },
-          { icon: '✅', text: 'Task completed: Follow up', time: '5 hours ago', avatar: '/default-avatar.png' },
-          { icon: '🏷️', text: 'Status changed: Lead to Opportunity', time: 'Yesterday', avatar: '/default-avatar.png' },
-          { icon: '📄', text: 'Document uploaded: NDA.pdf', time: 'Yesterday', avatar: '/default-avatar.png' },
-        ]);
+        if (mounted) {
+          setRecentActivity([
+            { icon: '🟢', text: 'Lead added: John Doe', time: '2 hours ago', avatar: '/default-avatar.png' },
+            { icon: '📞', text: 'Cold call made: Acme Corp', time: '3 hours ago', avatar: '/default-avatar.png' },
+            { icon: '✅', text: 'Task completed: Follow up', time: '5 hours ago', avatar: '/default-avatar.png' },
+            { icon: '🏷️', text: 'Status changed: Lead to Opportunity', time: 'Yesterday', avatar: '/default-avatar.png' },
+            { icon: '📄', text: 'Document uploaded: NDA.pdf', time: 'Yesterday', avatar: '/default-avatar.png' },
+          ]);
+        }
       } catch (err) {
-        setRecentActivityError('Failed to load recent activity.');
+        if (mounted) {
+          setRecentActivityError('Failed to load recent activity.');
+        }
       } finally {
-        setRecentActivityLoading(false);
+        if (mounted) {
+          setRecentActivityLoading(false);
+        }
       }
     }
     fetchRecentActivity();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   React.useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchJourneyCards();
     }
     setHeader({
@@ -506,7 +587,7 @@ const Dashboard = () => {
       ],
       tabs: [],
     });
-  }, [user, setHeader, fetchJourneyCards]);
+  }, [user?.id, setHeader, fetchJourneyCards]);
 
   // Fix: getCardPositions returns a flat array, but we want to connect each card to the first card in the next stage
   const cardPositions = getCardPositions(journeyStages);
@@ -614,1050 +695,548 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
 
+  // New state for enhanced dashboard features
+  const [dashboardView, setDashboardView] = useState<'overview' | 'analytics' | 'team' | 'automation' | 'insights'>('overview');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [widgetsExpanded, setWidgetsExpanded] = useState<{[key: string]: boolean}>({});
+  const [realTimeMode, setRealTimeMode] = useState(true);
+  const [customizationMode, setCustomizationMode] = useState(false);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
+  const [roleBasedView, setRoleBasedView] = useState<'founder' | 'manager' | 'sales' | 'admin'>('founder');
+
+  // Enhanced KPI data with trends and sparklines
+  const [enhancedKpis, setEnhancedKpis] = useState({
+    totalLeads: { value: 0, trend: 12.5, sparkline: [12, 19, 15, 22, 18, 24, 20] },
+    newLeadsToday: { value: 0, trend: 18.7, sparkline: [8, 12, 15, 18, 22, 25, 28] },
+    conversionRate: { value: 0, trend: 5.2, sparkline: [68, 72, 75, 78, 82, 85, 88] },
+    avgLeadValue: { value: 0, trend: 8.3, sparkline: [2500, 2800, 3200, 3500, 3800, 4200, 4500] },
+    activeTasks: { value: 0, trend: 5.2, sparkline: [45, 52, 48, 55, 62, 58, 65] },
+    overdueTasks: { value: 0, trend: -2.7, sparkline: [12, 8, 15, 10, 7, 13, 9] },
+    totalRevenue: { value: 0, trend: 15.8, sparkline: [45000, 52000, 48000, 55000, 62000, 58000, 65000] },
+    pipelineValue: { value: 0, trend: 22.1, sparkline: [120000, 135000, 150000, 165000, 180000, 195000, 210000] }
+  });
+
+  // Real-time activity feed
+  const [realTimeActivity, setRealTimeActivity] = useState([
+    { id: 1, type: 'lead', action: 'New lead added', details: 'John Doe from TechCorp', time: '2 min ago', priority: 'high', avatar: '/default-avatar.png' },
+    { id: 2, type: 'call', action: 'Call completed', details: 'Follow-up with Sarah Wilson', time: '5 min ago', priority: 'medium', avatar: '/default-avatar.png' },
+    { id: 3, type: 'task', action: 'Task overdue', details: 'Send proposal to Acme Corp', time: '15 min ago', priority: 'high', avatar: '/default-avatar.png' },
+    { id: 4, type: 'meeting', action: 'Meeting scheduled', details: 'Demo with Enterprise Client', time: '1 hour ago', priority: 'medium', avatar: '/default-avatar.png' },
+    { id: 5, type: 'deal', action: 'Deal closed', details: 'Property sale - $450K', time: '2 hours ago', priority: 'high', avatar: '/default-avatar.png' }
+  ]);
+
+  // Upcoming events and tasks
+  const [upcomingEvents, setUpcomingEvents] = useState([
+    { id: 1, type: 'meeting', title: 'Client Demo - TechCorp', time: '10:00 AM', duration: '1 hour', attendees: 3, priority: 'high' },
+    { id: 2, type: 'call', title: 'Follow-up Call', time: '2:00 PM', duration: '30 min', attendees: 1, priority: 'medium' },
+    { id: 3, type: 'task', title: 'Send Proposal', time: '4:00 PM', duration: '1 hour', attendees: 0, priority: 'high' },
+    { id: 4, type: 'meeting', title: 'Team Standup', time: '9:00 AM tomorrow', duration: '15 min', attendees: 5, priority: 'low' }
+  ]);
+
+  // AI Insights and recommendations
+  const [aiInsights, setAiInsights] = useState([
+    { id: 1, type: 'opportunity', title: 'High-value leads need attention', description: '3 leads in your pipeline show strong buying signals', priority: 'high', action: 'Review Pipeline' },
+    { id: 2, type: 'optimization', title: 'Email timing optimization', description: 'Sending emails at 2 PM increases open rates by 15%', priority: 'medium', action: 'Update Schedule' },
+    { id: 3, type: 'alert', title: 'Task completion rate declining', description: 'Team task completion dropped 8% this week', priority: 'high', action: 'Check Workload' },
+    { id: 4, type: 'insight', title: 'Best performing time slots', description: 'Tuesday and Thursday afternoons show highest conversion rates', priority: 'low', action: 'View Analytics' }
+  ]);
+
+  // Enhanced KPI Card Component - Updated Typography
+  const KPICard = ({ title, value, trend, sparkline, icon, onClick }: any) => (
+    <div 
+      className="bg-surface-primary/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:bg-surface-primary/20 hover:scale-[1.02] border border-surface-primary/20 group"
+      onClick={onClick}
+    >
+      <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+          <div className="p-3 bg-surface-primary/20 rounded-xl group-hover:scale-110 transition-transform duration-300">
+            {icon}
+                    </div>
+                    <div>
+            <p className="text-sm text-text-on-dark font-medium tracking-wide">{title}</p>
+            <p className="text-2xl text-text-on-dark font-extrabold tracking-tight">{value}</p>
+                    </div>
+                    </div>
+        <div className="flex items-center space-x-2">
+          {trend > 0 ? (
+            <TrendingUp className="h-5 w-5 text-states-success" />
+          ) : (
+            <TrendingDown className="h-5 w-5 text-states-error" />
+          )}
+          <span className={`text-xs font-semibold ${trend > 0 ? 'text-states-success' : 'text-states-error'}`}>
+            {trend > 0 ? '+' : ''}{trend}%
+          </span>
+                  </div>
+                    </div>
+      
+      {/* Sparkline Chart - Simplified */}
+      <div className="flex items-end space-x-1 h-12">
+        {sparkline.map((point: number, index: number) => (
+          <div
+            key={index}
+            className="flex-1 bg-surface-primary/30 rounded-sm transition-all duration-300 hover:bg-surface-primary/40"
+            style={{ height: `${(point / Math.max(...sparkline)) * 100}%` }}
+          />
+        ))}
+                    </div>
+                    </div>
+  );
+
+  // Real-time Activity Item Component - Updated Typography
+  const ActivityItem = ({ activity }: any) => (
+    <div className="flex items-start space-x-3 p-3 hover:bg-surface-secondary rounded-lg transition-colors duration-200">
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+        activity.priority === 'high' ? 'bg-states-error/10 text-states-error' :
+        activity.priority === 'medium' ? 'bg-decorative-default/10 text-decorative-default' :
+        'bg-text-body/10 text-text-body'
+      }`}>
+        {activity.type === 'lead' && <Users className="h-4 w-4" />}
+        {activity.type === 'call' && <Phone className="h-4 w-4" />}
+        {activity.type === 'task' && <CheckCircle className="h-4 w-4" />}
+        {activity.type === 'meeting' && <Calendar className="h-4 w-4" />}
+        {activity.type === 'deal' && <DollarSign className="h-4 w-4" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-text-heading truncate">
+          {activity.action}
+        </p>
+        <p className="text-xs text-text-body truncate font-medium">
+          {activity.details}
+        </p>
+        <p className="text-xs text-text-body/60 font-normal">
+          {activity.time}
+                                </p>
+                              </div>
+      {activity.priority === 'high' && (
+        <div className="w-2 h-2 bg-states-error rounded-full"></div>
+                      )}
+                    </div>
+  );
+
+  // AI Insight Card Component - Updated Typography
+  const InsightCard = ({ insight }: any) => (
+    <div className={`p-4 rounded-xl border-l-4 ${
+      insight.priority === 'high' ? 'bg-states-error/10 border-states-error' :
+      insight.priority === 'medium' ? 'bg-decorative-default/10 border-decorative-default' :
+      'bg-text-body/10 border-text-body'
+    }`}>
+      <div className="flex items-start space-x-3">
+        <div className={`p-2 rounded-lg ${
+          insight.priority === 'high' ? 'bg-states-error/20 text-states-error' :
+          insight.priority === 'medium' ? 'bg-decorative-default/20 text-decorative-default' :
+          'bg-text-body/20 text-text-body'
+        }`}>
+          <Brain className="h-4 w-4" />
+                          </div>
+        <div className="flex-1">
+          <h4 className="text-base font-bold text-text-heading mb-1 tracking-tight">
+            {insight.title}
+          </h4>
+          <p className="text-sm text-text-body mb-2 font-normal">
+            {insight.description}
+          </p>
+          <button className="text-xs font-semibold text-decorative-default hover:text-decorative-default/80 transition-colors tracking-wide">
+            {insight.action} →
+                      </button>
+                          </div>
+                        </div>
+                          </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      {/* Hero Section with Floating KPIs */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-6">
-              <h1 className="text-3xl font-bold text-white">Dashboard Overview</h1>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-slate-300 text-sm">Live Data</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${
-                  activeTab === 'overview' 
-                    ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('journeys')}
-                className={`px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${
-                  activeTab === 'journeys' 
-                    ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                Customer Journeys
-              </button>
-            </div>
-          </div>
-
-          {/* Floating KPIs */}
-          <div className="grid grid-cols-4 gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Total Leads</p>
-                  <p className="text-3xl font-bold text-white">{kpis?.totalLeads ?? 0}</p>
-                  <p className="text-xs text-slate-300 mt-1">+12.5% from last month</p>
-                </div>
-                <div className="p-3 bg-blue-500/20 rounded-xl">
-                  <svg className="h-6 w-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Avg Lead Value</p>
-                  <p className="text-3xl font-bold text-white">$0.00</p>
-                  <p className="text-xs text-slate-300 mt-1">+8.3% from last month</p>
-                </div>
-                <div className="p-3 bg-emerald-500/20 rounded-xl">
-                  <svg className="h-6 w-6 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Avg Leads/Day</p>
-                  <p className="text-3xl font-bold text-white">0.00</p>
-                  <p className="text-xs text-slate-300 mt-1">+15.2% from last month</p>
-                </div>
-                <div className="p-3 bg-purple-500/20 rounded-xl">
-                  <svg className="h-6 w-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Total Quotations</p>
-                  <p className="text-3xl font-bold text-white">0</p>
-                  <p className="text-xs text-slate-300 mt-1">+5.7% from last month</p>
-                </div>
-                <div className="p-3 bg-orange-500/20 rounded-xl">
-                  <svg className="h-6 w-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+    <LoadingState
+      loading={authLoading}
+      error={authError}
+      type="page"
+      message="Loading dashboard..."
+    >
+      <div className="min-h-screen bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary">
+        {/* Theme Test - Remove after verification */}
+        <div className="p-4 bg-surface-primary border border-surface-secondary m-4 rounded-lg">
+          <h3 className="text-lg font-bold text-text-heading mb-2">Theme Test</h3>
+          <div className="space-y-2">
+            <div className="p-2 bg-primary-default text-primary-on-primary rounded">Primary Button</div>
+            <div className="p-2 bg-secondary-default text-secondary-on-secondary rounded">Secondary Button</div>
+            <div className="p-2 bg-states-success text-text-on-dark rounded">Success State</div>
+            <div className="p-2 bg-states-error text-text-on-dark rounded">Error State</div>
+            <div className="p-2 bg-decorative-default text-text-on-dark rounded">Decorative Color</div>
           </div>
         </div>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Enhanced Bento Grid Dashboard */}
-          <div className="p-6">
-            <div
-              className="grid grid-cols-6 gap-6"
-              style={{
-                gridTemplateRows: 'masonry',
-                alignItems: 'stretch',
-                gridAutoRows: 'minmax(120px, auto)',
-              }}
-            >
-              {/* Revenue Overview - Big Bento */}
-              <div className="col-span-4 row-span-2 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-slate-900">Revenue Overview</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-600">Live</span>
-                  </div>
-                </div>
-                <div className="h-32 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-4">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl opacity-80"></div>
-                      <svg className="relative w-8 h-8 text-slate-400 mx-auto mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-slate-600">No data yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Revenue chart will appear here</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Leads - Tall Bento */}
-              <div className="col-span-2 row-span-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-blue-900">Total Leads</h3>
-                  <div className="p-2 bg-blue-200 rounded-lg">
-                    <svg className="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="text-4xl font-bold text-blue-900 mb-2">{kpis?.totalLeads ?? 0}</div>
-                <p className="text-sm text-blue-700">+12.5% from last month</p>
-              </div>
-
-              {/* Average Lead Value - Small Bento */}
-              <div className="col-span-2 row-span-1 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-emerald-900">Avg Lead Value</h3>
-                    <div className="text-2xl font-bold text-emerald-900">$0.00</div>
-                  </div>
-                  <div className="p-2 bg-emerald-200 rounded-lg">
-                    <svg className="h-5 w-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Average Leads/Day - Small Bento */}
-              <div className="col-span-2 row-span-1 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-purple-900">Avg Leads/Day</h3>
-                    <div className="text-2xl font-bold text-purple-900">0.00</div>
-                  </div>
-                  <div className="p-2 bg-purple-200 rounded-lg">
-                    <svg className="h-5 w-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Quotations - Small Bento */}
-              <div className="col-span-1 row-span-1 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <h3 className="text-sm font-bold text-orange-900 mb-2">Quotations</h3>
-                  <div className="text-xl font-bold text-orange-900">0</div>
-                </div>
-              </div>
-
-              {/* Total Persons - Small Bento */}
-              <div className="col-span-1 row-span-1 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-6 border border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <h3 className="text-sm font-bold text-indigo-900 mb-2">Persons</h3>
-                  <div className="text-xl font-bold text-indigo-900">0</div>
-                </div>
-              </div>
-
-              {/* Total Organizations - Small Bento */}
-              <div className="col-span-1 row-span-1 bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-6 border border-teal-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <h3 className="text-sm font-bold text-teal-900 mb-2">Organizations</h3>
-                  <div className="text-xl font-bold text-teal-900">0</div>
-                </div>
-              </div>
-
-              {/* Leads Chart - Wide Bento */}
-              <div className="col-span-3 row-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-slate-900">Leads</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-600">Live</span>
-                  </div>
-                </div>
-                <div className="h-24 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-12 h-12 mx-auto mb-2">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg opacity-80"></div>
-                      <svg className="relative w-6 h-6 text-slate-400 mx-auto mt-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                      </svg>
-                    </div>
-                    <p className="text-xs font-medium text-slate-600">No data yet</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Products - Small Bento */}
-              <div className="col-span-1 row-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3">Top Products</h3>
-                  <div className="relative w-10 h-10 mx-auto mb-2">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg opacity-80"></div>
-                    <svg className="relative w-5 h-5 text-slate-400 mx-auto mt-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </div>
-                  <span className="text-slate-500 text-xs">No data yet</span>
-                </div>
-              </div>
-
-              {/* Top Persons - Small Bento */}
-              <div className="col-span-1 row-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3">Top Persons</h3>
-                  <div className="relative w-10 h-10 mx-auto mb-2">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg opacity-80"></div>
-                    <svg className="relative w-5 h-5 text-slate-400 mx-auto mt-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                  </div>
-                  <span className="text-slate-500 text-xs">No data yet</span>
-                </div>
-              </div>
-
-              {/* Open Leads By Stages - Tall Bento */}
-              <div className="col-span-2 row-span-2 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-slate-900">Open Leads By Stages</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-600">Live</span>
-                  </div>
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-20 h-20 mx-auto mb-4">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl opacity-80"></div>
-                      <svg className="relative w-10 h-10 text-slate-400 mx-auto mt-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-slate-600">No data yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Lead stages will appear here</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Revenue By Sources - Tall Bento */}
-              <div className="col-span-2 row-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-slate-900">Revenue By Sources</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-600">Live</span>
-                  </div>
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-2">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg opacity-80"></div>
-                      <svg className="relative w-8 h-8 text-slate-400 mx-auto mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
-                    </div>
-                    <p className="text-xs font-medium text-slate-600">No data yet</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Revenue By Types - Tall Bento */}
-              <div className="col-span-2 row-span-1 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-slate-900">Revenue By Types</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-slate-600">Live</span>
-                  </div>
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-2">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg opacity-80"></div>
-                      <svg className="relative w-8 h-8 text-slate-400 mx-auto mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                      </svg>
-                    </div>
-                    <p className="text-xs font-medium text-slate-600">No data yet</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-      {activeTab === 'journeys' && (
-        <>
-          {/* Board Selector: Always show this if no journey is selected */}
-          {!selectedJourney ? (
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">Customer Journeys</h2>
-                  <p className="text-slate-600">Track and manage customer interactions across different stages</p>
-                </div>
-                <button 
-                  onClick={handleCreateJourney} 
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-none rounded-xl px-6 py-3 font-semibold text-base cursor-pointer shadow-lg transition-all duration-300 flex items-center space-x-2"
+        
+        {/* TOP SECTION: Enhanced KPI Cards with Blue Gradient Background */}
+        <div className="relative bg-gradient-to-r from-obsidian-veil via-charcoal-tint to-obsidian-veil text-text-on-dark">
+          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="relative px-6 py-8">
+            {/* Header with Controls */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-6">
+                <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Command Center</h1>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-states-success rounded-full animate-pulse"></div>
+                  <span className="text-sm text-text-on-dark font-semibold tracking-wide">Live Data</span>
+                        </div>
+                      </div>
+                      
+              {/* Dashboard Controls */}
+                        <div className="flex items-center space-x-3">
+                {/* Timeframe Selector */}
+                <select 
+                  value={selectedTimeframe}
+                  onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+                  className="bg-surface-primary/10 backdrop-blur-sm text-text-on-dark border border-surface-primary/20 rounded-lg px-3 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary-default/50"
                 >
-                  <Plus className="h-5 w-5" />
-                  <span>Create New Journey</span>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="quarter">This Quarter</option>
+                </select>
+                
+                {/* Real-time Toggle */}
+                <button
+                  onClick={() => setRealTimeMode(!realTimeMode)}
+                  className={`p-2 rounded-lg transition-all duration-300 ${
+                    realTimeMode 
+                      ? 'bg-states-success/20 text-states-success border border-states-success/30' 
+                      : 'bg-surface-primary/10 text-text-on-dark border border-surface-primary/20'
+                  }`}
+                  title={realTimeMode ? 'Real-time enabled' : 'Real-time disabled'}
+                >
+                  <Activity className="h-4 w-4" />
                 </button>
-              </div>
-              {journeyLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="text-center">
-                    <div className="relative w-16 h-16 mx-auto mb-4">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl opacity-80 animate-pulse"></div>
-                      <svg className="relative w-8 h-8 text-slate-400 mx-auto mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                      </svg>
+                
+                {/* Customization Mode */}
+                <button
+                  onClick={() => setCustomizationMode(!customizationMode)}
+                  className={`p-2 rounded-lg transition-all duration-300 ${
+                    customizationMode 
+                      ? 'bg-decorative-default/20 text-decorative-default border border-decorative-default/30' 
+                      : 'bg-surface-primary/10 text-text-on-dark border border-surface-primary/20'
+                  }`}
+                  title="Customize Dashboard"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+                      </div>
+                      </div>
+                      
+            {/* Enhanced KPI Grid - Updated Typography */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <KPICard
+                title="Total Leads"
+                value={enhancedKpis.totalLeads.value}
+                trend={enhancedKpis.totalLeads.trend}
+                sparkline={enhancedKpis.totalLeads.sparkline}
+                icon={<Users className="h-6 w-6 text-white" />}
+                onClick={() => {/* Navigate to leads */}}
+              />
+              
+              <KPICard
+                title="Conversion Rate"
+                value={`${enhancedKpis.conversionRate.value}%`}
+                trend={enhancedKpis.conversionRate.trend}
+                sparkline={enhancedKpis.conversionRate.sparkline}
+                icon={<Target className="h-6 w-6 text-white" />}
+                onClick={() => {/* Navigate to analytics */}}
+              />
+              
+              <KPICard
+                title="Pipeline Value"
+                value={`$${(enhancedKpis.pipelineValue.value / 1000).toFixed(0)}K`}
+                trend={enhancedKpis.pipelineValue.trend}
+                sparkline={enhancedKpis.pipelineValue.sparkline}
+                icon={<DollarSign className="h-6 w-6 text-white" />}
+                onClick={() => {/* Navigate to pipeline */}}
+              />
+              
+              <KPICard
+                title="Active Tasks"
+                value={enhancedKpis.activeTasks.value}
+                trend={enhancedKpis.activeTasks.trend}
+                sparkline={enhancedKpis.activeTasks.sparkline}
+                icon={<Clock className="h-6 w-6 text-white" />}
+                onClick={() => {/* Navigate to tasks */}}
+              />
+                        </div>
+                        </div>
+                      </div>
+
+        {/* MIDDLE SECTION: Visual Analytics - Updated Typography */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Lead Conversion Funnel */}
+            <Widget 
+              title="Lead Conversion Funnel" 
+              className="bg-surface-primary border border-surface-secondary"
+              actions={
+                <button className="text-sm text-decorative-default hover:text-decorative-default/80 font-semibold">
+                  View Details <ArrowRight className="ml-1 h-4 w-4" />
+                </button>
+              }
+            >
+                    <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-decorative-default rounded-full"></div>
+                    <span className="text-sm font-semibold">New Leads</span>
+                          </div>
+                  <span className="text-lg text-decorative-default font-bold tracking-tight">1,247</span>
+                          </div>
+                
+                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
+                        <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-decorative-default/80 rounded-full"></div>
+                    <span className="text-sm font-semibold">Qualified</span>
+                          </div>
+                  <span className="text-lg text-decorative-default font-bold tracking-tight">892</span>
+                      </div>
+                      
+                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
+                        <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-decorative-default/60 rounded-full"></div>
+                    <span className="text-sm font-semibold">Proposals</span>
+                          </div>
+                  <span className="text-lg text-decorative-default font-bold tracking-tight">445</span>
+                      </div>
+                      
+                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
+                        <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-decorative-default/40 rounded-full"></div>
+                    <span className="text-sm font-semibold">Closed</span>
+                          </div>
+                  <span className="text-lg text-decorative-default font-bold tracking-tight">234</span>
+                      </div>
                     </div>
-                    <p className="text-slate-600 text-lg font-medium">Loading journeys...</p>
-                    <p className="text-slate-500 text-sm mt-1">Please wait while we fetch your data</p>
-                  </div>
-                </div>
-              ) : journeys.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="relative w-24 h-24 mx-auto mb-6">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl opacity-80"></div>
-                    <svg className="relative w-12 h-12 text-slate-400 mx-auto mt-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                  <div className="text-slate-600 text-xl mb-2 font-semibold">No journeys yet</div>
-                  <div className="text-slate-500 mb-6">Create your first customer journey board to get started!</div>
-                  <button 
-                    onClick={handleCreateJourney}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-none rounded-xl px-6 py-3 font-semibold text-base cursor-pointer shadow-lg transition-all duration-300"
+                  </Widget>
+
+            {/* Revenue Trends Chart */}
+            <Widget 
+              title="Revenue Trends" 
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              actions={
+                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
+                  View Reports <ArrowRight className="ml-1 h-4 w-4" />
+                </button>
+              }
+            >
+                    <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                            <div>
+                    <p className="text-label text-gray-600 dark:text-gray-400 font-medium">Monthly Revenue</p>
+                    <p className="text-metric text-gray-900 dark:text-white font-bold tracking-tight">$88.2K</p>
+                            </div>
+                  <div className="flex items-center text-emerald-600">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    <span className="text-caption font-bold tracking-wide">+12.5%</span>
+                          </div>
+                          </div>
+                
+                {/* Simple Revenue Chart */}
+                <div className="h-32 flex items-end space-x-1">
+                  {[65, 78, 82, 75, 88, 92, 85, 95, 88, 92, 96, 89].map((value, index) => (
+                    <div
+                      key={index}
+                      className="flex-1 bg-blue-200 dark:bg-blue-600 rounded-sm transition-all duration-300 hover:bg-blue-300 dark:hover:bg-blue-500"
+                      style={{ height: `${value}%` }}
+                    />
+                  ))}
+                      </div>
+                    </div>
+                  </Widget>
+
+            {/* Team Performance */}
+            <Widget 
+              title="Team Performance" 
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              actions={
+                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
+                  View Team <ArrowRight className="ml-1 h-4 w-4" />
+                </button>
+              }
+            >
+                    <div className="space-y-4">
+                      {[
+                  { name: 'Sarah Johnson', deals: 8, revenue: '$45K', avatar: 'SJ' },
+                  { name: 'Mike Chen', deals: 6, revenue: '$32K', avatar: 'MC' },
+                  { name: 'Alex Rivera', deals: 4, revenue: '$28K', avatar: 'AR' }
+                ].map((member, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {member.avatar}
+                    </div>
+                            <div className="flex-1">
+                      <p className="text-body-small font-semibold text-gray-900 dark:text-white">{member.name}</p>
+                      <p className="text-caption text-gray-500 dark:text-gray-400 font-medium">{member.deals} deals</p>
+                            </div>
+                    <div className="text-right">
+                      <p className="text-body font-bold text-blue-600 dark:text-blue-400 tracking-tight">{member.revenue}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Widget>
+                      </div>
+                      </div>
+                      
+        {/* BOTTOM SECTION: Actionable Items - Updated Typography */}
+            <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Real-time Activity Feed */}
+            <Widget 
+              title="Live Activity Feed" 
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              actions={
+                <div className="flex items-center space-x-2">
+                <button 
+                    onClick={() => setRealTimeMode(!realTimeMode)}
+                    className={`p-1 rounded ${
+                      realTimeMode ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                    }`}
                   >
-                    Create Your First Journey
+                    <Activity className="h-3 w-3" />
+                </button>
+                  <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
+                    View All <ArrowRight className="ml-1 h-4 w-4" />
                   </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {journeys.map(journey => (
-                    <div 
-                      key={journey.id} 
-                      className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 cursor-pointer border border-slate-200/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:border-slate-300/50 hover:bg-white/90" 
-                      onClick={() => setSelectedJourney(journey)} 
-                      tabIndex={0} 
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedJourney(journey); }}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="font-bold text-xl text-slate-900 group-hover:text-slate-800 transition-colors mb-2">{journey.name}</div>
-                          <div className="text-slate-600 text-sm mb-4 line-clamp-2">{journey.description || 'No description provided'}</div>
-                        </div>
-                        <div className="p-2 bg-slate-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-slate-500 text-xs">
-                          Created {new Date(journey.created_at).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-xs text-slate-500">Active</span>
-                        </div>
-                      </div>
-                    </div>
+              }
+            >
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {realTimeActivity.map((activity) => (
+                  <ActivityItem key={activity.id} activity={activity} />
                   ))}
                 </div>
-              )}
-              {/* Create Journey Modal */}
-              {showCreateJourney && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setShowCreateJourney(false)}>
-                  <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 min-w-[450px] max-w-md border border-slate-200/50" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center space-x-3 mb-6">
-                      <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
-                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <h2 className="font-bold text-2xl text-slate-900">Create New Journey</h2>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Journey Name</label>
-                        <input 
-                          className="w-full text-lg p-4 rounded-xl border border-slate-200/50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-white/50 backdrop-blur-sm" 
-                          value={newJourneyName} 
-                          onChange={e => setNewJourneyName(e.target.value)} 
-                          placeholder="Enter journey name..." 
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Description (optional)</label>
-                        <textarea 
-                          className="w-full text-sm p-4 rounded-xl border border-slate-200/50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 resize-none bg-white/50 backdrop-blur-sm" 
-                          value={newJourneyDesc} 
-                          onChange={e => setNewJourneyDesc(e.target.value)} 
-                          placeholder="Describe your customer journey..." 
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-3 mt-8">
-                      <button 
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-none rounded-xl px-6 py-3 font-semibold text-base cursor-pointer transition-all duration-300 flex-1 shadow-lg hover:shadow-xl" 
-                        onClick={handleCreateJourney}
-                      >
-                        Create Journey
+            </Widget>
+
+            {/* Upcoming Events & Tasks */}
+            <Widget 
+              title="Upcoming Events" 
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              actions={
+                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
+                  View Calendar <ArrowRight className="ml-1 h-4 w-4" />
                       </button>
-                      <button 
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-none rounded-xl px-6 py-3 font-semibold text-base cursor-pointer transition-all duration-300 flex-1" 
-                        onClick={() => setShowCreateJourney(false)}
-                      >
-                        Cancel
-                      </button>
+              }
+            >
+              <div className="space-y-3">
+                {upcomingEvents.map((event) => (
+                  <div key={event.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      event.type === 'meeting' ? 'bg-blue-100 text-blue-600' :
+                      event.type === 'call' ? 'bg-green-100 text-green-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {event.type === 'meeting' && <Calendar className="h-5 w-5" />}
+                      {event.type === 'call' && <Phone className="h-5 w-5" />}
+                      {event.type === 'task' && <CheckCircle className="h-5 w-5" />}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body-small font-semibold text-gray-900 dark:text-white truncate">
+                        {event.title}
+                      </p>
+                      <p className="text-caption text-gray-500 dark:text-gray-400 font-medium">
+                        {event.time} • {event.duration}
+                      </p>
                   </div>
-                </div>
+                    {event.priority === 'high' && (
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
               )}
             </div>
-          ) : (
-            <>
-              {/* Only show kanban loader if a journey is selected and cards are loading */}
-              {loading ? (
-                <div style={{ width: '100%', padding: '0 2.5rem 2.5rem 2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
-                  <div style={{ textAlign: 'center', color: '#717783' }}>
-                    <div style={{ fontSize: 18, marginBottom: 12 }}>Loading journey cards...</div>
-                    <div style={{ fontSize: 14 }}>Please wait while we fetch your data</div>
+                ))}
                   </div>
-                </div>
-              ) : error ? (
-                <div style={{ width: '100%', padding: '0 2.5rem 2.5rem 2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
-                  <div style={{ textAlign: 'center', color: '#e37e55' }}>
-                    <div style={{ fontSize: 18, marginBottom: 12 }}>Error loading data</div>
-                    <div style={{ fontSize: 14, marginBottom: 16 }}>{error}</div>
-                    <button onClick={handleRetry} style={{ background: '#4371c5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontSize: 14 }}>Retry</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-6 px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-slate-200/50">
-                    <button 
-                      onClick={() => setSelectedJourney(null)} 
-                      className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-semibold text-lg cursor-pointer transition-colors duration-200"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      <span>All Boards</span>
+            </Widget>
+
+            {/* AI Insights & Quick Actions */}
+            <Widget 
+              title="AI Insights" 
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              actions={
+                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
+                  View All <ArrowRight className="ml-1 h-4 w-4" />
                     </button>
-                    <div className="flex items-center space-x-4">
-                      {editingJourneyName ? (
-                        <input
-                          value={editedJourneyName}
-                          onChange={e => setEditedJourneyName(e.target.value)}
-                          onBlur={saveJourneyName}
-                          onKeyDown={e => { if (e.key === 'Enter') saveJourneyName(); }}
-                          autoFocus
-                          className="font-bold text-2xl border border-slate-300 rounded-lg px-3 py-1 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                        />
-                      ) : (
-                        <h2 
-                          className="font-bold text-2xl text-slate-900 cursor-pointer hover:text-slate-700 transition-colors duration-200" 
-                          onClick={() => {
-                            setEditingJourneyName(true);
-                            setEditedJourneyName(selectedJourney.name);
-                          }}
-                        >
-                          {selectedJourney.name}
-                        </h2>
-                      )}
-                      <div className="flex items-center space-x-2 text-slate-500 text-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Created {new Date(selectedJourney.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Kanban board for selected journey */}
-                  {selectedJourney && !loading && !error && (
-                    <DragDropContext onDragEnd={onDragEnd}>
-                      <div className="kanban-scroll-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', gap: '1.5rem', paddingBottom: '1.5rem', scrollSnapType: 'x mandatory', minHeight: '60vh' }} role="list" aria-label="Journey Columns Kanban" tabIndex={0}>
-                        {/* Skeleton loader for columns */}
-                        {columnsLoading ? (
-                          Array.from({ length: 4 }).map((_, idx) => (
-                            <div key={`skeleton-${idx}`} style={{ minWidth: '19rem', maxWidth: '22rem', flex: 1, background: '#f8f9fb', borderRadius: '1.25rem', margin: '0 0.5rem', display: 'flex', flexDirection: 'column', boxShadow: '0 1.5px 6px rgba(16,30,54,0.06)', border: '2.5px solid #rgb(246, 246, 246)', transition: 'box-shadow 0.2s, border 0.2s', scrollSnapAlign: 'start', opacity: 0.5, minHeight: 400 }} />
-                          ))
-                        ) : (
-                          columns.map((column, colIdx) => (
-                            <Droppable key={`column-${column.id}`} droppableId={colIdx.toString()}>
-                              {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.droppableProps}
-                                  style={{
-                                    minWidth: '19rem',
-                                    maxWidth: '22rem',
-                                    flex: 1,
-                                    background: snapshot.isDraggingOver ? '#f0f4ff' : '#f8f9fb',
-                                    borderRadius: '1.25rem',
-                                    margin: '0 0.5rem',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    boxShadow: snapshot.isDraggingOver ? '0 4px 12px rgba(16,30,54,0.12)' : '0 1.5px 6px rgba(16,30,54,0.06)',
-                                    border: snapshot.isDraggingOver ? '2.5px solid #3b82f6' : '2.5px solid #rgb(246, 246, 246)',
-                                    transition: 'box-shadow 0.2s, border 0.2s',
-                                    scrollSnapAlign: 'start',
-                                    minHeight: 400,
-                                  }}
-                                >
-                                  <div style={{ padding: '1.5rem', borderBottom: '1px solid #rgb(246, 246, 246)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#23262F', margin: 0 }}>{column.name}</h3>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <span style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: 500 }}>
-                                          {journeyStages[colIdx]?.cards.length || 0}
-                                        </span>
-                                        <button
-                                          onClick={() => handleAddCardInstant(colIdx)}
-                                          style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#6b7280',
-                                            cursor: 'pointer',
-                                            fontSize: '1.25rem',
-                                            padding: '0.25rem',
-                                            borderRadius: '0.375rem',
-                                            transition: 'background-color 0.2s',
-                                          }}
-                                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-                                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                          title="Add Card"
-                                        >
-                                          +
-                                        </button>
-                                      </div>
-                                    </div>
-                                    <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>No description</p>
-                                  </div>
-                                  <div style={{ flex: 1, padding: '1rem', overflowY: 'auto' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                      {journeyStages[colIdx]?.cards.map((card, cardIdx) => (
-                                        <Draggable key={`card-${card.id}`} draggableId={card.id.toString()} index={cardIdx}>
-                                          {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                            <div
-                                              ref={provided.innerRef}
-                                              {...provided.draggableProps}
-                                              style={{
-                                                ...provided.draggableProps.style,
-                                                background: snapshot.isDragging ? '#ffffff' : '#ffffff',
-                                                borderRadius: '0.75rem',
-                                                padding: '1rem',
-                                                boxShadow: snapshot.isDragging ? '0 10px 25px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.1)',
-                                                border: snapshot.isDragging ? '1px solid #rgb(246, 246, 246)' : '1px solid #f3f4f6',
-                                                cursor: 'pointer',
-                                                outline: card.completed ? '2px solid #7be7b0' : 'none',
-                                                zIndex: snapshot.isDragging ? 1000 : undefined,
-                                                transition: 'box-shadow 0.18s, border 0.18s',
-                                              }}
-                                              onClick={() => setModalCard(card)}
-                                              role="listitem"
-                                              aria-label={card.title}
-                                              tabIndex={0}
-                                              onKeyDown={e => {
-                                                if (e.key === 'Enter' || e.key === ' ') setModalCard(card);
-                                              }}
-                                              title={card.title}
-                                            >
-                                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
-                                                <span {...provided.dragHandleProps} style={{ flexShrink: 0, cursor: 'grab', color: '#bbb', fontSize: 20 }} title="Drag" tabIndex={0} aria-label="Drag card" />
-                                                <span style={{ fontWeight: 700, fontSize: 16, flex: 1, color: '#23262F', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{card.title}</span>
-                                              </div>
-                                              {/* Tag Row - TODO: Use real tags when backend supports it */}
-                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 2 }}>
-                                                <span style={{ background: '#eaf0fa', color: '#3b82f6', fontWeight: 600, fontSize: 13, borderRadius: 8, padding: '2px 10px' }}>property</span>
-                                                <span style={{ background: '#eaf0fa', color: '#23262F', fontWeight: 600, fontSize: 13, borderRadius: 8, padding: '2px 10px' }}>realtor</span>
-                                                <span style={{ background: '#eaf0fa', color: '#8b5cf6', fontWeight: 600, fontSize: 13, borderRadius: 8, padding: '2px 10px' }}>tenants</span>
-                                              </div>
-                                              {/* Value Row - TODO: Use real value when backend supports it */}
-                                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                                                <span style={{ background: '#fff0f0', color: '#e37e55', fontWeight: 700, fontSize: 15, borderRadius: 8, padding: '2px 12px', border: '1.5px solid #e37e55' }}>BHK</span>
-                                                <span style={{ background: '#fff0f0', color: '#e37e55', fontWeight: 700, fontSize: 15, borderRadius: 8, padding: '2px 12px', border: '1.5px solid #e37e55' }}>{(card.value ?? 0).toLocaleString()} EUR</span>
-                                              </div>
-                                              {/* Bottom Row: Task, Assignee, Date - Use real assignee if available */}
-                                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#717783', marginTop: 2 }}>
-                                                <span>Task: 10/5</span>
-                                                <span style={{ color: '#bbb', fontSize: 18, margin: '0 2px' }}>•</span>
-                                                <span>{card.assigned_to || 'Unassigned'}</span>
-                                                <span style={{ color: '#bbb', fontSize: 18, margin: '0 2px' }}>•</span>
-                                                <span>{card.created_at ? new Date(card.created_at).toLocaleDateString() : '-'}</span>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </Draggable>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </Droppable>
-                          ))
-                        )}
-                        {/* Add Column Button */}
-                        <div style={{ minWidth: '19rem', maxWidth: '22rem', flex: 1, background: '#f8f9fb', borderRadius: '1.25rem', margin: '0 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2.5px dashed #4371c5', cursor: 'pointer', color: '#4371c5', fontWeight: 700, fontSize: 18 }} onClick={() => setAddingColumn(true)}>
-                          {addingColumn ? (
-                            <div style={{ padding: 24, width: '100%' }}>
-                              <input
-                                value={newColumnName}
-                                onChange={e => setNewColumnName(e.target.value)}
-                                onBlur={handleAddColumn}
-                                onKeyDown={e => { if (e.key === 'Enter') handleAddColumn(); }}
-                                autoFocus
-                                style={{ fontWeight: 700, fontSize: 16, border: '1px solid #rgb(246, 246, 246)', borderRadius: 8, padding: '2px 8px', minWidth: 80, width: '100%' }}
-                                placeholder="Column name"
-                              />
-                            </div>
-                          ) : (
-                            <span style={{ padding: 24, width: '100%', textAlign: 'center' }}>+ Add Column</span>
-                          )}
-                        </div>
-                      </div>
-                    </DragDropContext>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </>
-      )}
-      {/* Modals */}
-      {editCard && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.18)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-          onClick={() => setEditCard(null)}
-        >
-          <div style={{ background: '#fff', borderRadius: 24, boxShadow: 'var(--card-shadow)', padding: 36, minWidth: 320, minHeight: 180, position: 'relative' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Edit Card</h2>
-            <input
-              style={{ width: '100%', fontSize: 18, padding: 8, borderRadius: 8, border: '1px solid #rgb(246, 246, 246)', marginBottom: 18 }}
-              value={editCard.card.title}
-              onChange={e => setEditCard({ ...editCard, card: { ...editCard.card, title: e.target.value } })}
-              placeholder="Card Title"
-            />
-            <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
-              {(['green', 'blue', 'red', 'yellow'] as const).map(status => (
-                <button
-                  key={status}
-                  style={{ width: 28, height: 28, borderRadius: '50%', background: statusColors[status], border: editCard.card.status === status ? '2px solid #4371c5' : '2px solid #rgb(246, 246, 246)', cursor: 'pointer' }}
-                  onClick={() => setEditCard({ ...editCard, card: { ...editCard.card, status } })}
-                  title={status.charAt(0).toUpperCase() + status.slice(1)}
-                />
-              ))}
-            </div>
-            <button
-              style={{ background: '#4371c5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginRight: 12 }}
-              onClick={handleEditSave}
+              }
             >
-              Save
+              <div className="space-y-3">
+                {aiInsights.slice(0, 3).map((insight) => (
+                  <InsightCard key={insight.id} insight={insight} />
+                ))}
+                
+                {/* Quick Actions */}
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-body font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
+                      Add Lead
             </button>
-            <button
-              style={{ background: '#eee', color: '#23262F', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}
-              onClick={() => setEditCard(null)}
-            >
-              Cancel
+                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
+                      Schedule Call
+            </button>
+                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
+                      Create Task
+            </button>
+                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
+                      Send Report
             </button>
           </div>
         </div>
-      )}
-      {deleteCard && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.18)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-          onClick={() => setDeleteCard(null)}
-        >
-          <div style={{ background: '#fff', borderRadius: 24, boxShadow: 'var(--card-shadow)', padding: 36, minWidth: 320, minHeight: 120, position: 'relative' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 18 }}>Delete Card?</h2>
-            <div style={{ color: '#717783', fontSize: 16, marginBottom: 18 }}>Are you sure you want to delete "{deleteCard.card.title}"?</div>
-            <button
-              style={{ background: '#e37e55', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginRight: 12 }}
-              onClick={handleDeleteCard}
-            >
-              Delete
-            </button>
-            <button
-              style={{ background: '#eee', color: '#23262F', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}
-              onClick={() => setDeleteCard(null)}
-            >
-              Cancel
-            </button>
           </div>
+            </Widget>
         </div>
-      )}
-      {addCardCol !== null && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.18)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-          onClick={() => setAddCardCol(null)}
-        >
-          <div style={{ background: '#fff', borderRadius: 24, boxShadow: 'var(--card-shadow)', padding: 36, minWidth: 320, minHeight: 120, position: 'relative' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 18 }}>Add New Card</h2>
-            <input
-              style={{ width: '100%', fontSize: 18, padding: 8, borderRadius: 8, border: '1px solid #rgb(246, 246, 246)', marginBottom: 18 }}
-              value={newCardTitle}
-              onChange={e => setNewCardTitle(e.target.value)}
-              placeholder="Card Title"
-            />
-            <button
-              style={{ background: '#4371c5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginRight: 12 }}
-              onClick={handleAddCardModal}
-            >
-              Add
-            </button>
-            <button
-              style={{ background: '#eee', color: '#23262F', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}
-              onClick={() => setAddCardCol(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Right-side drawer for card details */}
-      {modalCard && (
-        <>
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0,0,0,0.18)',
-              zIndex: 9998,
-              transition: 'background 0.3s',
-            }}
-            onClick={() => setModalCard(null)}
-          />
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              right: 0,
-              height: '100vh',
-              width: 480,
-              maxWidth: '100vw',
-              background: '#fff',
-              boxShadow: '-8px 0 32px rgba(16,30,54,0.13)',
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              padding: 0,
-              transform: 'translateX(0)',
-              transition: 'transform 0.45s cubic-bezier(.4,1.2,.6,1)',
-              borderTopLeftRadius: 24,
-              borderBottomLeftRadius: 24,
-              overflowY: 'auto',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Drawer Header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '28px 32px 0 32px', borderTopLeftRadius: 24, background: '#fff', position: 'sticky', top: 0, zIndex: 10
-            }}>
-              <div style={{ fontWeight: 700, fontSize: 22, flex: 1 }}>
-                <input
-                  style={{
-                    fontWeight: 700, fontSize: 22, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#23262F',
-                  }}
-                  value={modalCard.title}
-                  onChange={e => setModalCard({ ...modalCard, title: e.target.value })}
-                />
               </div>
-              <button
-                style={{
-                  background: 'none', border: 'none', fontSize: 28, color: '#bbb', cursor: 'pointer', marginLeft: 12
-                }}
-                onClick={() => setModalCard(null)}
-                title="Close"
-              >
-                ×
+
+        {/* PREMIUM UX FEATURES */}
+        
+        {/* Floating Action Button for Quick Access */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="flex flex-col space-y-3">
+            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
+              <Plus className="h-6 w-6" />
               </button>
-            </div>
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1.5px solid #f0f1f3', margin: '18px 0 0 0', padding: '0 32px' }}>
-              {['Details', 'Subtasks', 'Comments', 'Activity'].map(tab => (
-                <button
-                  key={tab}
-                  style={{
-                    flex: 1,
-                    padding: '12px 0',
-                    background: 'none',
-                    border: 'none',
-                    fontWeight: 600,
-                    fontSize: 16,
-                    color: tab === drawerTab ? '#4371c5' : '#717783',
-                    borderBottom: tab === drawerTab ? '2.5px solid #4371c5' : '2.5px solid transparent',
-                    cursor: 'pointer',
-                    transition: 'color 0.18s, border 0.18s',
-                  }}
-                  onClick={() => setDrawerTab(tab as any)}
-                >
-                  {tab}
+            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
+              <Phone className="h-6 w-6" />
                 </button>
-              ))}
+            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
+              <Bell className="h-6 w-6" />
+            </button>
             </div>
-            {/* Tab Content */}
-            <div style={{ flex: 1, padding: '24px 32px 32px 32px', overflowY: 'auto' }}>
-              {/* Details Tab */}
-              {drawerTab === 'Details' && (
-                <>
-                  {/* Assignees */}
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Assignees</div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                      {/* Mock avatars */}
-                      {[{ name: 'Jane Doe', avatar: '/default-avatar.png' }, { name: 'John Smith', avatar: '/default-avatar.png' }].map(user => (
-                        <span key={user.name} title={user.name} style={{ display: 'inline-block', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', border: '2px solid #rgb(246, 246, 246)', background: '#f7f8fa' }}>
-                          <img src={user.avatar} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </span>
-                      ))}
-                      <button style={{ width: 32, height: 32, borderRadius: '50%', background: '#eaf0fa', border: 'none', color: '#4371c5', fontWeight: 700, fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>+</button>
                     </div>
-                  </div>
-                  {/* Tags */}
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Tags</div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {/* Mock tags */}
-                      {[{ label: 'Dashboard', color: '#eaf0fa', text: '#4371c5' }, { label: 'Medium', color: '#fbeee6', text: '#e37e55' }].map(tag => (
-                        <span key={tag.label} style={{ background: tag.color, color: tag.text, borderRadius: 12, padding: '2px 14px', fontSize: 13, fontWeight: 600 }}>{tag.label}</span>
-                      ))}
-                      <button style={{ background: '#f7f8fa', border: 'none', borderRadius: 12, padding: '2px 10px', fontSize: 15, color: '#4371c5', fontWeight: 600, cursor: 'pointer' }}>+</button>
-                    </div>
-                  </div>
-                  {/* Description */}
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Description</div>
-                    <textarea
-                      style={{ width: '100%', minHeight: 64, fontSize: 15, borderRadius: 8, border: '1px solid #rgb(246, 246, 246)', padding: 10, resize: 'vertical', fontFamily: 'inherit', color: '#23262F' }}
-                      value={drawerDescription || 'This is a sample description. Click to edit.'}
-                      onChange={e => setDrawerDescription(e.target.value)}
-                    />
-                  </div>
-                  {/* Attachments */}
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Attachments</div>
-                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                      {/* Mock attachments */}
-                      <span style={{ background: '#f7f8fa', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#4371c5', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" fill="none" stroke="#4371c5" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8"/><rect width="16" height="12" x="4" y="7" rx="2"/><path d="M8 21h8"/></svg>
-                        Design brief.pdf
-                        <button style={{ background: 'none', border: 'none', color: '#e37e55', fontWeight: 700, fontSize: 16, cursor: 'pointer' }} title="Remove">×</button>
-                      </span>
-                      <span style={{ background: '#f7f8fa', borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#e37e55', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" fill="none" stroke="#e37e55" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8"/><rect width="16" height="12" x="4" y="7" rx="2"/><path d="M8 21h8"/></svg>
-                        Logo.ai
-                        <button style={{ background: 'none', border: 'none', color: '#e37e55', fontWeight: 700, fontSize: 16, cursor: 'pointer' }} title="Remove">×</button>
-                      </span>
-                      <button style={{ background: '#eaf0fa', border: 'none', borderRadius: 8, padding: '6px 16px', fontSize: 15, color: '#4371c5', fontWeight: 600, cursor: 'pointer' }}>+ Add</button>
-                    </div>
-                  </div>
-                </>
-              )}
-              {/* Subtasks Tab */}
-              {drawerTab === 'Subtasks' && (
-                <>
-                  <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 12 }}>Subtasks</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {/* Mock subtasks */}
-                    {[{ text: 'Design wireframes', done: true }, { text: 'Review with team', done: false }].map((sub, idx) => (
-                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: sub.done ? '#7be7b0' : '#23262F', textDecoration: sub.done ? 'line-through' : 'none', fontWeight: 500 }}>
-                        <input type="checkbox" checked={sub.done} style={{ accentColor: '#4371c5', width: 18, height: 18 }} readOnly />
-                        {sub.text}
-                        <button style={{ background: 'none', border: 'none', color: '#bbb', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginLeft: 8 }} title="Remove">×</button>
+
+        {/* Customization Panel (when in customization mode) */}
+        {customizationMode && (
+          <div className="fixed inset-y-0 right-0 w-80 bg-white dark:bg-gray-900 shadow-2xl z-40 transform transition-transform duration-300">
+            <div className="p-6">
+              <h3 className="text-title font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Customize Dashboard</h3>
+              
+              {/* Widget Visibility */}
+              <div className="space-y-4">
+                <h4 className="text-label font-semibold text-gray-700 dark:text-gray-300 tracking-wide">Widget Visibility</h4>
+                {['KPI Cards', 'Activity Feed', 'Revenue Chart', 'Team Performance', 'AI Insights'].map((widget) => (
+                  <label key={widget} className="flex items-center space-x-3">
+                    <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <span className="text-body-small font-medium text-gray-900 dark:text-white">{widget}</span>
                       </label>
                     ))}
-                    <button style={{ background: '#eaf0fa', border: 'none', borderRadius: 8, padding: '6px 16px', fontSize: 15, color: '#4371c5', fontWeight: 600, cursor: 'pointer', marginTop: 8 }}>+ Add Subtask</button>
                   </div>
-                </>
-              )}
-              {/* Comments Tab */}
-              {drawerTab === 'Comments' && (
-                <>
-                  <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 12 }}>Comments</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    {/* Mock comments */}
-                    {[{ user: 'Jane Doe', avatar: '/default-avatar.png', text: 'Great work!', time: '2h ago' }, { user: 'John Smith', avatar: '/default-avatar.png', text: 'Let\'s review this tomorrow.', time: '1h ago' }].map((c, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <img src={c.avatar} alt={c.user} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #rgb(246, 246, 246)', marginTop: 2 }} />
-                        <div style={{ background: '#f7f8fa', borderRadius: 12, padding: '10px 14px', fontSize: 15, color: '#23262F', fontWeight: 500, flex: 1 }}>
-                          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{c.user} <span style={{ color: '#b0b6c3', fontWeight: 400, fontSize: 13, marginLeft: 8 }}>{c.time}</span></div>
-                          <div>{c.text}</div>
+              
+              {/* Role-based Views */}
+              <div className="mt-6">
+                <h4 className="text-label font-semibold text-gray-700 dark:text-gray-300 mb-3 tracking-wide">Role-based View</h4>
+                <select 
+                  value={roleBasedView}
+                  onChange={(e) => setRoleBasedView(e.target.value as any)}
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-body font-medium text-gray-900 dark:text-white"
+                >
+                  <option value="founder">Founder View</option>
+                  <option value="manager">Manager View</option>
+                  <option value="sales">Sales View</option>
+                  <option value="admin">Admin View</option>
+                </select>
                         </div>
                       </div>
-                    ))}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 8 }}>
-                      <img src={'/default-avatar.png'} alt="Me" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #rgb(246, 246, 246)', marginTop: 2 }} />
-                      <textarea style={{ flex: 1, borderRadius: 12, border: '1px solid #rgb(246, 246, 246)', padding: '10px 14px', fontSize: 15, fontFamily: 'inherit', color: '#23262F', minHeight: 36, resize: 'vertical' }} placeholder="Add a comment..." />
-                      <button style={{ background: '#4371c5', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 4 }}>Send</button>
                     </div>
-                  </div>
-                </>
-              )}
-              {/* Activity Tab */}
-              {drawerTab === 'Activity' && (
-                <>
-                  <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 12 }}>Activity</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {/* Mock activity feed */}
-                    {[{ icon: '📝', text: 'Edited description', time: '2h ago' }, { icon: '✅', text: 'Completed subtask', time: '1h ago' }].map((a, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: '#23262F', fontWeight: 500 }}>
-                        <span style={{ fontSize: 18 }}>{a.icon}</span>
-                        <span>{a.text}</span>
-                        <span style={{ color: '#b0b6c3', fontWeight: 400, fontSize: 13, marginLeft: 'auto' }}>{a.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </>
       )}
-    </div>
+      </div>
+    </LoadingState>
   );
 };
 
 export default Dashboard;
-
-// Add these styles at the bottom of the file
-const summaryCardStyle = {
-  background: '#fff',
-  borderRadius: '1rem',
-  boxShadow: 'var(--card-shadow)',
-  padding: '1.5rem',
-  minHeight: 80,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  justifyContent: 'center',
-  fontWeight: 500,
-  fontSize: '1rem',
-  color: '#23262F',
-};
-const summaryValueStyle = {
-  fontWeight: 700,
-  fontSize: '1.5rem',
-  color: '#101620',
-  marginTop: 6,
-};
-const sideCardStyle = {
-  background: '#fff',
-  borderRadius: '1.5rem',
-  boxShadow: 'var(--card-shadow)',
-  padding: '1.5rem',
-  minHeight: 120,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-const sideCardTitleStyle = {
-  fontWeight: 600,
-  fontSize: '1rem',
-  marginBottom: 12,
-  color: '#23262F',
-};
-const sideCardPlaceholderStyle = {
-  color: '#bbb',
-  fontSize: 15,
-  textAlign: 'center',
-};
-
-// Add @keyframes pulse for skeleton shimmer
-const style = document.createElement('style');
-style.innerHTML = `@keyframes pulse { 0% { opacity: 0.7; } 100% { opacity: 1; } }`;
-document.head.appendChild(style);

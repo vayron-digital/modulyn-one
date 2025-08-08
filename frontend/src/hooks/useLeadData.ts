@@ -709,28 +709,42 @@ export function useLeadData(leadId: string | null) {
 
   // Initial data fetch
   useEffect(() => {
-    if (!leadId || !user) return;
+    if (!leadId || !user?.id) return;
     
+    let mounted = true;
+
     const fetchInitialData = async () => {
-      await Promise.all([
-        fetchLeadDetails(),
-        fetchActivities(),
-        fetchDeals(),
-        fetchTickets(),
-        fetchAttachments(),
-        fetchNotes(),
-        fetchCalls(),
-        fetchTasks(),
-        fetchMeetings()
-      ]);
+      try {
+        await Promise.all([
+          fetchLeadDetails(),
+          fetchActivities(),
+          fetchDeals(),
+          fetchTickets(),
+          fetchAttachments(),
+          fetchNotes(),
+          fetchCalls(),
+          fetchTasks(),
+          fetchMeetings()
+        ]);
+      } catch (error) {
+        if (mounted) {
+          console.error('Error fetching initial lead data:', error);
+        }
+      }
     };
 
     fetchInitialData();
-  }, [leadId, user]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [leadId, user?.id]);
 
   // Setup real-time subscriptions
   useEffect(() => {
-    if (!leadId || !user) return;
+    if (!leadId || !user?.id) return;
+
+    let mounted = true;
 
     // Lead changes
     if (leadsChannelRef.current) leadsChannelRef.current.unsubscribe();
@@ -739,6 +753,7 @@ export function useLeadData(leadId: string | null) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'leads', filter: `id=eq.${leadId}` },
         (payload) => {
+          if (!mounted) return;
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             fetchLeadDetails();
           }
@@ -748,12 +763,15 @@ export function useLeadData(leadId: string | null) {
     leadsChannelRef.current = leadChannel;
 
     return () => {
+      mounted = false;
       leadChannel.unsubscribe();
     };
-  }, [leadId, user]);
+  }, [leadId, user?.id]);
 
   useEffect(() => {
-    if (!leadId || !user) return;
+    if (!leadId || !user?.id) return;
+
+    let mounted = true;
 
     // Activity changes
     if (activityChannelRef.current) activityChannelRef.current.unsubscribe();
@@ -762,6 +780,7 @@ export function useLeadData(leadId: string | null) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'lead_activities', filter: `lead_id=eq.${leadId}` },
         (payload) => {
+          if (!mounted) return;
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             fetchActivities();
           }
@@ -771,9 +790,10 @@ export function useLeadData(leadId: string | null) {
     activityChannelRef.current = activityChannel;
 
     return () => {
+      mounted = false;
       activityChannel.unsubscribe();
     };
-  }, [leadId, user]);
+  }, [leadId, user?.id]);
 
   return {
     lead,

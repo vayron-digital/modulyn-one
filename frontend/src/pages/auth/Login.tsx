@@ -37,7 +37,7 @@ export default function Login({ logoutReason }: LoginProps) {
       {/* Main Form Area (left, bold bg) */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 py-8 md:py-0 order-1 md:order-none" style={{ background: S.rightCol.background }}>
         <div className="w-full mx-auto" style={{ maxWidth: S.rightCol.maxWidth, padding: S.rightCol.padding, borderRadius: S.rightCol.borderRadius, boxShadow: S.rightCol.boxShadow, background: S.rightCol.background }}>
-          <h1 className="font-bold mb-8 text-center" style={{ color: S.header.color, fontSize: S.header.fontSize, fontWeight: S.header.fontWeight, marginBottom: S.header.marginBottom }}>{'Welcome back to Modulyn One'}</h1>
+          <h1 className="text-hero font-black tracking-tighter mb-8 text-center" style={{ color: S.header.color }}>{'Welcome back to Modulyn One'}</h1>
           {logoutReason && (
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-4 rounded-md text-xs sm:text-sm mb-4">
               <div className="flex">
@@ -69,7 +69,7 @@ export default function Login({ logoutReason }: LoginProps) {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div>
-                <label htmlFor="email-address" className="block font-semibold mb-2" style={S.label}>
+                <label htmlFor="email-address" className="text-label font-semibold tracking-wide mb-2" style={S.label}>
                   Email address
                 </label>
                 <input
@@ -86,7 +86,7 @@ export default function Login({ logoutReason }: LoginProps) {
                 />
               </div>
               <div className="relative">
-                <label htmlFor="password" className="block font-semibold mb-2" style={S.label}>
+                <label htmlFor="password" className="text-label font-semibold tracking-wide mb-2" style={S.label}>
                   Password
                 </label>
                 <input
@@ -120,14 +120,14 @@ export default function Login({ logoutReason }: LoginProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-bold shadow-lg transition hover:opacity-90"
+              className="w-full btn-text font-bold shadow-lg transition hover:opacity-90"
               style={S.button}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
             <div className="text-center mt-4">
-              <span style={{ color: S.button.background }}>Don't have an account? </span>
-              <Link to="/signup" className="font-bold underline hover:text-white transition" style={{ color: S.button.background }}>Sign up</Link>
+              <span className="text-body font-medium" style={{ color: S.button.background }}>Don't have an account? </span>
+              <Link to="/signup" className="text-body font-bold underline hover:text-white transition tracking-wide" style={{ color: S.button.background }}>Sign up</Link>
             </div>
           </form>
         </div>
@@ -136,8 +136,8 @@ export default function Login({ logoutReason }: LoginProps) {
       <div className="hidden md:flex flex-col justify-between w-1/2 p-12 order-2 md:order-none" style={{ background: S.leftCol.background }}>
         <div>
           <img src="/logoBW.png" alt="Modulyn One" style={{ height: S.leftCol.logoHeight, width: S.leftCol.logoWidth }} />
-          <h2 className="mt-6 font-bold" style={{ color: S.leftCol.brandColor, fontSize: S.leftCol.brandFontSize }}>Modulyn One</h2>
-          <p className="mt-2" style={{ color: S.leftCol.textColor, fontSize: S.leftCol.contactBlock.fontSize }}>The modular CRM for modern teams</p>
+          <h2 className="text-headline font-bold tracking-tight mt-6" style={{ color: S.leftCol.brandColor }}>Modulyn One</h2>
+          <p className="text-body font-medium mt-2" style={{ color: S.leftCol.textColor }}>The modular CRM for modern teams</p>
         </div>
         <div className="space-y-4 text-sm" style={{ color: S.leftCol.textColor, fontSize: S.leftCol.contactBlock.fontSize }}>
           <div><span className="font-semibold" style={{ color: S.leftCol.contactBlock.labelColor }}>Email:</span> <span style={{ color: S.leftCol.contactBlock.valueColor }}>hello@modulyn.com</span></div>

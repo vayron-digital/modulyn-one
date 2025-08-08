@@ -1,28 +1,38 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import FullScreenLoader from './FullScreenLoader';
+import { useAuthLoading } from '../../hooks/useAuthLoading';
+import LoadingState from './LoadingState';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  fallbackPath?: string;
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+export default function ProtectedRoute({ 
+  children, 
+  requireAdmin = false, 
+  fallbackPath = '/login' 
+}: ProtectedRouteProps) {
+  const { user, loading, error, isAuthenticated, isAdmin, retryAuth } = useAuthLoading();
   const location = useLocation();
 
-  if (loading) {
-    return <FullScreenLoader />;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (requireAdmin && !user.is_admin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
+  return (
+    <LoadingState
+      loading={loading}
+      error={error}
+      onRetry={retryAuth}
+      type="page"
+      message="Authenticating..."
+      showUser={true}
+    >
+      {!isAuthenticated ? (
+        <Navigate to={fallbackPath} state={{ from: location }} replace />
+      ) : requireAdmin && !isAdmin ? (
+        <Navigate to="/" replace />
+      ) : (
+        <>{children}</>
+      )}
+    </LoadingState>
+  );
 } 

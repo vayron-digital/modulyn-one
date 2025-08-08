@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { FiShare2, FiUpload, FiStar, FiPlus, FiList, FiSettings, FiBell, FiHome, FiUsers, FiBarChart2, FiTarget, FiBookOpen } from 'react-icons/fi';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 
 const SIDEBAR_TOP_MARGIN = '5.5rem'; // rem, matches top nav height
 
@@ -38,7 +39,8 @@ const Sidebar: React.FC = () => {
   }
 
   return (
-    <aside
+    <ComponentErrorBoundary componentName="Sidebar" showRetry={false}>
+      <aside
       style={{
         position: 'fixed',
         left: '0.625rem',
@@ -134,6 +136,7 @@ const Sidebar: React.FC = () => {
         }
       `}</style>
     </aside>
+    </ComponentErrorBoundary>
   );
 };
 

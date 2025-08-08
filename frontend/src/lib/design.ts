@@ -1,3 +1,5 @@
+import theme from '../../design-system/modulyn-theme.json'
+
 export const DESIGN = {
   sidebarWidth: 260,
   headerHeight: 64,
@@ -7,60 +9,60 @@ export const DESIGN = {
     title: '18px',
   },
   colors: {
-    primary: '#0b090d', // Material purple 200
-    accent: '#03DAC6',  // Material teal 200
-    background: '#FFFFFF',
-    backgroundDark: '#121212', // Material dark bg
-    surface: '#F5F5F5',
-    surfaceDark: '#1E1E1E',
-    card: '#FFFFFF',
-    cardDark: '#232323',
-    text: '#090004', // Light text
-    textDark: 'rgba(255,255,255,0.87)', // High-emphasis
-    textSecondary: 'rgba(60,60,60,0.7)',
-    textSecondaryDark: 'rgba(255,255,255,0.60)',
-    textDisabled: 'rgba(0,0,0,0.38)',
-    textDisabledDark: 'rgba(255,255,255,0.38)',
-    divider: 'rgba(0,0,0,0.12)',
-    dividerDark: 'rgba(255,255,255,0.12)',
+    primary: theme.functional.primary.default,
+    accent: theme.functional.highlight.default,
+    background: theme.functional.surface.primary,
+    backgroundDark: theme.personalized.obsidianVeil,
+    surface: theme.functional.surface.secondary,
+    surfaceDark: theme.personalized.charcoalTint,
+    card: theme.functional.surface.primary,
+    cardDark: theme.personalized.charcoalTint,
+    text: theme.functional.onSurface.strong,
+    textDark: theme.semantic.text.onDark,
+    textSecondary: theme.functional.onSurface.soft,
+    textSecondaryDark: theme.semantic.text.onDark,
+    textDisabled: theme.semantic.text.disabled,
+    textDisabledDark: theme.semantic.text.disabled,
+    divider: theme.semantic.fields.border,
+    dividerDark: theme.semantic.fields.border,
   },
   logo: {
     height: 32,
     width: 120,
   },
   signupPage: {
-    background: '#FFFFFF',
+    background: theme.functional.surface.primary,
     leftCol: {
-      background: '#EDEADE', // Alabaster
+      background: theme.functional.surface.secondary,
       logoHeight: 'auto',
       logoWidth: 200,
-      brandColor: '#630330', // Tyrian Purple
+      brandColor: theme.functional.primary.default,
       brandFontSize: '22px',
-      textColor: '#090004', // Dark Neon Purple
+      textColor: theme.functional.onSurface.strong,
       contactBlock: {
-        labelColor: '#630330',
-        valueColor: '#1A1A1A',
+        labelColor: theme.functional.primary.default,
+        valueColor: theme.functional.onSurface.strong,
         fontSize: '14px',
         spacing: '1.5rem',
       },
       socialIcon: {
         size: 24,
-        bg: '#F3F6',
-        border: '1px solid #630330',
-        color: '#6C2EBE',
+        bg: theme.functional.surface.primary,
+        border: `1px solid ${theme.functional.primary.default}`,
+        color: theme.functional.primary.default,
         radius: '50%',
         margin: '0 0.5rem',
       },
     },
     rightCol: {
-      background: '#630330',
+      background: theme.functional.primary.default,
       maxWidth: 520,
       padding: '2rem',
       borderRadius: '16px',
       boxShadow: '0 4px 32px 0 rgba(0, 0, 0, 0.08)',
     },
     header: {
-      color: '#EDEADE',
+      color: theme.functional.primary.onPrimary,
       fontSize: '1.5rem',
       fontWeight: 700,
       marginBottom: '2rem',
@@ -68,25 +70,25 @@ export const DESIGN = {
     },
     input: {
       fontSize: '16px',
-      color: '#EDEADE',
+      color: theme.functional.primary.onPrimary,
       border: 'none',
-      borderBottom: '2px solid #E5E7EB',
+      borderBottom: `2px solid ${theme.semantic.fields.border}`,
       borderRadius: 0,
       background: 'transparent',
       padding: '0.75rem 0',
       marginBottom: '2rem',
-      focusBorder: '#6C2EBE',
-      placeholderColor: '#A0AEC0',
+      focusBorder: theme.semantic.fields.focusBorder,
+      placeholderColor: theme.semantic.fields.placeholder,
     },
     label: {
       fontSize: '16px',
-      color: '#EDEADE',
+      color: theme.functional.primary.onPrimary,
       fontWeight: 600,
       marginBottom: '0.5rem',
     },
     button: {
-      background: '#EDEADE',
-      color: '#630330',
+      background: theme.functional.surface.primary,
+      color: theme.functional.primary.default,
       borderRadius: '8px',
       fontSize: '18px',
       fontWeight: 700,
@@ -95,8 +97,8 @@ export const DESIGN = {
       boxShadow: '0 2px 8px 0 rgba(108,46,190,0.10)',
     },
     progress: {
-      dotActive: '#090004',
-      dotInactive: '#EDEADE',
+      dotActive: theme.functional.onSurface.strong,
+      dotInactive: theme.functional.surface.primary,
       size: 12,
       spacing: '0.75rem',
       marginTop: '2.5rem',

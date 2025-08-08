@@ -142,7 +142,9 @@ export default function ColdCalls() {
   useEffect(() => {
     fetchCalls();
     fetchAgentStats();
-    setupRealtimeSubscription();
+    const cleanup = setupRealtimeSubscription();
+    
+    return cleanup;
   }, []);
 
   const setupRealtimeSubscription = () => {
@@ -446,7 +448,7 @@ export default function ColdCalls() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cold Calling Tracker</h1>
+          <h1 className="text-headline font-bold text-gray-900 dark:text-white tracking-tight">Cold Calling Tracker</h1>
           <p className="text-gray-600 dark:text-gray-400">Track cold calls, outcomes, and team performance</p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">

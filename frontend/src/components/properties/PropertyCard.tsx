@@ -4,9 +4,12 @@ import { Button } from '../ui/button';
 import { FaBed, FaBath, FaRulerCombined, FaRegHeart, FaShareAlt, FaBalanceScale } from 'react-icons/fa';
 import { PropertyType } from '../../utils/propertyTypes';
 import { getCurrencyDisplay, useCurrencyStore } from '../../utils/currency';
+import { formatPropertyTypeDisplay } from '../../utils/propertyTypesByLocation';
 import LazyImage from '../common/LazyImage';
 import { motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
+import { MapPin, Building, DollarSign, Calendar, User } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface PropertyCardProps {
   id: string;
@@ -31,12 +34,6 @@ interface PropertyCardProps {
 const formatNumber = (value: number | undefined) =>
   typeof value === 'number' && !isNaN(value) ? value.toLocaleString() : 'N/A';
 
-const statusColors: Record<string, string> = {
-  Available: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300',
-  Sold: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
-  'Under Offer': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
-};
-
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
     case 'Available':
@@ -45,6 +42,10 @@ const getStatusBadgeColor = (status: string) => {
       return 'destructive';
     case 'Under Offer':
       return 'secondary';
+    case 'Rented':
+      return 'outline';
+    case 'Off Market':
+      return 'outline';
     default:
       return 'default';
   }
@@ -59,51 +60,174 @@ const PropertyCard: React.FC<PropertyCardProps> = React.memo(({
 
   const { currency: primaryCurrency, secondary_currencies } = useCurrencyStore();
   const currencyDisplay = getCurrencyDisplay(price ?? 0, primaryCurrency);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
-      onClick={handleClick}
+      className="group"
     >
-      <div className="relative h-48 overflow-hidden">
-        <LazyImage
-          src={image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80'}
-          alt={title}
-          className="w-full h-full object-cover"
-          placeholder="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
-        />
-        <div className="absolute top-2 right-2">
-          <Badge variant={getStatusBadgeColor(status)}>
-            {status}
-          </Badge>
-        </div>
-      </div>
-      
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{location}</p>
-        
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-bold text-primary">
-            {currencyDisplay.primary}
+      <Card className="bg-white border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden group-hover:border-blue-300">
+        <div className="relative">
+          {/* Image Section */}
+          <div className="relative h-48 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+            <LazyImage
+              src={image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80'}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              placeholder="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
+            />
+            
+            {/* Status Badge */}
+            <div className="absolute top-3 left-3">
+              <Badge variant={getStatusBadgeColor(status)} className="text-xs font-medium">
+                {status}
+              </Badge>
+            </div>
+            
+            {/* Property Type Badge */}
+            <div className="absolute top-3 right-3">
+              <Badge variant="outline" className="bg-white/90 backdrop-blur-sm text-xs font-medium">
+                {formatPropertyTypeDisplay(type)}
+              </Badge>
+            </div>
+            
+            {/* Quick Actions Overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 bg-white/90 hover:bg-white"
+                        onClick={(e) => { e.stopPropagation(); onFavorite?.(); }}
+                      >
+                        <FaRegHeart className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add to Favorites</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 bg-white/90 hover:bg-white"
+                        onClick={(e) => { e.stopPropagation(); onShare?.(); }}
+                      >
+                        <FaShareAlt className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Share Property</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span><FaBed className="inline-block" /> {typeof bedrooms === 'string' ? bedrooms : formatNumber(bedrooms)}</span>
-            <span>•</span>
-            <span><FaBath className="inline-block" /> {typeof bathrooms === 'string' ? bathrooms : formatNumber(bathrooms)}</span>
-            <span>•</span>
-            <span><FaRulerCombined className="inline-block" /> {typeof area === 'string' ? area : formatNumber(area)} sqft</span>
-          </div>
+          
+          {/* Content Section */}
+          <CardContent className="p-4" onClick={handleClick}>
+            {/* Title and Location */}
+            <div className="mb-3">
+              <h3 className="font-semibold text-slate-900 text-lg mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                {title}
+              </h3>
+              <div className="flex items-center gap-1 text-slate-600 text-sm">
+                <MapPin className="h-3 w-3 flex-shrink-0" />
+                <span className="line-clamp-1">{location}</span>
+              </div>
+            </div>
+            
+            {/* Price */}
+            <div className="mb-3">
+              <div className="text-xl font-bold text-slate-900">
+                {currencyDisplay.primary}
+              </div>
+              {secondary_currencies.length > 0 && (
+                <div className="text-xs text-slate-500">
+                  {currencyDisplay.secondary}
+                </div>
+              )}
+            </div>
+            
+            {/* Property Details */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
+                  <FaBed className="h-3 w-3" />
+                </div>
+                <div className="text-sm font-medium text-slate-900">
+                  {typeof bedrooms === 'string' ? bedrooms : formatNumber(bedrooms)}
+                </div>
+                <div className="text-xs text-slate-500">Beds</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
+                  <FaBath className="h-3 w-3" />
+                </div>
+                <div className="text-sm font-medium text-slate-900">
+                  {typeof bathrooms === 'string' ? bathrooms : formatNumber(bathrooms)}
+                </div>
+                <div className="text-xs text-slate-500">Baths</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-slate-600 mb-1">
+                  <FaRulerCombined className="h-3 w-3" />
+                </div>
+                <div className="text-sm font-medium text-slate-900">
+                  {typeof area === 'string' ? area : formatNumber(area)}
+                </div>
+                <div className="text-xs text-slate-500">Sqft</div>
+              </div>
+            </div>
+            
+            {/* Additional Info */}
+            <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>Listed {listingDate}</span>
+              </div>
+              {owner && (
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  <span className="truncate max-w-20">{owner}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+          
+          {/* Footer Actions */}
+          <CardFooter className="px-4 pb-4 pt-0">
+            <div className="flex gap-2 w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                onClick={(e) => { e.stopPropagation(); onCompare?.(); }}
+              >
+                <FaBalanceScale className="h-3 w-3 mr-1" />
+                Compare
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                onClick={handleClick}
+              >
+                View Details
+              </Button>
+            </div>
+          </CardFooter>
         </div>
-      </div>
-      <CardFooter className="flex justify-between gap-2 pt-2 px-6 pb-6">
-        <Button size="icon" variant="ghost" className="hover:bg-pink-100" onClick={e => { e.stopPropagation(); onFavorite && onFavorite(); }}><FaRegHeart /></Button>
-        <Button size="icon" variant="ghost" className="hover:bg-blue-100" onClick={e => { e.stopPropagation(); onShare && onShare(); }}><FaShareAlt /></Button>
-        <Button size="icon" variant="ghost" className="hover:bg-yellow-100" onClick={e => { e.stopPropagation(); onCompare && onCompare(); }}><FaBalanceScale /></Button>
-      </CardFooter>
+      </Card>
     </motion.div>
   );
 });

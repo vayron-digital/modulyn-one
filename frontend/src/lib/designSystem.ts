@@ -1,101 +1,102 @@
 // Design System Configuration
 // This file serves as the single source of truth for all design tokens
+import theme from '../../design-system/modulyn-theme.json'
 
 export const colors = {
-  // Primary brand colors - Blue gradient theme
-  primary: "#3B82F6", // Blue-500
-  primaryGradient: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)", // Blue to Indigo
-  secondary: "#6366F1", // Indigo-500
-  accent: "#8B5CF6", // Violet-500
+  // Primary brand colors - Using centralized theme
+  primary: theme.functional.primary.default,
+  primaryGradient: `linear-gradient(135deg, ${theme.functional.primary.default} 0%, ${theme.functional.interactive.default} 100%)`,
+  secondary: theme.functional.secondary.default,
+  accent: theme.functional.highlight.default,
   
   // Status colors
-  danger: "#EF4444", // Red-500
-  success: "#10B981", // Emerald-500
-  warning: "#F59E0B", // Amber-500
-  info: "#3B82F6", // Blue-500
+  danger: theme.semantic.states.error,
+  success: theme.semantic.states.success,
+  warning: theme.semantic.states.warning,
+  info: theme.semantic.states.info,
   
   // Text colors
   text: {
-    primary: "#1F2937", // Gray-800
-    secondary: "#6B7280", // Gray-500
-    muted: "#9CA3AF", // Gray-400
-    inverse: "#FFFFFF",
-    light: "#F9FAFB", // Gray-50
+    primary: theme.semantic.text.heading,
+    secondary: theme.semantic.text.body,
+    muted: theme.semantic.text.disabled,
+    inverse: theme.semantic.text.onDark,
+    light: theme.functional.onSurface.soft,
   },
   
   // Background colors
   background: {
-    primary: "#FFFFFF",
-    secondary: "#F8FAFC", // Slate-50
-    tertiary: "#F1F5F9", // Slate-100
-    dark: "#0F172A", // Slate-900
-    gradient: "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)", // Slate gradient
+    primary: theme.functional.surface.primary,
+    secondary: theme.functional.surface.secondary,
+    tertiary: theme.functional.surface.secondary,
+    dark: theme.personalized.obsidianVeil,
+    gradient: `linear-gradient(135deg, ${theme.functional.surface.primary} 0%, ${theme.functional.surface.secondary} 100%)`,
   },
   
   // Border colors
   border: {
-    light: "#E2E8F0", // Slate-200
-    medium: "#CBD5E1", // Slate-300
-    dark: "#94A3B8", // Slate-400
+    light: theme.semantic.fields.border,
+    medium: theme.semantic.fields.border,
+    dark: theme.semantic.fields.border,
   },
   
   // Button colors
   button: {
-    primary: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)",
-    primaryHover: "linear-gradient(135deg, #2563EB 0%, #4F46E5 100%)",
-    secondary: "#F8FAFC",
-    secondaryHover: "#F1F5F9",
-    outline: "#E2E8F0",
-    outlineHover: "#CBD5E1",
+    primary: `linear-gradient(135deg, ${theme.functional.primary.default} 0%, ${theme.functional.interactive.default} 100%)`,
+    primaryHover: `linear-gradient(135deg, ${theme.functional.interactive.hover} 0%, ${theme.functional.interactive.default} 100%)`,
+    secondary: theme.functional.surface.secondary,
+    secondaryHover: theme.functional.surface.primary,
+    outline: theme.semantic.fields.border,
+    outlineHover: theme.semantic.fields.border,
   },
   
   // Card colors
   card: {
-    background: "#FFFFFF",
-    border: "#E2E8F0",
+    background: theme.functional.surface.primary,
+    border: theme.semantic.fields.border,
     shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
   },
   
   // Dark mode variants
   dark: {
-    primary: "#60A5FA", // Blue-400
-    primaryGradient: "linear-gradient(135deg, #60A5FA 0%, #818CF8 100%)",
-    secondary: "#818CF8", // Indigo-400
-    accent: "#A78BFA", // Violet-400
+    primary: theme.functional.primary.default,
+    primaryGradient: `linear-gradient(135deg, ${theme.functional.primary.default} 0%, ${theme.functional.interactive.default} 100%)`,
+    secondary: theme.functional.secondary.default,
+    accent: theme.functional.highlight.default,
     
     text: {
-      primary: "#F9FAFB", // Gray-50
-      secondary: "#D1D5DB", // Gray-300
-      muted: "#9CA3AF", // Gray-400
-      inverse: "#1F2937", // Gray-800
+      primary: theme.semantic.text.onDark,
+      secondary: theme.semantic.text.onDark,
+      muted: theme.semantic.text.disabled,
+      inverse: theme.semantic.text.heading,
     },
     
     background: {
-      primary: "#0F172A", // Slate-900
-      secondary: "#1E293B", // Slate-800
-      tertiary: "#334155", // Slate-700
-      dark: "#020617", // Slate-950
-      gradient: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+      primary: theme.personalized.obsidianVeil,
+      secondary: theme.personalized.charcoalTint,
+      tertiary: theme.personalized.charcoalTint,
+      dark: theme.personalized.obsidianVeil,
+      gradient: `linear-gradient(135deg, ${theme.personalized.obsidianVeil} 0%, ${theme.personalized.charcoalTint} 100%)`,
     },
     
     border: {
-      light: "#334155", // Slate-700
-      medium: "#475569", // Slate-600
-      dark: "#64748B", // Slate-500
+      light: theme.semantic.fields.border,
+      medium: theme.semantic.fields.border,
+      dark: theme.semantic.fields.border,
     },
     
     button: {
-      primary: "linear-gradient(135deg, #60A5FA 0%, #818CF8 100%)",
-      primaryHover: "linear-gradient(135deg, #3B82F6 0%, #6366F1 100%)",
-      secondary: "#1E293B",
-      secondaryHover: "#334155",
-      outline: "#334155",
-      outlineHover: "#475569",
+      primary: `linear-gradient(135deg, ${theme.functional.primary.default} 0%, ${theme.functional.interactive.default} 100%)`,
+      primaryHover: `linear-gradient(135deg, ${theme.functional.interactive.hover} 0%, ${theme.functional.interactive.default} 100%)`,
+      secondary: theme.personalized.charcoalTint,
+      secondaryHover: theme.personalized.obsidianVeil,
+      outline: theme.semantic.fields.border,
+      outlineHover: theme.semantic.fields.border,
     },
     
     card: {
-      background: "#1E293B",
-      border: "#334155",
+      background: theme.personalized.charcoalTint,
+      border: theme.semantic.fields.border,
       shadow: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
     },
   },

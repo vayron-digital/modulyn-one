@@ -5,6 +5,7 @@ import TopNavBar from './TopNavBar';
 import styles from './DashboardLayout.module.css';
 import Header, { HeaderTab } from './Header';
 import Footer from './Footer';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 
 interface LayoutContextType {
   setHeader: (header: HeaderProps) => void;
@@ -49,7 +50,9 @@ export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 // Default export: use <Outlet /> for nested routes
 const DashboardLayout: React.FC = () => (
   <LayoutProvider>
-    <Outlet />
+    <ComponentErrorBoundary componentName="DashboardLayout">
+      <Outlet />
+    </ComponentErrorBoundary>
   </LayoutProvider>
 );
 

@@ -8,7 +8,7 @@ export default function StepPersonalInfo() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <label className="block font-semibold mb-2" style={S.label}>Full Name</label>
+        <label className="text-label font-semibold tracking-wide mb-2" style={S.label}>Full Name</label>
         <input
           value={data.fullName}
           onChange={e => setField('fullName', e.target.value)}

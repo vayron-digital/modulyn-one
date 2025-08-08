@@ -36,17 +36,27 @@ export default function ChatTemplates() {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('chat_templates')
         .select('*')
         .order('title');
-
-      if (error) throw error;
-
-      setTemplates(data);
-    } catch (error: any) {
-      console.error('Error fetching chat templates:', error);
-      setError(error.message);
+        
+      if (error) {
+        console.error('Error fetching templates:', error);
+        throw new Error(error.message || 'Failed to fetch templates');
+      }
+      
+      setTemplates(data || []);
+    } catch (err: any) {
+      console.error('Error in fetchTemplates:', err);
+      setError(err.message || 'Failed to load templates');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to load templates',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
@@ -55,9 +65,14 @@ export default function ChatTemplates() {
   const handleCopy = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
-      toast({ title: 'Copied!', description: 'Template copied to clipboard.' });
-    } catch {
-      toast({ title: 'Error', description: 'Failed to copy.', variant: 'destructive' });
+      toast({ title: 'Success', description: 'Template copied to clipboard.' });
+    } catch (err: any) {
+      console.error('Error copying to clipboard:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to copy template to clipboard',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -96,17 +111,33 @@ export default function ChatTemplates() {
       toast({ title: 'Error', description: 'Title and content required.', variant: 'destructive' });
       return;
     }
-    setCreating(true);
+    
     try {
-      const { error } = await supabase.from('chat_templates').insert([{ title: newTitle, content: newContent }]);
-      if (error) throw error;
+      setCreating(true);
+      setError(null);
+      
+      const { error } = await supabase
+        .from('chat_templates')
+        .insert([{ title: newTitle, content: newContent }]);
+        
+      if (error) {
+        console.error('Error creating template:', error);
+        throw new Error(error.message || 'Failed to create template');
+      }
+      
       toast({ title: 'Success', description: 'Template created.' });
       setShowNewModal(false);
       setNewTitle('');
       setNewContent('');
       fetchTemplates();
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      console.error('Error in handleCreateTemplate:', err);
+      setError(err.message || 'Failed to create template');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to create template',
+        variant: 'destructive'
+      });
     } finally {
       setCreating(false);
     }

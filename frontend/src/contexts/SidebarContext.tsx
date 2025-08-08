@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface SidebarContextType {
@@ -29,11 +29,18 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sidebarOpen', JSON.stringify(isOpen));
   }, [isOpen]);
 
-  const toggle = () => setIsOpen((prev: boolean) => !prev);
-  const setOpen = (open: boolean) => setIsOpen(open);
+  const toggle = useCallback(() => setIsOpen((prev: boolean) => !prev), []);
+  const setOpen = useCallback((open: boolean) => setIsOpen(open), []);
+
+  const value = useMemo(() => ({ 
+    isOpen, 
+    toggle, 
+    setOpen, 
+    isMobile 
+  }), [isOpen, toggle, setOpen, isMobile]);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggle, setOpen, isMobile }}>
+    <SidebarContext.Provider value={value}>
       {children}
     </SidebarContext.Provider>
   );

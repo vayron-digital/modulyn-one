@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthLoading } from '../../hooks/useAuthLoading';
+import LoadingState from '../../components/common/LoadingState';
 import { useToast } from '../../components/ui/use-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -282,7 +283,7 @@ const normalizeStatus = (status: string): string => {
 
 const Leads = () => {
   const { setHeader } = useLayout();
-  const { user } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuthLoading();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -1406,7 +1407,13 @@ const Leads = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <LoadingState
+      loading={authLoading}
+      error={authError}
+      type="page"
+      message="Loading leads..."
+    >
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       {/* Navigation */}
       <LeadsNavigation />
 
@@ -1766,6 +1773,7 @@ const Leads = () => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </LoadingState>
   );
 };
 

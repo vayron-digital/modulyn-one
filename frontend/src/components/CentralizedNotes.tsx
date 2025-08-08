@@ -110,7 +110,9 @@ export default function CentralizedNotes() {
   useEffect(() => {
     fetchNotes();
     fetchLeads();
-    setupRealtimeSubscription();
+    const cleanup = setupRealtimeSubscription();
+    
+    return cleanup;
   }, []);
 
   const setupRealtimeSubscription = () => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 interface Toast {
   id: string;
@@ -30,8 +30,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
+  const value = useMemo(() => ({ 
+    toasts, 
+    addToast, 
+    removeToast 
+  }), [toasts, addToast, removeToast]);
+
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
+    <ToastContext.Provider value={value}>
       {children}
     </ToastContext.Provider>
   );

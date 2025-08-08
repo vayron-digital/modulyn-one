@@ -92,7 +92,7 @@ export default function SignupForm() {
           <motion.button
             whileTap={{ scale: 0.96 }}
             onClick={prevStep}
-            className="btn-secondary font-semibold"
+            className="btn-secondary btn-text font-semibold"
             style={{
               borderRadius: S.button.borderRadius,
               color: DESIGN.colors.primary,
@@ -113,7 +113,7 @@ export default function SignupForm() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={nextStep}
-            className="btn-primary text-white font-semibold"
+            className="btn-primary btn-text text-white font-semibold"
             style={{
               background: S.button.background,
               borderRadius: S.button.borderRadius,
@@ -132,7 +132,7 @@ export default function SignupForm() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={validateStep}
-            className="btn-primary text-white font-semibold"
+            className="btn-primary btn-text text-white font-semibold"
             style={{
               background: S.button.background,
               borderRadius: S.button.borderRadius,

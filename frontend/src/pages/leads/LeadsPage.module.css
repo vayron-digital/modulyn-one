@@ -38,10 +38,10 @@
 .title {
   font-size: 2rem;
   font-weight: 600;
-  color: #181C32;
+  color: var(--text-heading);
 }
 .subtitle {
-  color: #A3AED0;
+  color: var(--text-body);
   font-size: 1rem;
   margin-top: 4px;
 }
@@ -50,9 +50,9 @@
   gap: 12px;
 }
 .exportBtn {
-  background: #fff;
-  color: #7F56D9;
-  border: 1px solid #E5E7EB;
+  background: var(--surface-primary);
+  color: var(--primary-default);
+  border: 1px solid var(--fields-border);
   border-radius: 8px;
   padding: 8px 18px;
   font-weight: 500;
@@ -62,11 +62,11 @@
   transition: background 0.2s;
 }
 .exportBtn:hover {
-  background: #F3F4F6;
+  background: var(--surface-secondary);
 }
 .addBtn {
-  background: #7F56D9;
-  color: #fff;
+  background: var(--primary-default);
+  color: var(--primary-on-primary);
   border: none;
   border-radius: 8px;
   padding: 8px 18px;
@@ -77,14 +77,14 @@
   transition: background 0.2s;
 }
 .addBtn:hover {
-  background: #5B3DB2;
+  background: var(--interactive-hover);
 }
 .tabs {
   display: flex;
   gap: 32px;
   margin-bottom: 0;
-  border-bottom: 2px solid #F3F4F6;
-  background: #fff;
+  border-bottom: 2px solid var(--surface-secondary);
+  background: var(--surface-primary);
   padding: 0 40px;
   height: 56px;
   align-items: flex-end;
@@ -92,7 +92,7 @@
 .tab, .tabActive {
   font-size: 1.08rem;
   font-weight: 500;
-  color: #A3AED0;
+  color: var(--text-body);
   padding: 0 0 14px 0;
   cursor: pointer;
   border-bottom: 3px solid transparent;
@@ -103,13 +103,13 @@
   background: none;
 }
 .tabActive {
-  color: #7F56D9;
-  border-bottom: 3px solid #7F56D9;
+  color: var(--primary-default);
+  border-bottom: 3px solid var(--primary-default);
   background: none;
 }
 .tabCount {
-  background: #F3F4F6;
-  color: #7F56D9;
+  background: var(--surface-secondary);
+  color: var(--primary-default);
   border-radius: 8px;
   font-size: 0.95em;
   padding: 2px 8px;
@@ -125,8 +125,8 @@
 .searchBarWrap {
   display: flex;
   align-items: center;
-  background: #fff;
-  border: 1px solid #E5E7EB;
+  background: var(--surface-primary);
+  border: 1px solid var(--fields-border);
   border-radius: 8px;
   padding: 0 0 0 14px;
   width: 320px;
@@ -135,14 +135,14 @@
 .searchBarIcon {
   width: 18px;
   height: 18px;
-  color: #A3AED0;
+  color: var(--text-body);
   margin-right: 8px;
 }
 .searchBar {
   background: transparent;
   border: none;
   outline: none;
-  color: #181C32;
+  color: var(--text-heading);
   font-size: 1rem;
   flex: 1;
   padding: 10px 0 10px 0;
@@ -150,11 +150,11 @@
 .dateRangeBtn {
   display: flex;
   align-items: center;
-  background: #fff;
-  border: 1px solid #E5E7EB;
+  background: var(--surface-primary);
+  border: 1px solid var(--fields-border);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #7F56D9;
+  color: var(--primary-default);
   font-weight: 500;
   font-size: 1rem;
   gap: 8px;

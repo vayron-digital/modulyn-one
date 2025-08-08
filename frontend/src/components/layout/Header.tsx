@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ title, breadcrumbs, tabs }) => {
           ))}
         </nav>
       )}
-      <h1 className={styles.title}>{title}</h1>
+      <h1 className={`${styles.title} text-headline font-bold tracking-tight`}>{title}</h1>
       {tabs && tabs.length > 0 && (
         <nav className={styles.navTabs} id="nav-tabs">
           {tabs.map(tab => (

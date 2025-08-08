@@ -135,37 +135,59 @@ export const useNotifications = () => {
   }, [notifications, markAsRead, toast]);
 
   useEffect(() => {
-    fetchNotifications();
+    if (!user?.id) return;
 
-    // Subscribe to new notifications
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications'
-        },
-        payload => {
-          const newNotification = payload.new as Notification;
-          if (!user || newNotification.user_id !== user.id) return; // Only notify the intended user
-          setNotifications(prev => [newNotification, ...prev]);
-          if (newNotification.status === 'unread') {
-            setUnreadCount(prev => prev + 1);
-            toast({
-              title: newNotification.title,
-              description: newNotification.message
-            });
+    let mounted = true;
+
+    const setupNotifications = async () => {
+      await fetchNotifications();
+
+      if (!mounted) return;
+
+      // Subscribe to new notifications
+      const channel = supabase
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications'
+          },
+          payload => {
+            if (!mounted) return;
+            
+            const newNotification = payload.new as Notification;
+            if (!user || newNotification.user_id !== user.id) return; // Only notify the intended user
+            setNotifications(prev => [newNotification, ...prev]);
+            if (newNotification.status === 'unread') {
+              setUnreadCount(prev => prev + 1);
+              toast({
+                title: newNotification.title,
+                description: newNotification.message
+              });
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    let channel: any = null;
+    setupNotifications().then((ch) => {
+      if (mounted) {
+        channel = ch;
+      }
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      mounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [fetchNotifications, toast, user]);
+  }, [user?.id, fetchNotifications, toast]);
 
   return {
     notifications,

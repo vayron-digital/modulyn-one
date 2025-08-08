@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { User, AuthContextType } from '../types/auth';
 import { useCurrencyStore } from '../utils/currency';
@@ -16,6 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: any = null;
 
     const initializeAuth = async () => {
       console.log('Initializing auth...');
@@ -106,12 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
           }
         });
+        
+        authSubscription = subscription;
         console.log('Auth initialized');
-        return () => {
-          console.log('Effect cleanup');
-          mounted = false;
-          subscription.unsubscribe();
-        };
       } catch (error) {
         console.error('Error initializing auth:', error);
         if (mounted) {
@@ -125,36 +123,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, []);
+
+    // Cleanup function
+    return () => {
+      mounted = false;
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   useEffect(() => {
-    if (user?.id) {
-      // Fetch user_settings and hydrate currency store
-      (async () => {
-        try {
-          const { data: userSettings, error } = await supabase
-            .from('user_settings')
-            .select('currency, secondary_currencies')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (!error && userSettings) {
-            if (userSettings.currency) setCurrency(userSettings.currency);
-            if (userSettings.secondary_currencies) setSecondaryCurrencies(userSettings.secondary_currencies);
-          } else {
-            // Set defaults if no settings found
-            setCurrency('AED');
-            setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
-          }
-        } catch (error) {
-          console.warn('Error loading user settings:', error);
-          // Set defaults on error
+    if (!user?.id) return;
+
+    let mounted = true;
+
+    const fetchUserSettings = async () => {
+      try {
+        const { data: userSettings, error } = await supabase
+          .from('user_settings')
+          .select('currency, secondary_currencies')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!mounted) return;
+        
+        if (!error && userSettings) {
+          if (userSettings.currency) setCurrency(userSettings.currency);
+          if (userSettings.secondary_currencies) setSecondaryCurrencies(userSettings.secondary_currencies);
+        } else {
+          // Set defaults if no settings found
           setCurrency('AED');
           setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
         }
-      })();
-    }
-  }, [user?.id]);
+      } catch (error) {
+        if (!mounted) return;
+        console.warn('Error loading user settings:', error);
+        // Set defaults on error
+        setCurrency('AED');
+        setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
+      }
+    };
+
+    fetchUserSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, setCurrency, setSecondaryCurrencies]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -283,7 +299,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     error,
@@ -291,7 +307,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     logout,
     signOut,
-  };
+  }), [user, loading, error, login, register, logout, signOut]);
 
   return (
     <AuthContext.Provider value={value}>

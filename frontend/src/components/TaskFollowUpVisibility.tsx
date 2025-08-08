@@ -77,7 +77,9 @@ export default function TaskFollowUpVisibility() {
   useEffect(() => {
     fetchTasks();
     fetchAgentActivity();
-    setupRealtimeSubscription();
+    const cleanup = setupRealtimeSubscription();
+    
+    return cleanup;
   }, []);
 
   const setupRealtimeSubscription = () => {

@@ -7,6 +7,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { User } from '../../types/auth';
 import { cn } from '../../lib/utils';
 import { Input, Button, FormGroup } from '../../components/ui';
+import { toast } from '../../components/ui/use-toast';
 
 const mockChannels = [
   { id: 'general', name: 'General' },
@@ -198,6 +199,7 @@ const ChatPage: React.FC = () => {
 
   const sendMessage = async () => {
     if (!input.trim() || !activeThread || !user) return;
+
     const newMsg = {
       thread_id: activeThread.id,
       sender_id: user.id,
@@ -205,7 +207,10 @@ const ChatPage: React.FC = () => {
       type: 'text',
       created_at: new Date().toISOString(),
     };
+
     setInput('');
+    setMessages(prev => [...prev, newMsg]);
+
     try {
       // Emit via Socket.IO for real-time
       socket?.emit('sendMessage', {
@@ -214,10 +219,23 @@ const ChatPage: React.FC = () => {
         content: input,
         type: 'text',
       });
+      
       // Insert to Supabase for persistence
-      await supabase.from('chat_messages').insert([newMsg]);
-    } catch (err) {
-      // Optionally: show error toast
+      const { error } = await supabase.from('chat_messages').insert([newMsg]);
+      
+      if (error) {
+        console.error('Error saving message:', error);
+        throw new Error(error.message || 'Failed to save message');
+      }
+    } catch (err: any) {
+      console.error('Error in sendMessage:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to send message',
+        variant: 'destructive'
+      });
+      // Optionally: revert the optimistic update
+      setMessages(prev => prev.filter(msg => msg !== newMsg));
     }
   };
 
@@ -226,15 +244,27 @@ const ChatPage: React.FC = () => {
     setShowNewChatModal(true);
     setUsersLoading(true);
     setUsersError(null);
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
         .neq('id', user?.id);
-      if (error) throw error;
+        
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw new Error(error.message || 'Failed to fetch users');
+      }
+      
       setAllUsers(data || []);
     } catch (err: any) {
+      console.error('Error in openNewChatModal:', err);
       setUsersError(err.message || 'Failed to fetch users');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to fetch users',
+        variant: 'destructive'
+      });
     } finally {
       setUsersLoading(false);
     }
@@ -243,60 +273,108 @@ const ChatPage: React.FC = () => {
   // Create or get thread with selected user
   const startNewChat = async (otherUser: any) => {
     if (!user) return;
-    // Check if thread exists
-    const participants = [user.id, otherUser.id].sort().join(',');
-    const { data: existing, error: findErr } = await supabase
-      .from('chat_threads')
-      .select('*')
-      .ilike('participants', `%${user.id}%`)
-      .ilike('participants', `%${otherUser.id}%`);
-    let thread = existing && existing.find((t: any) => {
-      const ids = t.participants.split(',').map((id: string) => id.trim()).sort().join(',');
-      return ids === participants;
-    });
-    if (!thread) {
-      // Create new thread
-      const { data: created, error: createErr } = await supabase
+    
+    try {
+      // Check if thread exists
+      const participants = [user.id, otherUser.id].sort().join(',');
+      const { data: existing, error: findErr } = await supabase
         .from('chat_threads')
-        .insert([{ participants }])
-        .select();
-      if (createErr) return setUsersError(createErr.message);
-      thread = created && created[0];
+        .select('*')
+        .ilike('participants', `%${user.id}%`)
+        .ilike('participants', `%${otherUser.id}%`);
+        
+      if (findErr) {
+        console.error('Error finding existing thread:', findErr);
+        throw new Error(findErr.message || 'Failed to check existing thread');
+      }
+      
+      let thread = existing && existing.find((t: any) => {
+        const ids = t.participants.split(',').map((id: string) => id.trim()).sort().join(',');
+        return ids === participants;
+      });
+      
+      if (!thread) {
+        // Create new thread
+        const { data: created, error: createErr } = await supabase
+          .from('chat_threads')
+          .insert([{ participants }])
+          .select();
+          
+        if (createErr) {
+          console.error('Error creating thread:', createErr);
+          throw new Error(createErr.message || 'Failed to create new chat thread');
+        }
+        
+        thread = created && created[0];
+      }
+      
+      setShowNewChatModal(false);
+      setActiveThread(thread);
+      
+      // Optionally: refetch threads
+      const { data: threadsData, error: threadsError } = await supabase
+        .from('chat_threads')
+        .select('*')
+        .ilike('participants', `%${user.id}%`)
+        .order('updated_at', { ascending: false });
+        
+      if (threadsError) {
+        console.error('Error refreshing threads:', threadsError);
+        // Don't throw here as the main operation succeeded
+      } else {
+        setThreads(threadsData || []);
+      }
+    } catch (err: any) {
+      console.error('Error in startNewChat:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to start new chat',
+        variant: 'destructive'
+      });
     }
-    setShowNewChatModal(false);
-    setActiveThread(thread);
-    // Optionally: refetch threads
-    const { data: threadsData } = await supabase
-      .from('chat_threads')
-      .select('*')
-      .ilike('participants', `%${user.id}%`)
-      .order('updated_at', { ascending: false });
-    setThreads(threadsData || []);
   };
 
   // File upload handler (mock: just use URL.createObjectURL for now)
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !activeThread || !user) return;
+    
     setUploading(true);
+    
     try {
       // TODO: Replace with Supabase Storage upload
       const url = URL.createObjectURL(file);
+      
+      const fileMsg = {
+        thread_id: activeThread.id,
+        sender_id: user.id,
+        content: JSON.stringify({ url, name: file.name, type: file.type }),
+        type: 'file',
+        created_at: new Date().toISOString(),
+      };
+      
       socket?.emit('sendMessage', {
         threadId: activeThread.id,
         senderId: user.id,
         content: JSON.stringify({ url, name: file.name, type: file.type }),
         type: 'file',
       });
-      await supabase.from('chat_messages').insert([
-        {
-          thread_id: activeThread.id,
-          sender_id: user.id,
-          content: JSON.stringify({ url, name: file.name, type: file.type }),
-          type: 'file',
-          created_at: new Date().toISOString(),
-        },
-      ]);
+      
+      const { error } = await supabase.from('chat_messages').insert([fileMsg]);
+      
+      if (error) {
+        console.error('Error saving file message:', error);
+        throw new Error(error.message || 'Failed to save file message');
+      }
+      
+      setMessages(prev => [...prev, fileMsg]);
+    } catch (err: any) {
+      console.error('Error in handleFileChange:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to upload file',
+        variant: 'destructive'
+      });
     } finally {
       setUploading(false);
     }

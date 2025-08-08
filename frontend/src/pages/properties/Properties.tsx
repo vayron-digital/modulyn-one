@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthLoading } from '../../hooks/useAuthLoading';
+import LoadingState from '../../components/common/LoadingState';
 import { useToast } from '../../components/ui/use-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -47,6 +48,27 @@ import {
   Settings,
   Pencil,
   Trash,
+  Grid,
+  List,
+  RefreshCw,
+  Save,
+  Share2,
+  Copy,
+  ExternalLink,
+  Lock,
+  Unlock,
+  Shield,
+  Crown,
+  Sparkles,
+  Rocket,
+  Zap,
+  Award,
+  Briefcase,
+  Globe,
+  Heart,
+  AlertCircle,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { getCurrencyDisplay } from '../../utils/currency';
@@ -62,7 +84,7 @@ import {
 } from '../../components/ui/dialog';
 import { Input, Checkbox } from '../../components/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Badge, badgeVariants } from '../../components/ui/badge';
+import { Badge } from '../../components/ui/badge';
 import PropertyCard from '../../components/properties/PropertyCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 import { Textarea } from '../../components/ui/textarea';
@@ -76,19 +98,31 @@ import PropertyPagination from '../../components/properties/PropertyPagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { PropertyType, RESIDENTIAL_TYPES, COMMERCIAL_TYPES, ALL_PROPERTY_TYPES } from '../../utils/propertyTypes';
+import { motion, AnimatePresence } from 'framer-motion';
+import { formatPropertyTypeDisplay } from '../../utils/propertyTypesByLocation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
+import { ToggleGroup, ToggleGroupItem } from '../../components/ui/toggle-group';
 
 interface Property {
   id: string;
-  name: string;
+  title: string;
   type: PropertyType;
+  property_type_detailed?: string;
   status: string;
   price: number;
+  current_price?: number;
   bedrooms?: number;
   bathrooms?: number;
+  bathroom_options?: number[];
+  size_options?: number[];
+  square_footage?: number;
   address: string;
   tags?: string[];
   created_at: string;
   updated_at: string;
+  owner?: string;
+  images?: string[];
+  bedroom_options?: number[];
 }
 
 const ALL_STATUS_OPTIONS: { label: string; status: PropertyStatus | null }[] = [
@@ -109,7 +143,7 @@ const DEFAULT_TABS: Tab[] = [
   { label: 'Off Market', status: 'Off Market' as PropertyStatus }
 ];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
 interface FilterPreset {
   name: string;
@@ -175,7 +209,7 @@ type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'succe
 type TabName = 'Overview' | 'Details' | 'Media' | 'Location' | 'Pricing' | 'Documents' | 'History';
 
 const Properties = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuthLoading();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -215,9 +249,16 @@ const Properties = () => {
     }
   });
   const [showCustomizeTabs, setShowCustomizeTabs] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
   const [refreshKey, setRefreshKey] = useState(0);
   const [showManageTabs, setShowManageTabs] = useState(false);
+  const [stats, setStats] = useState({
+    total: 0,
+    available: 0,
+    sold: 0,
+    underOffer: 0,
+    totalValue: 0
+  });
   
   const debouncedFilters = useDebounce(filters, 500);
 
@@ -235,6 +276,7 @@ const Properties = () => {
     { value: 'industrial' as PropertyType, label: 'Industrial' }
   ];
 
+  // Fetch properties with enhanced error handling and stats
   useEffect(() => {
     let isMounted = true;
     const fetchProperties = async () => {
@@ -258,7 +300,7 @@ const Properties = () => {
 
         // Apply search
         if (search) {
-          query = query.or(`name.ilike.%${search}%,address.ilike.%${search}%`);
+          query = query.or(`title.ilike.%${search}%,address.ilike.%${search}%`);
         }
 
         // Apply sorting
@@ -276,6 +318,18 @@ const Properties = () => {
         if (isMounted) {
           setProperties(data || []);
           setTotalPages(Math.ceil((count || 0) / PAGE_SIZE));
+          
+          // Calculate stats
+          const allProperties = await supabase.from('properties').select('*');
+          if (allProperties.data) {
+            const total = allProperties.data.length;
+            const available = allProperties.data.filter(p => p.status === 'Available').length;
+            const sold = allProperties.data.filter(p => p.status === 'Sold').length;
+            const underOffer = allProperties.data.filter(p => p.status === 'Under Offer').length;
+            const totalValue = allProperties.data.reduce((sum, p) => sum + (p.price || 0), 0);
+            
+            setStats({ total, available, sold, underOffer, totalValue });
+          }
         }
       } catch (error: any) {
         console.error('Error fetching properties:', error);
@@ -296,6 +350,7 @@ const Properties = () => {
     return () => { isMounted = false; };
   }, [location.pathname, page, sort, filters, search, toast]);
 
+  // Real-time updates
   useEffect(() => {
     const subscription = supabase
       .channel('properties_changes')
@@ -316,7 +371,7 @@ const Properties = () => {
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1); // Reset to first page when filters change
+    setPage(1);
   };
 
   const handleSort = (newSort: { field: string; order: 'asc' | 'desc' }) => {
@@ -355,14 +410,6 @@ const Properties = () => {
   const formatStatus = (status: string | undefined) => {
     if (!status) return 'Unknown';
     return status.replace('_', ' ');
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, which: 'start'|'end') => {
-    setDateRange(prev => ({
-      ...prev,
-      [which]: e.target.value
-    }));
-    setPage(1);
   };
 
   const handleBulkUpdate = async () => {
@@ -421,7 +468,7 @@ const Properties = () => {
     const headers = ['ID', 'Name', 'Type', 'Price', 'Address', 'Status', 'Created At'];
     const data = properties.map(p => [
       p.id,
-      p.name,
+                  p.title,
       p.type,
       p.price,
       p.address,
@@ -445,95 +492,8 @@ const Properties = () => {
     setShowQuickView(property);
   };
 
-  const savePreset = () => {
-    const name = prompt('Enter preset name:');
-    if (!name) return;
-
-    const newPreset: FilterPreset = {
-      name,
-      filters: {
-        type: filters.type !== 'All' ? [filters.type] : undefined,
-        min_price: filters.minPrice ? filters.minPrice : undefined,
-        max_price: filters.maxPrice ? filters.maxPrice : undefined,
-        status: filters.status !== 'All' ? [filters.status] : undefined,
-      }
-    };
-
-    setFilterPresets(prev => [...prev, newPreset]);
-    setActivePreset(name);
-  };
-
-  const loadPreset = (preset: FilterPreset) => {
-    setFilters({
-      type: preset.filters.type?.[0] || 'All',
-      minPrice: preset.filters.min_price?.toString() || '',
-      maxPrice: preset.filters.max_price?.toString() || '',
-      bedrooms: 'All',
-      bathrooms: 'All',
-      location: '',
-      status: (preset.filters.status?.[0] as PropertyStatus | 'All') || 'All',
-      tags: '',
-    });
-    setActivePreset(preset.name);
-  };
-
-  const deletePreset = (name: string) => {
-    setFilterPresets(prev => prev.filter(p => p.name !== name));
-    if (activePreset === name) {
-      setActivePreset(null);
-    }
-  };
-
-  const handleTabToggle = (status: PropertyStatus | null) => {
-    if (tabs.some((tab: Tab) => tab.status === status)) {
-      setTabs(tabs.filter((tab: Tab) => tab.status !== status));
-    } else {
-      const found = ALL_STATUS_OPTIONS.find(opt => opt.status === status);
-      if (found) setTabs([...tabs, found]);
-    }
-  };
-
-  const moveTab = (index: number, direction: 'up' | 'down') => {
-    const newTabs = [...tabs];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    [newTabs[index], newTabs[newIndex]] = [newTabs[newIndex], newTabs[index]];
-    setTabs(newTabs);
-  };
-
-  const handleTabClick = (tab: Tab) => {
-    const idx = tabs.findIndex((t: Tab) => t.label === tab.label);
-    if (idx !== -1) {
-      setActiveTab(idx);
-    }
-  };
-
-  const sortedProperties = [...properties].sort((a, b) => {
-    if (!sort.field) return 0;
-
-    const aValue = a[sort.field];
-    const bValue = b[sort.field];
-
-    if (aValue === null) return 1;
-    if (bValue === null) return -1;
-
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sort.order === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sort.order === 'asc' 
-        ? aValue - bValue
-        : bValue - aValue;
-    }
-
-    return 0;
-  });
-
-  const handleSaveTabs = () => {
-    localStorage.setItem('propertyTabs', JSON.stringify(tabs));
-    setShowManageTabs(false);
+  const handleTabChange = (tabIndex: number) => {
+    setActiveTab(tabIndex);
   };
 
   const getBadgeVariant = (status: PropertyStatus): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -545,79 +505,6 @@ const Properties = () => {
     return 'default';
   };
 
-  const handleTabChange = (tabIndex: number) => {
-    setActiveTab(tabIndex);
-  };
-
-  const handleSearch = (value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      search: value
-    }));
-  };
-
-  const handleTypeChange = (value: PropertyType | 'All') => {
-    setFilters(prev => ({
-      ...prev,
-      type: value
-    }));
-  };
-
-  const handlePriceRangeChange = (min: number, max: number) => {
-    setFilters(prev => ({
-      ...prev,
-      minPrice: min.toString(),
-      maxPrice: max.toString(),
-    }));
-  };
-
-  const handleStatusChange = (value: PropertyStatus | 'All') => {
-    setFilters(prev => ({
-      ...prev,
-      status: value
-    }));
-  };
-
-  const handleLocationChange = (value: string | 'All') => {
-    setFilters(prev => ({
-      ...prev,
-      location: value
-    }));
-  };
-
-  const handleBedroomsChange = (value: string) => {
-    handleFilterChange('bedrooms', value);
-  };
-
-  const handleBathroomsChange = (value: string) => {
-    handleFilterChange('bathrooms', value);
-  };
-
-  const handleAreaChange = (value: string) => {
-    handleFilterChange('location', value);
-  };
-
-  const handleAmenitiesChange = (value: string[]) => {
-    setFilters(prev => ({
-      ...prev,
-      amenities: value
-    }));
-  };
-
-  const handleError = (error: Error) => {
-    console.error('Error:', error);
-    toast({ title: 'Error', description: error.message, variant: 'destructive' });
-  };
-
-  // Fix string | null assignment
-  const safeString = (val: string | null): string => val ?? '';
-
-  // Fix priceRange type mismatch for props expecting [number, number]
-  const getPriceRangeArray = (priceRange: { min: number; max: number }): [number, number] => [priceRange.min, priceRange.max];
-
-  // Fix status type mismatch for props expecting string
-  const getStatusString = (status: PropertyStatus | 'All'): string => status === 'All' ? '' : status;
-
   const formatOptions = (arr: (string | number)[] | undefined, fallback: string | number | undefined) => {
     if (!arr || arr.length === 0) return fallback ?? 'N/A';
     if (arr.length === 1) return arr[0];
@@ -625,151 +512,152 @@ const Properties = () => {
     return arr.join(', ');
   };
 
-  // Wrapper for filter UI compatibility
-  const handleFilterChangeWrapper = (filtersObj: Partial<Filters>) => {
-    Object.entries(filtersObj).forEach(([key, value]) => {
-      handleFilterChange(key as keyof Filters, value);
-    });
-  };
-
-  // Map filters to PropertyFilters expected shape
-  const propertyFiltersProps = {
-    search,
-    type: filters.type,
-    status: filters.status,
-    priceRange: [Number(filters.minPrice) || 0, Number(filters.maxPrice) || 0],
-    bedrooms: filters.bedrooms,
-    bathrooms: filters.bathrooms,
-  };
-
-  const renderManageTabsDialog = () => {
-    if (!showManageTabs) return null;
-
-    return (
-      <DialogRoot open={showManageTabs} onOpenChange={setShowManageTabs}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Customize Property View Tabs</DialogTitle>
-            <DialogDescription>
-              Drag and drop tabs to reorder them. Changes will be saved automatically.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {tabs.map((tab, index) => (
-              <div key={tab.label} className="flex items-center justify-between p-2 border rounded">
-                <span>{tab.label}</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => moveTab(index, 'up')}
-                    disabled={index === 0}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => moveTab(index, 'down')}
-                    disabled={index === tabs.length - 1}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button onClick={handleSaveTabs}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </DialogRoot>
-    );
-  };
-
-  const renderTabContent = (tab: TabName) => {
-    switch (tab) {
-      case 'Overview':
-        return <PropertyOverview property={selectedProperty} />;
-      case 'Details':
-        return <PropertyDetails property={selectedProperty} />;
-      case 'Media':
-        return <PropertyMedia property={selectedProperty} />;
-      case 'Location':
-        return <PropertyLocation property={selectedProperty} />;
-      case 'Pricing':
-        return <PropertyPricing property={selectedProperty} />;
-      case 'Documents':
-        return <PropertyDocuments property={selectedProperty} />;
-      case 'History':
-        return <PropertyHistory property={selectedProperty} />;
-      default:
-        return null;
-    }
-  };
-
   if (loading) return <FullScreenLoader />;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="space-y-6 bg-white min-h-screen p-6 sm:p-4 md:p-6">
-      {/* Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-black">Properties</h1>
-          <p className="text-gray-600 text-sm mt-1">Manage your listings, fast.</p>
+    <LoadingState
+      loading={authLoading}
+      error={authError}
+      type="page"
+      message="Loading properties..."
+    >
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-20">
+      {/* Hero Section with Floating KPIs */}
+      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-6">
+              <h1 className="text-3xl font-bold text-white">Properties</h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-slate-300 text-sm">Live Portfolio</span>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-auto">
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-300" />
             <Input
-              type="text"
-              placeholder="Search properties..."
-              className="w-full sm:w-64 pl-10"
+                  placeholder="Search properties, addresses..."
               value={search}
               onChange={handleSearchInput}
+                  className="pl-12 w-96 bg-white/10 border-white/20 text-white placeholder:text-slate-300 focus:bg-white/20 backdrop-blur-sm"
             />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           </div>
           <Button
             variant="outline"
-            className="bg-white text-black border-black hover:bg-gray-100 w-full sm:w-auto"
+                size="sm" 
             onClick={() => setShowFilters(!showFilters)}
+                className="border-white/30 text-white hover:bg-white/10"
           >
-            <Filter className="h-4 w-4 mr-2 text-black" />
+                <Filter className="h-4 w-4 mr-2" />
             Filters
           </Button>
-          <Button className="bg-black text-white hover:bg-gray-900 w-full sm:w-auto" onClick={() => navigate('/properties/new')}>
-              <Plus className="h-4 w-4 mr-2 text-white" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExport}
+                className="border-white/30 text-white hover:bg-white/10"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={() => navigate('/properties/new')} 
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
               Add Property
             </Button>
         </div>
       </div>
 
-      {/* Filters & Tabs */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <div className="flex-1">
-          <PropertyFilters
-            filters={propertyFiltersProps}
-            onChange={(newFilters) => {
-              setSearch(newFilters.search);
-              setFilters(prev => ({
-                ...prev,
-                type: newFilters.type,
-                status: newFilters.status,
-                minPrice: String(newFilters.priceRange[0] || ''),
-                maxPrice: String(newFilters.priceRange[1] || ''),
-                bedrooms: newFilters.bedrooms,
-                bathrooms: newFilters.bathrooms,
-              }));
-            }}
-          />
+          {/* Floating KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Total Properties</p>
+                  <p className="text-3xl font-bold text-white">{stats.total}</p>
+                  <p className="text-xs text-slate-300 mt-1">+8.2% from last month</p>
         </div>
-        <div className="flex flex-row flex-wrap gap-2 sm:gap-4 items-center">
+                <div className="p-3 bg-blue-500/20 rounded-xl">
+                  <Building className="h-6 w-6 text-blue-300" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Available</p>
+                  <p className="text-3xl font-bold text-white">{stats.available}</p>
+                  <p className="text-xs text-slate-300 mt-1">Ready for sale</p>
+                </div>
+                <div className="p-3 bg-emerald-500/20 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-emerald-300" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Under Offer</p>
+                  <p className="text-3xl font-bold text-white">{stats.underOffer}</p>
+                  <p className="text-xs text-slate-300 mt-1">In negotiation</p>
+                </div>
+                <div className="p-3 bg-yellow-500/20 rounded-xl">
+                  <Clock className="h-6 w-6 text-yellow-300" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Sold</p>
+                  <p className="text-3xl font-bold text-white">{stats.sold}</p>
+                  <p className="text-xs text-slate-300 mt-1">This month</p>
+                </div>
+                <div className="p-3 bg-red-500/20 rounded-xl">
+                  <CheckCircle className="h-6 w-6 text-red-300" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Portfolio Value</p>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalValue)}</p>
+                  <p className="text-xs text-slate-300 mt-1">Total market value</p>
+                </div>
+                <div className="p-3 bg-purple-500/20 rounded-xl">
+                  <DollarSign className="h-6 w-6 text-purple-300" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Bar */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 mx-6 -mt-6 mb-6 border border-slate-200/50 shadow-lg">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap gap-2">
         {tabs.map((tab, idx) => (
             <Button
             key={tab.label}
               variant={activeTab === idx ? 'default' : 'outline'}
-              className={`text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 ${activeTab === idx ? 'bg-black text-white' : 'bg-white text-black border-black'}`}
+                  className={`${
+                    activeTab === idx 
+                      ? 'bg-blue-600 text-white border-blue-600' 
+                      : 'bg-white/50 backdrop-blur-sm text-slate-700 border-slate-200/50 hover:bg-white/70'
+                  }`}
               onClick={() => handleTabChange(idx)}
           >
             {tab.label}
@@ -778,298 +666,484 @@ const Properties = () => {
         </div>
       </div>
 
-      {/* Table/Card View Toggle */}
-      <div className="flex justify-end gap-2">
-          <Button
-          variant={viewMode === 'table' ? 'default' : 'outline'}
-          className="text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2"
-          onClick={() => setViewMode('table')}
-        >
-          Table
-          </Button>
-          <Button
-          variant={viewMode === 'card' ? 'default' : 'outline'}
-          className="text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2"
-          onClick={() => setViewMode('card')}
-        >
-          Cards
-          </Button>
+          <div className="flex items-center space-x-3">
+            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'table' | 'card')}>
+              <ToggleGroupItem value="card" className="data-[state=on]:bg-blue-600 data-[state=on]:text-white bg-white/50 backdrop-blur-sm border-slate-200/50">
+                <Grid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="table" className="data-[state=on]:bg-blue-600 data-[state=on]:text-white bg-white/50 backdrop-blur-sm border-slate-200/50">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
 
-      {/* Table View */}
-      {viewMode === 'table' ? (
-        <div className="overflow-x-auto rounded-lg border border-black bg-white">
-          <Table className="min-w-[700px]">
+        {/* Advanced Filters */}
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-6 pt-6 border-t border-slate-200/50"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-2 block">Property Type</Label>
+                <Select value={filters.type} onValueChange={(value) => handleFilterChange('type', value)}>
+                  <SelectTrigger className="bg-white/50 backdrop-blur-sm border-slate-200/50 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Types</SelectItem>
+                    {propertyTypeOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-2 block">Status</Label>
+                <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                  <SelectTrigger className="bg-white/50 backdrop-blur-sm border-slate-200/50 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Status</SelectItem>
+                    {PROPERTY_STATUSES.CORE.map(status => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-2 block">Min Price</Label>
+                <Input
+                  type="number"
+                  placeholder="Min Price"
+                  className="bg-white/50 backdrop-blur-sm border-slate-200/50 focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.minPrice}
+                  onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-slate-700 mb-2 block">Max Price</Label>
+                <Input
+                  type="number"
+                  placeholder="Max Price"
+                  className="bg-white/50 backdrop-blur-sm border-slate-200/50 focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.maxPrice}
+                  onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Bulk Actions */}
+      {selected.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mx-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium text-blue-900">
+                {selected.length} property{selected.length !== 1 ? 'ies' : 'y'} selected
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <Select value={bulkAction || ''} onValueChange={(value) => setBulkAction(value as any)}>
+                <SelectTrigger className="w-40 bg-white border-blue-200">
+                  <SelectValue placeholder="Bulk Action" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="status">Update Status</SelectItem>
+                  <SelectItem value="type">Update Type</SelectItem>
+                  <SelectItem value="delete">Delete</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {bulkAction && bulkAction !== 'delete' && (
+                <Select value={bulkValue} onValueChange={setBulkValue}>
+                  <SelectTrigger className="w-40 bg-white border-blue-200">
+                    <SelectValue placeholder="Select Value" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bulkAction === 'status' && PROPERTY_STATUSES.CORE.map(status => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                    {bulkAction === 'type' && propertyTypeOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+          <Button
+                variant="outline"
+                size="sm"
+                onClick={bulkAction === 'delete' ? handleBulkDelete : handleBulkUpdate}
+                disabled={!bulkAction || (bulkAction !== 'delete' && !bulkValue)}
+                className="bg-white border-blue-200 hover:bg-blue-50"
+              >
+                {bulkAction === 'delete' ? 'Delete Selected' : 'Update Selected'}
+          </Button>
+              
+          <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelected([])}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Clear Selection
+          </Button>
+        </div>
+          </div>
+        </div>
+      )}
+
+      {/* Properties Grid/Table */}
+      <div className="px-6">
+        <AnimatePresence mode="wait">
+          {viewMode === 'card' ? (
+            <motion.div
+              key="card-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {properties.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  id={property.id}
+                  refNo={property.id}
+                  title={property.title}
+                  price={property.current_price ?? property.price}
+                  type={property.property_type_detailed || property.type}
+                  location={property.address}
+                  bedrooms={String(formatOptions(property.bedroom_options, property.bedrooms) ?? 'N/A')}
+                  bathrooms={String(formatOptions(property.bathroom_options, property.bathrooms) ?? 'N/A')}
+                  area={String(formatOptions(property.size_options, property.square_footage) ?? 'N/A')}
+                  status={property.status}
+                  listingDate={new Date(property.created_at).toLocaleDateString()}
+                  owner={property.owner || ''}
+                  image={property.images?.[0] || ''}
+                  onClick={() => navigate(`/properties/${property.id}`)}
+                />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="table-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-white/70 backdrop-blur-sm rounded-xl border border-slate-200/50 shadow-lg overflow-hidden"
+            >
+              <Table>
               <TableHeader>
-                <TableRow>
+                  <TableRow className="bg-slate-50/50">
                   <TableHead className="w-12">
                     <Checkbox
                       checked={selected.length === properties.length}
                       onCheckedChange={handleSelectAll}
-                      className="rounded border-black"
+                        className="rounded"
                     />
                   </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-100 text-black"
-                    onClick={() => handleSort({ field: 'name', order: 'asc' })}
-                  >
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">
                     <div className="flex items-center gap-1">
                       Name
-                      {sort.field === 'name' && (
+                        {sort.field === 'title' && (
                         sort.order === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 text-black" /> : 
-                          <ChevronDown className="h-4 w-4 text-black" />
+                            <ChevronUp className="h-4 w-4" /> : 
+                            <ChevronDown className="h-4 w-4" />
                       )}
                     </div>
                   </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-100 text-black"
-                    onClick={() => handleSort({ field: 'type', order: 'asc' })}
-                  >
-                    <div className="flex items-center gap-1">
-                      Type
-                      {sort.field === 'type' && (
-                        sort.order === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 text-black" /> : 
-                          <ChevronDown className="h-4 w-4 text-black" />
-                      )}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-100 text-black"
-                    onClick={() => handleSort({ field: 'price', order: 'asc' })}
-                  >
-                    <div className="flex items-center gap-1">
-                      Price
-                      {sort.field === 'price' && (
-                        sort.order === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 text-black" /> : 
-                          <ChevronDown className="h-4 w-4 text-black" />
-                      )}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-100 text-black"
-                    onClick={() => handleSort({ field: 'status', order: 'asc' })}
-                  >
-                    <div className="flex items-center gap-1">
-                      Status
-                      {sort.field === 'status' && (
-                        sort.order === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 text-black" /> : 
-                          <ChevronDown className="h-4 w-4 text-black" />
-                      )}
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-100 text-black"
-                    onClick={() => handleSort({ field: 'created_at', order: 'asc' })}
-                  >
-                    <div className="flex items-center gap-1">
-                      Created
-                      {sort.field === 'created_at' && (
-                        sort.order === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 text-black" /> : 
-                          <ChevronDown className="h-4 w-4 text-black" />
-                      )}
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-12"></TableHead>
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">Type</TableHead>
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">Price</TableHead>
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">Status</TableHead>
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">Location</TableHead>
+                    <TableHead className="cursor-pointer hover:bg-slate-100/50">Created</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedProperties.map((property) => (
-                  <TableRow key={property.id} className="even:bg-white odd:bg-gray-50 hover:bg-gray-100 transition-colors">
+                  {properties.map((property) => (
+                    <TableRow key={property.id} className="hover:bg-slate-50/50">
                     <TableCell>
                       <Checkbox
                         checked={selected.includes(property.id)}
                         onCheckedChange={() => handleSelect(property.id)}
-                        className="rounded border-black"
+                          className="rounded"
                       />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-black" />
-                        {property.name}
+                          <Building className="h-4 w-4 text-slate-500" />
+                          <span className="font-medium">{property.title}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="capitalize text-black">{property.type}</span>
+                        <Badge variant="outline" className="capitalize">
+                          {formatPropertyTypeDisplay(property.property_type_detailed || property.type)}
+                        </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-black" />
-                        <div className="space-y-1">
-                          <div className="font-semibold text-black">
+                          <DollarSign className="h-4 w-4 text-slate-500" />
+                          <span className="font-semibold">
                             {formatCurrency(property.price)}
-                          </div>
-                        </div>
+                          </span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getBadgeVariant(property.status || 'Available')} className="border-black text-black bg-white">
-                        {property.status || 'Available'}
+                        <Badge variant={getBadgeVariant(property.status as PropertyStatus)}>
+                          {property.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-black">
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-slate-500" />
+                          <span className="text-sm text-slate-600 truncate max-w-32">
+                            {property.address}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-600">
                       {new Date(property.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                        <div className="flex gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-600 hover:text-black"
+                                  className="h-8 w-8"
                           onClick={() => handleQuickView(property)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {user?.is_admin && (
+                              </TooltipTrigger>
+                              <TooltipContent>Quick View</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-gray-600 hover:text-black"
+                                  className="h-8 w-8"
                             onClick={() => navigate(`/properties/edit/${property.id}`)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                        )}
+                              </TooltipTrigger>
+                              <TooltipContent>Edit</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-600 hover:text-black"
+                                  className="h-8 w-8"
                           onClick={() => navigate(`/properties/${property.id}`)}
                         >
                           <ArrowUpRight className="h-4 w-4" />
                         </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View Details</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-          {sortedProperties.map((property) => (
-            <PropertyCard
-              key={property.id}
-              id={property.id}
-              refNo={property.id}
-              title={property.name}
-              price={property.current_price ?? 0}
-              type={property.type}
-              location={property.address}
-              bedrooms={String(formatOptions(property.bedroom_options, property.bedrooms) ?? '')}
-              bathrooms={String(formatOptions(property.bathroom_options, property.bathrooms) ?? '')}
-              area={String(formatOptions(property.size_options, property.square_footage) ?? '')}
-              status={property.status}
-              listingDate={new Date(property.created_at).toLocaleDateString()}
-              owner={property.owner}
-              image={property.images?.[0]}
-              onClick={() => navigate(`/properties/${property.id}`)}
-            />
-          ))}
-        </div>
-      )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* Pagination */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-        <div className="text-xs sm:text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+          <div className="text-sm text-slate-600">
           Showing {properties.length} of {totalPages * PAGE_SIZE} properties
         </div>
-        <div className="flex gap-2">
+          
+          <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="bg-white text-black border-black hover:bg-gray-100"
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
+              className="bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70"
           >
-            <ChevronLeft className="h-4 w-4 text-black" />
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
           </Button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={page === pageNum ? 'default' : 'outline'}
+                    size="sm"
+                    className={`w-8 h-8 p-0 ${
+                      page === pageNum 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70'
+                    }`}
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
           <Button
             variant="outline"
             size="sm"
-            className="bg-white text-black border-black hover:bg-gray-100"
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
+              className="bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70"
           >
-            <ChevronRight className="h-4 w-4 text-black" />
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
+          </div>
         </div>
       </div>
 
       {/* Quick View Modal */}
       {showQuickView && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-0">
-          <Card className="w-full max-w-lg sm:max-w-2xl border-black bg-white">
-            <CardHeader className="border-b border-black">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-black text-base sm:text-lg">{showQuickView.name}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-600 hover:text-black"
-                  onClick={() => setShowQuickView(null)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <DialogRoot open={!!showQuickView} onOpenChange={() => setShowQuickView(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                                      <DialogTitle className="text-xl font-semibold">{showQuickView.title}</DialogTitle>
+              <DialogDescription>
+                Property details and quick actions
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-3">
                   <div>
-                    <div className="text-xs sm:text-sm text-black">Type</div>
+                  <Label className="text-sm font-medium text-slate-600">Type</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <Home className="h-4 w-4 text-black" />
-                      <span className="text-black">{showQuickView.type}</span>
+                    <Home className="h-4 w-4 text-slate-500" />
+                    <span className="capitalize">{showQuickView.type}</span>
                     </div>
                   </div>
+                
                   <div>
-                    <div className="text-xs sm:text-sm text-black">Status</div>
-                    <Badge className="border-black text-black bg-white">
+                  <Label className="text-sm font-medium text-slate-600">Status</Label>
+                  <Badge variant={getBadgeVariant(showQuickView.status as PropertyStatus)} className="mt-1">
                       {showQuickView.status}
                     </Badge>
                   </div>
+                
                   <div>
-                    <div className="text-xs sm:text-sm text-black">Price</div>
+                  <Label className="text-sm font-medium text-slate-600">Price</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <DollarSign className="h-4 w-4 text-black" />
-                      <span className="text-black">{formatCurrency(showQuickView.price)}</span>
+                    <DollarSign className="h-4 w-4 text-slate-500" />
+                    <span className="font-semibold">{formatCurrency(showQuickView.price)}</span>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm text-black">Location</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="h-4 w-4 text-black" />
-                      <span className="text-black">{showQuickView.address}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm text-black">Bedrooms</div>
-                    <span className="text-black">{showQuickView.bedrooms ?? 'N/A'}</span>
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm text-black">Bathrooms</div>
-                    <span className="text-black">{showQuickView.bathrooms ?? 'N/A'}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="text-xs sm:text-sm text-black">Tags</div>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {showQuickView.tags?.length ? showQuickView.tags.map(tag => (
-                        <Badge key={tag} className="border-black text-black bg-white">{tag}</Badge>
-                      )) : <span className="text-gray-600">None</span>}
-                    </div>
-                  </div>
-                </div>
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="space-y-3">
+                  <div>
+                  <Label className="text-sm font-medium text-slate-600">Location</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                    <MapPin className="h-4 w-4 text-slate-500" />
+                    <span className="text-sm">{showQuickView.address}</span>
+                    </div>
+                  </div>
+                
+                  <div>
+                  <Label className="text-sm font-medium text-slate-600">Bedrooms</Label>
+                  <span className="text-sm">{showQuickView.bedrooms ?? 'N/A'}</span>
+                  </div>
+                
+                  <div>
+                  <Label className="text-sm font-medium text-slate-600">Bathrooms</Label>
+                  <span className="text-sm">{showQuickView.bathrooms ?? 'N/A'}</span>
+                  </div>
+                    </div>
+                  </div>
+            
+            {showQuickView.tags && showQuickView.tags.length > 0 && (
+              <div className="border-t border-slate-200 pt-4">
+                <Label className="text-sm font-medium text-slate-600">Tags</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {showQuickView.tags.map(tag => (
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
         </div>
+            )}
+            
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const address = showQuickView.address || showQuickView.title;
+                  if (address) {
+                    const encodedAddress = encodeURIComponent(address);
+                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                    window.open(googleMapsUrl, '_blank');
+                  } else {
+                    toast({
+                      title: "No Address Available",
+                      description: "This property doesn't have an address to show on the map.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                View on Map
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/properties/edit/${showQuickView.id}`)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Property
+              </Button>
+              <Button
+                onClick={() => navigate(`/properties/${showQuickView.id}`)}
+              >
+                <ArrowUpRight className="h-4 w-4 mr-2" />
+                View Details
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogRoot>
       )}
     </div>
+    </LoadingState>
   );
 };
 

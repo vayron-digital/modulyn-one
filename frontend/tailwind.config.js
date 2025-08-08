@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import theme from './src/lib/theme.js'
+
 export default {
   darkMode: 'class',
   content: [
@@ -8,42 +10,165 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Use centralized theme colors
+        'modulyn-flame': theme.personalized.modulynFlame,
+        'snowfield': theme.personalized.snowfield,
+        'obsidian-veil': theme.personalized.obsidianVeil,
+        'mist-grey': theme.personalized.mistGrey,
+        'charcoal-tint': theme.personalized.charcoalTint,
+        'lumen-pink': theme.personalized.lumenPink,
+        'skyline-blue': theme.personalized.skylineBlue,
+        'inferno-red': theme.personalized.infernoRed,
+        'amber-pulse': theme.personalized.amberPulse,
+        'emerald-rise': theme.personalized.emeraldRise,
+        
+        // Functional colors
+        'surface': {
+          'primary': theme.functional.surface.primary,
+          'secondary': theme.functional.surface.secondary,
+        },
+        'on-surface': {
+          'strong': theme.functional.onSurface.strong,
+          'soft': theme.functional.onSurface.soft,
+        },
+        'primary': {
+          'default': theme.functional.primary.default,
+          'on-primary': theme.functional.primary.onPrimary,
+        },
+        'secondary': {
+          'default': theme.functional.secondary.default,
+          'on-secondary': theme.functional.secondary.onSecondary,
+        },
+        'interactive': {
+          'default': theme.functional.interactive.default,
+          'hover': theme.functional.interactive.hover,
+          'disabled': theme.functional.interactive.disabled,
+        },
+        'critical': {
+          'default': theme.functional.critical.default,
+          'on-critical': theme.functional.critical.onCritical,
+        },
+        'warning': {
+          'default': theme.functional.warning.default,
+          'on-warning': theme.functional.warning.onWarning,
+        },
+        'success': {
+          'default': theme.functional.success.default,
+          'on-success': theme.functional.success.onSuccess,
+        },
+        'highlight': {
+          'default': theme.functional.highlight.default,
+        },
+        'decorative': {
+          'default': theme.functional.decorative.default,
+        },
+        
+        // Semantic colors
+        'text': {
+          'heading': theme.semantic.text.heading,
+          'body': theme.semantic.text.body,
+          'link': theme.semantic.text.link,
+          'link-hover': theme.semantic.text.linkHover,
+          'disabled': theme.semantic.text.disabled,
+          'on-dark': theme.semantic.text.onDark,
+        },
+        'fields': {
+          'background': theme.semantic.fields.background,
+          'border': theme.semantic.fields.border,
+          'placeholder': theme.semantic.fields.placeholder,
+          'text': theme.semantic.fields.text,
+          'focus-border': theme.semantic.fields.focusBorder,
+        },
+        'states': {
+          'error': theme.semantic.states.error,
+          'warning': theme.semantic.states.warning,
+          'success': theme.semantic.states.success,
+          'info': theme.semantic.states.info,
+        },
+        
+        // Legacy support - map old colors to new theme
         background: {
-          DEFAULT: '#FFFFFF',
-          dark: '#121212',
+          DEFAULT: theme.functional.surface.primary,
+          dark: theme.personalized.obsidianVeil,
         },
         card: {
-          DEFAULT: '#FFFFFF',
-          dark: '#232323',
+          DEFAULT: theme.functional.surface.primary,
+          dark: theme.personalized.charcoalTint,
         },
         surface: {
-          DEFAULT: '#F5F5F5',
-          dark: '#1E1E1E',
+          DEFAULT: theme.functional.surface.secondary,
+          dark: theme.personalized.charcoalTint,
         },
-        primary: '#0b090d',
-        accent: '#091413',
+        primary: theme.functional.primary.default,
+        accent: theme.functional.secondary.default,
         text: {
-          DEFAULT: '#090004',
-          dark: 'rgba(255,255,255,0.87)',
-          secondary: 'rgba(60,60,60,0.7)',
-          secondaryDark: 'rgba(255,255,255,0.60)',
-          disabled: 'rgba(0,0,0,0.38)',
-          disabledDark: 'rgba(255,255,255,0.38)',
+          DEFAULT: theme.functional.onSurface.strong,
+          dark: theme.semantic.text.onDark,
+          secondary: theme.functional.onSurface.soft,
+          secondaryDark: theme.semantic.text.onDark,
+          disabled: theme.semantic.text.disabled,
+          disabledDark: theme.semantic.text.disabled,
         },
         divider: {
-          DEFAULT: 'rgba(0,0,0,0.12)',
-          dark: 'rgba(255,255,255,0.12)',
+          DEFAULT: theme.semantic.fields.border,
+          dark: theme.semantic.fields.border,
         },
       },
-      spacing: {
-        xs: '4px',
-        sm: '8px',
-        md: '16px',
-        lg: '24px',
-        xl: '32px',
-        '2xl': '48px',
-        '3xl': '64px',
+      
+      // Typography tokens
+      fontFamily: {
+        'heading': theme.typography.fontFamily.heading,
+        'body': theme.typography.fontFamily.body,
+        'mono': theme.typography.fontFamily.mono,
+        'sans': theme.typography.fontFamily.body,
       },
+      fontSize: {
+        'xs': theme.typography.fontSize.xs,
+        'sm': theme.typography.fontSize.sm,
+        'base': theme.typography.fontSize.base,
+        'lg': theme.typography.fontSize.lg,
+        'xl': theme.typography.fontSize.xl,
+        '2xl': theme.typography.fontSize['2xl'],
+        '3xl': theme.typography.fontSize['3xl'],
+        '4xl': theme.typography.fontSize['4xl'],
+      },
+      fontWeight: {
+        'light': theme.typography.fontWeight.light,
+        'normal': theme.typography.fontWeight.regular,
+        'medium': theme.typography.fontWeight.medium,
+        'semibold': theme.typography.fontWeight.semibold,
+        'bold': theme.typography.fontWeight.bold,
+        'extrabold': theme.typography.fontWeight.extrabold,
+      },
+      lineHeight: {
+        'tight': theme.typography.lineHeight.tight,
+        'normal': theme.typography.lineHeight.normal,
+        'relaxed': theme.typography.lineHeight.relaxed,
+      },
+      
+      // Spacing tokens
+      spacing: {
+        'xs': theme.spacing.xs,
+        'sm': theme.spacing.sm,
+        'md': theme.spacing.md,
+        'lg': theme.spacing.lg,
+        'xl': theme.spacing.xl,
+        '2xl': theme.spacing['2xl'],
+        '3xl': theme.spacing['3xl'],
+      },
+      
+      // Shadow tokens
+      boxShadow: {
+        'none': theme.shadows.none,
+        'sm': theme.shadows.sm,
+        'md': theme.shadows.md,
+        'lg': theme.shadows.lg,
+        'xl': theme.shadows.xl,
+        '2xl': theme.shadows['2xl'],
+        'inner': theme.shadows.inner,
+      },
+      
+      // Border radius
       borderRadius: {
         none: '0px',
         sm: '4px',
@@ -53,44 +178,15 @@ export default {
         '2xl': '24px',
         full: '9999px',
       },
-      boxShadow: {
-        'soft': '0 2px 4px rgba(0, 0, 0, 0.05)',
-        'dark': '0 2px 4px rgba(0, 0, 0, 0.2)',
-        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-      },
-      fontSize: {
-        xs: '12px',
-        sm: '14px',
-        base: '16px',
-        lg: '18px',
-        xl: '20px',
-        '2xl': '24px',
-        '3xl': '30px',
-        '4xl': '36px',
-      },
-      fontWeight: {
-        light: 300,
-        normal: 400,
-        medium: 500,
-        semibold: 600,
-        bold: 700,
-        extrabold: 800,
-      },
-      lineHeight: {
-        tight: 1.25,
-        normal: 1.5,
-        relaxed: 1.75,
-      },
+      
+      // Transitions
       transitionDuration: {
         fast: '150ms',
         normal: '250ms',
         slow: '350ms',
       },
+      
+      // Keyframes
       keyframes: {
         'slide-up': {
           '0%': { transform: 'translateY(100%)', opacity: '0' },
@@ -99,10 +195,6 @@ export default {
       },
       animation: {
         'slide-up': 'slide-up 0.3s ease-out',
-      },
-      fontFamily: {
-        'sans': ['Inter', 'Mona Sans', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
-        'mono': ['JetBrains Mono', 'Fira Code', 'Monaco', 'Cascadia Code', 'monospace'],
       },
     },
   },

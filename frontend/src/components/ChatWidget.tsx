@@ -46,19 +46,29 @@ export const ChatWidget: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let mounted = true;
+    
     const socket = io(SOCKET_URL);
     socketRef.current = socket;
+    
     socket.emit('joinThread', { threadId: activeChannel.id });
+    
     socket.on('threadMessages', ({ messages }) => {
-      setMessages(messages);
+      if (mounted) {
+        setMessages(messages);
+      }
     });
+    
     socket.on('newMessage', ({ message }) => {
-      setMessages((prev) => [...prev, message]);
+      if (mounted) {
+        setMessages((prev) => [...prev, message]);
+      }
     });
+    
     return () => {
+      mounted = false;
       socket.disconnect();
     };
-    // eslint-disable-next-line
   }, [activeChannel.id]);
 
   useEffect(() => {

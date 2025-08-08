@@ -50,7 +50,10 @@ function UploadDocument() {
 
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      if (userError) {
+        console.error('Error getting user:', userError);
+        throw new Error(userError.message || 'Authentication error');
+      }
       if (!user) throw new Error('No user found');
 
       // Validate file
@@ -90,12 +93,15 @@ function UploadDocument() {
           uploaded_by: user.id
         }]);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error inserting document record:', insertError);
+        throw new Error(insertError.message || 'Failed to save document record');
+      }
 
       navigate(`/projects/${projectId}`);
     } catch (error: any) {
       console.error('Error uploading document:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred while uploading the document');
     } finally {
       setUploading(false);
     }

@@ -17,16 +17,20 @@ function ForgotPassword() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending password reset:', error);
+        throw new Error(error.message || 'Failed to send password reset email');
+      }
 
       setMessage({
         type: 'success',
         text: 'Password reset instructions have been sent to your email.'
       });
     } catch (error: any) {
+      console.error('Error in handleSubmit:', error);
       setMessage({
         type: 'error',
-        text: error.message
+        text: error.message || 'An unexpected error occurred. Please try again.'
       });
     } finally {
       setLoading(false);

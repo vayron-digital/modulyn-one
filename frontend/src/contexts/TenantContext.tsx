@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction, useMemo } from 'react';
 
 type TenantType = {
   trial_start: string | null;
@@ -24,8 +24,16 @@ export const TenantContext = createContext<TenantContextType>({
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [tenant, setTenant] = useState<TenantType>(null);
+  
+  const value = useMemo(() => ({ 
+    user, 
+    tenant, 
+    setUser, 
+    setTenant 
+  }), [user, tenant, setUser, setTenant]);
+  
   return (
-    <TenantContext.Provider value={{ user, tenant, setUser, setTenant }}>
+    <TenantContext.Provider value={value}>
       {children}
     </TenantContext.Provider>
   );

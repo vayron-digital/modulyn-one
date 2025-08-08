@@ -99,7 +99,7 @@ export default function DeveloperBrochuresPage() {
         ) : (
           <FolderOpen className="h-12 w-12 text-primary" />
         )}
-        <h1 className="text-3xl font-bold">{developerName} Brochures</h1>
+        <h1 className="text-headline font-bold tracking-tight">{developerName} Brochures</h1>
       </div>
 
       <div className="flex justify-end mb-4">

@@ -13,9 +13,13 @@ export function usePresence(): PresenceState {
   const [lastSeen, setLastSeen] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+
+    let mounted = true;
 
     const updatePresence = async () => {
+      if (!mounted) return;
+      
       try {
         const { error } = await supabase
           .from('presence')
@@ -26,7 +30,9 @@ export function usePresence(): PresenceState {
           });
 
         if (error) throw error;
-        setIsOnline(true);
+        if (mounted) {
+          setIsOnline(true);
+        }
       } catch (error) {
         console.error('Error updating presence:', error);
       }
@@ -36,9 +42,10 @@ export function usePresence(): PresenceState {
     updatePresence(); // Initial update
 
     return () => {
+      mounted = false;
       clearInterval(interval);
       // Set user as offline when component unmounts
-      if (user) {
+      if (user?.id) {
         supabase
           .from('presence')
           .upsert({
@@ -53,7 +60,7 @@ export function usePresence(): PresenceState {
           });
       }
     };
-  }, [user]);
+  }, [user?.id]);
 
   return { isOnline, lastSeen };
 } 

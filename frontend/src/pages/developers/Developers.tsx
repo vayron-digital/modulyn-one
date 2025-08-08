@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
+import { toast } from '../../hooks/useToast';
 
 interface Developer {
   developer_id: string;
@@ -12,11 +13,12 @@ interface Developer {
 }
 
 const Developers: React.FC = () => {
+  const { user } = useAuth();
   const [developers, setDevelopers] = useState<Developer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDevName, setNewDevName] = useState('');
   const [adding, setAdding] = useState(false);
@@ -26,9 +28,28 @@ const Developers: React.FC = () => {
 
   useEffect(() => {
     const fetchDevelopers = async () => {
-      const { data, error } = await supabase.from('developers').select('developer_id, name, logo_url').order('name');
-      if (!error) setDevelopers((data || []).filter(d => d.developer_id));
-      setLoading(false);
+      try {
+        setLoading(true);
+        setError(null);
+        const { data, error } = await supabase.from('developers').select('developer_id, name, logo_url').order('name');
+        
+        if (error) {
+          console.error('Error fetching developers:', error);
+          throw new Error(error.message || 'Failed to fetch developers');
+        }
+        
+        setDevelopers((data || []).filter(d => d.developer_id));
+      } catch (err: any) {
+        console.error('Error in fetchDevelopers:', err);
+        setError(err.message || 'Failed to load developers');
+        toast({
+          title: 'Error',
+          description: err.message || 'Failed to load developers',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     fetchDevelopers();
   }, []);
@@ -37,33 +58,122 @@ const Developers: React.FC = () => {
 
   const handleAddDeveloper = async () => {
     if (!newDevName.trim()) return;
-    setAdding(true);
-    const { data: newDev, error } = await supabase.from('developers').insert({ name: newDevName.trim() }).select('developer_id, name, logo_url').single();
-    setAdding(false);
-    if (!error && newDev && newDev.developer_id) {
-      setShowAddModal(false);
-      setNewDevName('');
-      // Refresh list
-      const { data } = await supabase.from('developers').select('developer_id, name, logo_url').order('name');
-      setDevelopers((data || []).filter(d => d.developer_id));
+    
+    try {
+      setAdding(true);
+      setError(null);
+      
+      const { data: newDev, error } = await supabase
+        .from('developers')
+        .insert({ name: newDevName.trim() })
+        .select('developer_id, name, logo_url')
+        .single();
+      
+      if (error) {
+        console.error('Error adding developer:', error);
+        throw new Error(error.message || 'Failed to add developer');
+      }
+      
+      if (newDev && newDev.developer_id) {
+        setShowAddModal(false);
+        setNewDevName('');
+        
+        // Refresh list
+        const { data, error: refreshError } = await supabase
+          .from('developers')
+          .select('developer_id, name, logo_url')
+          .order('name');
+        
+        if (refreshError) {
+          console.error('Error refreshing developers:', refreshError);
+          throw new Error('Developer added but failed to refresh list');
+        }
+        
+        setDevelopers((data || []).filter(d => d.developer_id));
+        toast({
+          title: 'Success',
+          description: 'Developer added successfully',
+        });
+      }
+    } catch (err: any) {
+      console.error('Error in handleAddDeveloper:', err);
+      setError(err.message || 'Failed to add developer');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to add developer',
+        variant: 'destructive'
+      });
+    } finally {
+      setAdding(false);
     }
   };
 
   const handleEditDeveloper = async () => {
     if (!editDev || !editName.trim()) return;
-    setEditing(true);
-    const { error } = await supabase.from('developers').update({ name: editName.trim() }).eq('developer_id', editDev.developer_id);
-    setEditing(false);
-    if (!error) {
+    
+    try {
+      setEditing(true);
+      setError(null);
+      
+      const { error } = await supabase
+        .from('developers')
+        .update({ name: editName.trim() })
+        .eq('developer_id', editDev.developer_id);
+      
+      if (error) {
+        console.error('Error updating developer:', error);
+        throw new Error(error.message || 'Failed to update developer');
+      }
+      
       setEditDev(null);
       setEditName('');
+      
       // Refresh list
-      const { data } = await supabase.from('developers').select('developer_id, name, logo_url').order('name');
+      const { data, error: refreshError } = await supabase
+        .from('developers')
+        .select('developer_id, name, logo_url')
+        .order('name');
+      
+      if (refreshError) {
+        console.error('Error refreshing developers:', refreshError);
+        throw new Error('Developer updated but failed to refresh list');
+      }
+      
       setDevelopers((data || []).filter(d => d.developer_id));
+      toast({
+        title: 'Success',
+        description: 'Developer updated successfully',
+      });
+    } catch (err: any) {
+      console.error('Error in handleEditDeveloper:', err);
+      setError(err.message || 'Failed to update developer');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to update developer',
+        variant: 'destructive'
+      });
+    } finally {
+      setEditing(false);
     }
   };
 
   if (loading) return <div className="p-8 text-center">Loading developers...</div>;
+  
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+          <button 
+            onClick={() => window.location.reload()} 
+            className="ml-2 underline"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">

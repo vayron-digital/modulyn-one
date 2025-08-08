@@ -862,7 +862,7 @@ const Settings = () => {
         <div className="relative px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Settings</h1>
+              <h1 className="text-headline font-bold mb-2 tracking-tight">Settings</h1>
               <p className="text-slate-300">Manage your account and team settings</p>
             </div>
             <div className="flex items-center space-x-3">

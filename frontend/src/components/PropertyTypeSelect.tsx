@@ -3,15 +3,15 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { 
-  RESIDENTIAL_TYPES, 
-  COMMERCIAL_TYPES, 
-  PropertyType,
-  getPropertyTypeCategory
-} from '../utils/propertyTypes';
+  getPropertyTypesByLocation,
+  getPropertyTypesGroupedByLocation,
+  PropertyTypeOption
+} from '../utils/propertyTypesByLocation';
+import { useTenantLocation } from '../hooks/useTenantLocation';
 
 interface PropertyTypeSelectProps {
-  value: PropertyType;
-  onChange: (value: PropertyType) => void;
+  value: string;
+  onChange: (value: string) => void;
   className?: string;
   showCategoryLabels?: boolean;
 }
@@ -22,8 +22,25 @@ export const PropertyTypeSelect: React.FC<PropertyTypeSelectProps> = ({
   className = '',
   showCategoryLabels = true
 }) => {
+  const { primaryLocation, loading } = useTenantLocation();
+  
+  // Get property types based on tenant location
+  const propertyTypes = getPropertyTypesByLocation(primaryLocation);
+  const groupedTypes = getPropertyTypesGroupedByLocation(primaryLocation);
+
+  if (loading) {
+    return (
+      <div className={cn(
+        "flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm",
+        className
+      )}>
+        <span className="text-gray-500">Loading property types...</span>
+      </div>
+    );
+  }
+
   return (
-    <SelectPrimitive.Root defaultValue={value} onValueChange={onChange}>
+    <SelectPrimitive.Root value={value} onValueChange={onChange}>
       <SelectPrimitive.Trigger
         className={cn(
           "flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -39,15 +56,16 @@ export const PropertyTypeSelect: React.FC<PropertyTypeSelectProps> = ({
         >
           <SelectPrimitive.Viewport className="p-1">
             {showCategoryLabels ? (
-              <>
-                <SelectPrimitive.Group>
+              // Show grouped by categories
+              Object.entries(groupedTypes).map(([category, types]) => (
+                <SelectPrimitive.Group key={category}>
                   <SelectPrimitive.Label className="py-1.5 pl-8 pr-2 text-sm font-semibold">
-                    Residential
+                    {category}
                   </SelectPrimitive.Label>
-                  {RESIDENTIAL_TYPES.map((type) => (
+                  {types.map((type) => (
                     <SelectPrimitive.Item
-                      key={type}
-                      value={type}
+                      key={type.value}
+                      value={type.value}
                       className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                     >
                       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -55,61 +73,27 @@ export const PropertyTypeSelect: React.FC<PropertyTypeSelectProps> = ({
                           <Check className="h-4 w-4" />
                         </SelectPrimitive.ItemIndicator>
                       </span>
-                      <SelectPrimitive.ItemText>{type}</SelectPrimitive.ItemText>
+                      <SelectPrimitive.ItemText>{type.label}</SelectPrimitive.ItemText>
                     </SelectPrimitive.Item>
                   ))}
                 </SelectPrimitive.Group>
-                <SelectPrimitive.Group>
-                  <SelectPrimitive.Label className="py-1.5 pl-8 pr-2 text-sm font-semibold">
-                    Commercial
-                  </SelectPrimitive.Label>
-                  {COMMERCIAL_TYPES.map((type) => (
-                    <SelectPrimitive.Item
-                      key={type}
-                      value={type}
-                      className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                    >
-                      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                        <SelectPrimitive.ItemIndicator>
-                          <Check className="h-4 w-4" />
-                        </SelectPrimitive.ItemIndicator>
-                      </span>
-                      <SelectPrimitive.ItemText>{type}</SelectPrimitive.ItemText>
-                    </SelectPrimitive.Item>
-                  ))}
-                </SelectPrimitive.Group>
-              </>
+              ))
             ) : (
-              <>
-                {RESIDENTIAL_TYPES.map((type) => (
-                  <SelectPrimitive.Item
-                    key={type}
-                    value={type}
-                    className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                  >
-                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                      <SelectPrimitive.ItemIndicator>
-                        <Check className="h-4 w-4" />
-                      </SelectPrimitive.ItemIndicator>
-                    </span>
-                    <SelectPrimitive.ItemText>{type}</SelectPrimitive.ItemText>
-                  </SelectPrimitive.Item>
-                ))}
-                {COMMERCIAL_TYPES.map((type) => (
-                  <SelectPrimitive.Item
-                    key={type}
-                    value={type}
-                    className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                  >
-                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                      <SelectPrimitive.ItemIndicator>
-                        <Check className="h-4 w-4" />
-                      </SelectPrimitive.ItemIndicator>
-                    </span>
-                    <SelectPrimitive.ItemText>{type}</SelectPrimitive.ItemText>
-                  </SelectPrimitive.Item>
-                ))}
-              </>
+              // Show flat list
+              propertyTypes.map((type) => (
+                <SelectPrimitive.Item
+                  key={type.value}
+                  value={type.value}
+                  className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    <SelectPrimitive.ItemIndicator>
+                      <Check className="h-4 w-4" />
+                    </SelectPrimitive.ItemIndicator>
+                  </span>
+                  <SelectPrimitive.ItemText>{type.label}</SelectPrimitive.ItemText>
+                </SelectPrimitive.Item>
+              ))
             )}
           </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>

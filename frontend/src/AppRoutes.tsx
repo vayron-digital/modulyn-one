@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import LoadingBoundary from './components/common/LoadingBoundary';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import PageErrorBoundary from './components/common/PageErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // Loading component for Suspense fallback
@@ -48,6 +49,7 @@ const Team = React.lazy(() => import('./pages/team/Team'));
 const TeamManagement = React.lazy(() => import('./pages/team/TeamManagement'));
 const TeamHierarchy = React.lazy(() => import('./pages/team/TeamHierarchy'));
 const Settings = React.lazy(() => import('./pages/settings/Settings'));
+const Subscription = React.lazy(() => import('./pages/settings/Subscription'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const Reports = React.lazy(() => import('./pages/reports/Reports'));
 const Tasks = React.lazy(() => import('./pages/tasks/Tasks'));
@@ -59,8 +61,6 @@ const DeveloperBrochuresPage = React.lazy(() => import('./pages/brochures/Develo
 const UploadBrochurePage = React.lazy(() => import('./pages/brochures/UploadBrochurePage'));
 const ManageDevelopersPage = React.lazy(() => import('./pages/brochures/ManageDevelopersPage'));
 const ManageBrochuresPage = React.lazy(() => import('./pages/brochures/ManageBrochuresPage'));
-const DashboardV2 = React.lazy(() => import('./pages/dashboard/DashboardV2'));
-const DashboardPro = React.lazy(() => import('./pages/dashboard/DashboardPro'));
 
 // Admin Pages - Lazy loaded
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -86,13 +86,15 @@ const AdminNewUserPage = React.lazy(() => import('./pages/admin/AdminNewUserPage
 const AdminTeamHierarchyPage = React.lazy(() => import('./pages/admin/AdminTeamHierarchyPage'));
 const StorageTest = React.lazy(() => import('./pages/admin/StorageTest'));
 
-// Wrapper component for Suspense
-const SuspenseWrapper = ({ children, skeletonType }: { children: React.ReactNode; skeletonType?: 'table' | 'card' | 'form' }) => (
-  <Suspense fallback={<PageLoader />}>
-    <LoadingBoundary skeletonType={skeletonType}>
-      {children}
-    </LoadingBoundary>
-  </Suspense>
+// Wrapper component for Suspense with Error Boundary
+const SuspenseWrapper = ({ children, skeletonType, pageName }: { children: React.ReactNode; skeletonType?: 'table' | 'card' | 'form'; pageName?: string }) => (
+  <PageErrorBoundary pageName={pageName} showDetails={import.meta.env.DEV}>
+    <Suspense fallback={<PageLoader />}>
+      <LoadingBoundary skeletonType={skeletonType}>
+        {children}
+      </LoadingBoundary>
+    </Suspense>
+  </PageErrorBoundary>
 );
 
 const AppRoutes: React.FC = () => {
@@ -134,7 +136,7 @@ const AppRoutes: React.FC = () => {
             path="/"
             element={
               <ProtectedRoute>
-                <SuspenseWrapper skeletonType="card">
+                <SuspenseWrapper skeletonType="card" pageName="Dashboard">
                   <Dashboard />
                 </SuspenseWrapper>
               </ProtectedRoute>
@@ -144,7 +146,7 @@ const AppRoutes: React.FC = () => {
             path="/properties"
             element={
               <ProtectedRoute>
-                <SuspenseWrapper skeletonType="table">
+                <SuspenseWrapper skeletonType="table" pageName="Properties">
                   <Properties />
                 </SuspenseWrapper>
               </ProtectedRoute>
@@ -154,7 +156,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/properties/new" element={<SuspenseWrapper skeletonType="form"><PropertyForm /></SuspenseWrapper>} />
           <Route path="/properties/edit/:id" element={<SuspenseWrapper skeletonType="form"><PropertyForm /></SuspenseWrapper>} />
           <Route path="/properties/add" element={<Navigate to="/properties/new" replace />} />
-          <Route path="/leads" element={<SuspenseWrapper skeletonType="table"><Leads /></SuspenseWrapper>} />
+          <Route path="/leads" element={<SuspenseWrapper skeletonType="table" pageName="Leads"><Leads /></SuspenseWrapper>} />
           <Route path="/leads/:id" element={<SuspenseWrapper skeletonType="card"><LeadDetails /></SuspenseWrapper>} />
           <Route path="/leads/add" element={<SuspenseWrapper skeletonType="form"><AddLead /></SuspenseWrapper>} />
           <Route path="/leads/new" element={<SuspenseWrapper skeletonType="form"><LeadForm /></SuspenseWrapper>} />
@@ -176,7 +178,7 @@ const AppRoutes: React.FC = () => {
               </SuspenseWrapper>
             </ProtectedRoute>
           } />
-          <Route path="/tasks" element={<SuspenseWrapper skeletonType="table"><Tasks /></SuspenseWrapper>} />
+          <Route path="/tasks" element={<SuspenseWrapper skeletonType="table" pageName="Tasks"><Tasks /></SuspenseWrapper>} />
           <Route path="/tasks/new" element={<SuspenseWrapper skeletonType="form"><TaskForm /></SuspenseWrapper>} />
           <Route path="/documents" element={<SuspenseWrapper skeletonType="table"><Documents /></SuspenseWrapper>} />
           <Route path="/documents/uploads" element={<SuspenseWrapper skeletonType="table"><Uploads /></SuspenseWrapper>} />
@@ -184,6 +186,13 @@ const AppRoutes: React.FC = () => {
           <Route path="/team/management" element={<SuspenseWrapper skeletonType="table"><TeamManagement /></SuspenseWrapper>} />
           <Route path="/team/hierarchy" element={<SuspenseWrapper skeletonType="table"><TeamHierarchy /></SuspenseWrapper>} />
           <Route path="/settings" element={<SuspenseWrapper skeletonType="form"><Settings /></SuspenseWrapper>} />
+          <Route path="/settings/subscription" element={
+            <ProtectedRoute requireAdmin>
+              <SuspenseWrapper skeletonType="card" pageName="Subscription">
+                <Subscription />
+              </SuspenseWrapper>
+            </ProtectedRoute>
+          } />
           <Route path="/chat/templates" element={<SuspenseWrapper skeletonType="table"><ChatTemplates /></SuspenseWrapper>} />
           <Route path="/activity/live" element={<SuspenseWrapper skeletonType="card"><LiveActivityTracker /></SuspenseWrapper>} />
           <Route path="/cold-calls" element={<SuspenseWrapper skeletonType="table"><ColdCalls /></SuspenseWrapper>} />
@@ -193,8 +202,6 @@ const AppRoutes: React.FC = () => {
           <Route path="/brochures" element={<SuspenseWrapper skeletonType="table"><BrochuresPage /></SuspenseWrapper>} />
           <Route path="/brochures/:developerId" element={<SuspenseWrapper skeletonType="table"><DeveloperBrochuresPage /></SuspenseWrapper>} />
           <Route path="/chat" element={<Suspense fallback={<PageLoader />}><ChatPage /></Suspense>} />
-          <Route path="/dashboard-v2" element={<Suspense fallback={<PageLoader />}><DashboardV2 /></Suspense>} />
-          <Route path="/dashboard-pro" element={<Suspense fallback={<PageLoader />}><DashboardPro /></Suspense>} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={user?.is_admin === true ? <Suspense fallback={<PageLoader />}><LoadingBoundary><AdminDashboard /></LoadingBoundary></Suspense> : <Navigate to="/" />} />

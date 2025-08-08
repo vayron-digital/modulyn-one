@@ -25,14 +25,18 @@ function ResetPassword() {
         password: password
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating password:', error);
+        throw new Error(error.message || 'Failed to update password');
+      }
 
       // Redirect to login page after successful password reset
       navigate('/login', { 
         state: { message: 'Password has been reset successfully. Please log in with your new password.' }
       });
     } catch (error: any) {
-      setError(error.message);
+      console.error('Error in handleSubmit:', error);
+      setError(error.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

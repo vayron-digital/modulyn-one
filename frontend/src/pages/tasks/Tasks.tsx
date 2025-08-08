@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthLoading } from '../../hooks/useAuthLoading';
+import LoadingState from '../../components/common/LoadingState';
 import { useToast } from '../../components/ui/use-toast';
 import { useLayout } from '../../components/layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
@@ -149,7 +150,7 @@ const TASK_PRIORITIES = [
 const PAGE_SIZE = 10;
 
 const Tasks = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuthLoading();
   const { toast } = useToast();
   const { setHeader } = useLayout();
   const navigate = useNavigate();
@@ -962,14 +963,20 @@ const Tasks = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-6">
+    <LoadingState
+      loading={authLoading}
+      error={authError}
+      type="page"
+      message="Loading tasks..."
+    >
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-6">
       <div className="max-w-1vw mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section with KPIs */}
         <div className="mb-8">
           <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 rounded-2xl p-8 text-white shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Task Management</h1>
+                <h1 className="text-headline font-bold mb-2 tracking-tight">Task Management</h1>
                 <p className="text-slate-300">Track, manage, and complete your tasks efficiently</p>
               </div>
               <div className="flex items-center space-x-3">
@@ -2477,6 +2484,7 @@ const Tasks = () => {
         </DialogContent>
       </DialogRoot>
     </div>
+    </LoadingState>
   );
 };
 
