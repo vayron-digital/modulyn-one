@@ -21,25 +21,27 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        // Manual chunk splitting for better caching
+        // Simplified chunk splitting to avoid dependency issues
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+            // Keep React and React-dependent libraries together
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('framer-motion')) {
               return 'react-vendor';
             }
+            // UI libraries
             if (id.includes('@radix-ui')) {
               return 'ui-vendor';
             }
-            if (id.includes('date-fns') || id.includes('lodash') || id.includes('framer-motion')) {
-              return 'utils-vendor';
-            }
+            // Charts
             if (id.includes('chart.js') || id.includes('react-chartjs')) {
               return 'charts-vendor';
             }
+            // Database
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
             }
+            // Everything else goes to vendor
             return 'vendor';
           }
           // Feature chunks
