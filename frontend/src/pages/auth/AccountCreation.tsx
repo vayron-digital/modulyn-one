@@ -9,12 +9,18 @@ import {
   ArrowRight, 
   ArrowLeft,
   Check,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Globe,
+  ExternalLink,
+  Users,
+  Crown
 } from 'lucide-react';
 import { CompanySelector } from '../../components/auth/CompanySelector';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 
 interface UserDetails {
   firstName: string;
@@ -27,6 +33,8 @@ interface UserDetails {
   phoneCountryCode: string;
   fullPhoneNumber: string;
   jobTitle: string;
+  customSlug?: string;
+  companyEmail?: string;
 }
 
 interface SelectedTenant {
@@ -53,6 +61,11 @@ const AccountCreation: React.FC = () => {
   const [oauthUserData, setOauthUserData] = useState<any>(null);
   const [companyMode, setCompanyMode] = useState<'create' | 'join'>('create');
   const [selectedTenant, setSelectedTenant] = useState<SelectedTenant | null>(null);
+  const [slugConflict, setSlugConflict] = useState<{exists: boolean, tenant?: SelectedTenant} | null>(null);
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [planLimitReached, setPlanLimitReached] = useState<{reached: boolean, planDetails?: any} | null>(null);
   
   const [userDetails, setUserDetails] = useState<UserDetails>({
     firstName: '',
@@ -64,7 +77,9 @@ const AccountCreation: React.FC = () => {
     phone: '',
     phoneCountryCode: 'AE',
     fullPhoneNumber: '',
-    jobTitle: ''
+    jobTitle: '',
+    customSlug: '',
+    companyEmail: ''
   });
 
   const plans = {
@@ -77,19 +92,165 @@ const AccountCreation: React.FC = () => {
 
   const updateUserDetails = (field: keyof UserDetails, value: string) => {
     setUserDetails(prev => ({ ...prev, [field]: value }));
+    
+    // Real-time slug validation for custom slug input
+    if (field === 'customSlug' && value.trim()) {
+      validateCustomSlug(value.trim());
+    }
+    
+    // Clear slug conflict when company name changes in create mode
+    if (field === 'company' && companyMode === 'create') {
+      setSlugConflict(null);
+    }
+  };
+  
+  // Validate custom slug in real-time
+  const validateCustomSlug = async (slug: string) => {
+    try {
+      const slugified = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      
+      const { data: existingTenant } = await supabase
+        .from('tenants')
+        .select('id, name, slug, logo_url')
+        .eq('slug', slugified)
+        .maybeSingle();
+        
+      if (existingTenant) {
+        setSlugConflict({
+          exists: true,
+          tenant: existingTenant
+        });
+      } else {
+        setSlugConflict({ exists: false });
+      }
+    } catch (error) {
+      console.error('Error validating slug:', error);
+    }
+  };
+  
+  // Send email verification for joining company
+  const sendEmailVerification = async (email: string, tenantId: string) => {
+    try {
+      setLoading(true);
+      
+      // Generate verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store verification attempt in localStorage (in real app, use backend)
+      const verificationData = {
+        email,
+        tenantId,
+        code,
+        timestamp: Date.now(),
+        attempts: 0
+      };
+      
+      localStorage.setItem('emailVerification', JSON.stringify(verificationData));
+      
+      // TODO: Send actual email through backend API
+      console.log('🔐 Verification code for', email, ':', code);
+      
+      setEmailVerificationSent(true);
+      setError('');
+    } catch (error) {
+      setError('Failed to send verification email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Verify email code
+  const verifyEmailCode = () => {
+    try {
+      const stored = localStorage.getItem('emailVerification');
+      if (!stored) {
+        setError('Verification session expired. Please try again.');
+        return false;
+      }
+      
+      const verificationData = JSON.parse(stored);
+      
+      // Check if verification is expired (10 minutes)
+      if (Date.now() - verificationData.timestamp > 10 * 60 * 1000) {
+        setError('Verification code expired. Please request a new one.');
+        localStorage.removeItem('emailVerification');
+        setEmailVerificationSent(false);
+        return false;
+      }
+      
+      if (verificationCode !== verificationData.code) {
+        setError('Invalid verification code. Please try again.');
+        return false;
+      }
+      
+      setEmailVerified(true);
+      setError('');
+      localStorage.removeItem('emailVerification');
+      return true;
+    } catch (error) {
+      setError('Verification failed. Please try again.');
+      return false;
+    }
+  };
+  
+  // Check user limits for tenant
+  const checkUserLimits = async (tenantId: string) => {
+    try {
+      const response = await api.get(`/tenants/${tenantId}/check-limits`);
+      
+      if (response.data.limitReached) {
+        setPlanLimitReached({
+          reached: true,
+          planDetails: response.data.planDetails
+        });
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking user limits:', error);
+      // Allow proceeding if we can't check limits
+      return true;
+    }
   };
 
   const validateUserDetails = () => {
     console.log('🔍 Validating user details:', userDetails);
     console.log('🔑 isOAuthUser:', isOAuthUser);
+    console.log('🏢 companyMode:', companyMode);
+    console.log('📧 emailVerified:', emailVerified);
     
-    if (!userDetails.firstName || !userDetails.lastName || !userDetails.email || !userDetails.company) {
-      const missingFields = [];
-      if (!userDetails.firstName) missingFields.push('First Name');
-      if (!userDetails.lastName) missingFields.push('Last Name');
-      if (!userDetails.email) missingFields.push('Email');
-      if (!userDetails.company) missingFields.push('Company');
+    const missingFields = [];
+    if (!userDetails.firstName) missingFields.push('First Name');
+    if (!userDetails.lastName) missingFields.push('Last Name');
+    if (!userDetails.email) missingFields.push('Email');
+    if (!userDetails.company) missingFields.push('Company');
+    
+    // Additional validations for create mode
+    if (companyMode === 'create') {
+      if (!userDetails.customSlug) missingFields.push('Company URL');
       
+      // Check for slug conflict
+      if (slugConflict?.exists) {
+        setError('Company URL already exists. Please choose a different one or join the existing company.');
+        return false;
+      }
+    }
+    
+    // Additional validations for join mode
+    if (companyMode === 'join') {
+      if (!selectedTenant) {
+        setError('Please select a company to join');
+        return false;
+      }
+      if (!userDetails.companyEmail) missingFields.push('Company Email');
+      if (!emailVerified) {
+        setError('Please verify your company email address');
+        return false;
+      }
+    }
+    
+    if (missingFields.length > 0) {
       console.log('❌ Missing required fields:', missingFields);
       setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return false;
@@ -295,11 +456,18 @@ const AccountCreation: React.FC = () => {
       let tenantData;
       
       if (companyMode === 'join' && selectedTenant) {
+        // Check user limits before proceeding
+        const canJoin = await checkUserLimits(selectedTenant.id);
+        if (!canJoin) {
+          // Redirect to plan limit reached page
+          const planDetailsParam = encodeURIComponent(JSON.stringify(planLimitReached?.planDetails));
+          navigate(`/plan-limit-reached?planDetails=${planDetailsParam}`);
+          setLoading(false);
+          return;
+        }
+        
         // Joining existing tenant
         tenantData = selectedTenant;
-        
-        // TODO: Send join request to tenant admins
-        // For now, we'll add the user directly (you might want approval workflow)
         console.log('Joining existing tenant:', selectedTenant);
       } else {
         // Create new tenant with unique slug handling
@@ -311,33 +479,15 @@ const AccountCreation: React.FC = () => {
           return d;
         };
 
-        // Generate unique slug
-        let baseSlug = slugify(userDetails.company);
-        let uniqueSlug = baseSlug;
-        let counter = 1;
+        // Use custom slug if provided, otherwise generate from company name
+        const customSlug = userDetails.customSlug ? slugify(userDetails.customSlug) : slugify(userDetails.company);
         
-        // Check if slug exists and increment if needed
-        while (true) {
-          const { data: existingTenant } = await supabase
-            .from('tenants')
-            .select('id')
-            .eq('slug', uniqueSlug)
-            .maybeSingle();
-            
-          if (!existingTenant) {
-            break; // Slug is unique
-          }
-          
-          uniqueSlug = `${baseSlug}-${counter}`;
-          counter++;
-        }
-        
-        console.log('🏷️ Using unique slug:', uniqueSlug);
+        console.log('🏷️ Using custom slug:', customSlug);
 
         const { data: newTenantData, error: tenantError } = await supabase.from('tenants').insert([
           {
             name: userDetails.company,
-            slug: uniqueSlug,
+            slug: customSlug,
             theme_color: '#6C2EBE',
             feature_flags: {
               cold_calls: true,
@@ -596,8 +746,27 @@ const AccountCreation: React.FC = () => {
                         updateUserDetails('company', companyName);
                         setSelectedTenant(tenant || null);
                       }}
-                      onModeChange={setCompanyMode}
+                      onModeChange={(mode) => {
+                        setCompanyMode(mode);
+                        setSlugConflict(null);
+                        setEmailVerificationSent(false);
+                        setEmailVerified(false);
+                      }}
                       mode={companyMode}
+                      customSlug={userDetails.customSlug}
+                      onSlugChange={(slug) => updateUserDetails('customSlug', slug)}
+                      slugConflict={slugConflict}
+                      onSlugConflictAction={(action) => {
+                        if (action === 'join' && slugConflict?.tenant) {
+                          setCompanyMode('join');
+                          setSelectedTenant(slugConflict.tenant);
+                          updateUserDetails('company', slugConflict.tenant.name);
+                          setSlugConflict(null);
+                        } else if (action === 'change') {
+                          updateUserDetails('customSlug', '');
+                          setSlugConflict(null);
+                        }
+                      }}
                     />
                   </div>
                   <div>
@@ -612,6 +781,117 @@ const AccountCreation: React.FC = () => {
                       placeholder="Enter your job title"
                     />
                   </div>
+                  
+                  {/* Company Email Verification for Join Mode */}
+                  {companyMode === 'join' && selectedTenant && (
+                    <div className="md:col-span-2">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Company Email Address *
+                          </label>
+                          <div className="flex gap-2">
+                            <div className="flex-1 relative">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Mail className="h-5 w-5 text-slate-400" />
+                              </div>
+                              <input
+                                type="email"
+                                value={userDetails.companyEmail}
+                                onChange={(e) => updateUserDetails('companyEmail', e.target.value)}
+                                disabled={emailVerified}
+                                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50"
+                                placeholder={`Enter your ${selectedTenant.name} email`}
+                              />
+                            </div>
+                            {!emailVerificationSent && !emailVerified && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (userDetails.companyEmail && selectedTenant) {
+                                    sendEmailVerification(userDetails.companyEmail, selectedTenant.id);
+                                  } else {
+                                    setError('Please enter your company email address');
+                                  }
+                                }}
+                                disabled={loading || !userDetails.companyEmail}
+                                className="px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                              >
+                                {loading ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  'Send Code'
+                                )}
+                              </button>
+                            )}
+                            {emailVerified && (
+                              <div className="px-4 py-3 bg-green-600 text-white rounded-lg font-medium flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4" />
+                                Verified
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            We'll send a verification code to confirm you work at {selectedTenant.name}
+                          </p>
+                        </div>
+                        
+                        {/* Verification Code Input */}
+                        {emailVerificationSent && !emailVerified && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 text-blue-700">
+                                <Mail className="w-4 h-4" />
+                                <span className="text-sm font-medium">
+                                  Verification code sent to {userDetails.companyEmail}
+                                </span>
+                              </div>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={verificationCode}
+                                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                  placeholder="Enter 6-digit code"
+                                  className="flex-1 px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  maxLength={6}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={verifyEmailCode}
+                                  disabled={verificationCode.length !== 6}
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  Verify
+                                </button>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEmailVerificationSent(false);
+                                  setVerificationCode('');
+                                }}
+                                className="text-xs text-blue-600 hover:text-blue-700 underline"
+                              >
+                                Didn't receive code? Try again
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Email Verified Success */}
+                        {emailVerified && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 text-green-700">
+                              <CheckCircle className="w-4 h-4" />
+                              <span className="text-sm font-medium">
+                                Email verified! You can now join {selectedTenant.name}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* OAuth User Notice */}
                   {isOAuthUser && (

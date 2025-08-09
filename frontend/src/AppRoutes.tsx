@@ -37,6 +37,7 @@ const AccountCreation = React.lazy(() => import('./pages/auth/AccountCreation'))
 const AccountCreationSuccess = React.lazy(() => import('./pages/auth/AccountCreationSuccess'));
 const OAuthCallback = React.lazy(() => import('./pages/auth/OAuthCallback'));
 const PaymentCallback = React.lazy(() => import('./pages/auth/PaymentCallback'));
+const PlanLimitReached = React.lazy(() => import('./pages/auth/PlanLimitReached'));
 const PreviewSpace = React.lazy(() => import('./pages/auth/PreviewSpace'));
 const PreviewSettings = React.lazy(() => import('./pages/auth/PreviewSettings'));
 
@@ -147,6 +148,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <SmartRedirect />} />
         <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallback /></Suspense>} />
         <Route path="/payment/callback" element={<Suspense fallback={<PageLoader />}><PaymentCallback /></Suspense>} />
+        <Route path="/plan-limit-reached" element={<Suspense fallback={<PageLoader />}><PlanLimitReached /></Suspense>} />
         <Route path="/preview" element={<Suspense fallback={<PageLoader />}><PreviewSpace /></Suspense>} />
         <Route path="/preview/settings" element={<Suspense fallback={<PageLoader />}><PreviewSettings /></Suspense>} />
         <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <SmartRedirect />} />
