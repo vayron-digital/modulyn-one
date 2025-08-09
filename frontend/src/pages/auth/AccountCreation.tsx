@@ -302,7 +302,7 @@ const AccountCreation: React.FC = () => {
         // For now, we'll add the user directly (you might want approval workflow)
         console.log('Joining existing tenant:', selectedTenant);
       } else {
-        // Create new tenant
+        // Create new tenant with unique slug handling
         const slugify = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         const now = new Date();
         const addDays = (date: Date, days: number) => {
@@ -311,10 +311,33 @@ const AccountCreation: React.FC = () => {
           return d;
         };
 
+        // Generate unique slug
+        let baseSlug = slugify(userDetails.company);
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        
+        // Check if slug exists and increment if needed
+        while (true) {
+          const { data: existingTenant } = await supabase
+            .from('tenants')
+            .select('id')
+            .eq('slug', uniqueSlug)
+            .maybeSingle();
+            
+          if (!existingTenant) {
+            break; // Slug is unique
+          }
+          
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        
+        console.log('🏷️ Using unique slug:', uniqueSlug);
+
         const { data: newTenantData, error: tenantError } = await supabase.from('tenants').insert([
           {
             name: userDetails.company,
-            slug: slugify(userDetails.company),
+            slug: uniqueSlug,
             theme_color: '#6C2EBE',
             feature_flags: {
               cold_calls: true,
