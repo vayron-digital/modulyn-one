@@ -4,6 +4,13 @@ import { supabase } from '../lib/supabase';
 
 const router = Router();
 
+// Plan limits configuration
+const PLAN_LIMITS = {
+  starter: { maxUsers: 5, name: 'Starter', price: 29 },
+  professional: { maxUsers: 20, name: 'Professional', price: 79 },
+  enterprise: { maxUsers: 999999, name: 'Enterprise', price: 199 }
+};
+
 // Search tenants (public endpoint for company selection during registration)
 router.get('/search', async (req: Request, res: Response) => {
   try {
@@ -88,6 +95,72 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
     res.json({ tenant: formattedTenant });
   } catch (error) {
     console.error('Get tenant error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Check user limits for a tenant
+router.get('/:id/check-limits', async (req: Request, res: Response) => {
+  try {
+    const { id: tenantId } = req.params;
+
+    // Get tenant with current user count
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select(`
+        id,
+        name,
+        subscription_plan,
+        subscription_status,
+        profiles!tenant_id(count)
+      `)
+      .eq('id', tenantId)
+      .single();
+
+    if (tenantError || !tenant) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Determine current plan (default to starter if not set)
+    const currentPlan = tenant.subscription_plan || 'starter';
+    const planConfig = PLAN_LIMITS[currentPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.starter;
+    
+    const currentUsers = tenant.profiles?.[0]?.count || 0;
+    const limitReached = currentUsers >= planConfig.maxUsers;
+
+    // Get recommended plans if limit reached
+    let recommendedPlans: any[] = [];
+    if (limitReached) {
+      recommendedPlans = Object.entries(PLAN_LIMITS)
+        .filter(([planKey, planData]) => 
+          planData.maxUsers > currentUsers && planKey !== currentPlan
+        )
+        .map(([planKey, planData]) => ({
+          id: planKey,
+          name: planData.name,
+          price: planData.price,
+          maxUsers: planData.maxUsers === 999999 ? 'Unlimited' : planData.maxUsers
+        }));
+    }
+
+    res.json({
+      limitReached,
+      currentUsers,
+      maxUsers: planConfig.maxUsers,
+      currentPlan: {
+        id: currentPlan,
+        name: planConfig.name,
+        price: planConfig.price,
+        maxUsers: planConfig.maxUsers === 999999 ? 'Unlimited' : planConfig.maxUsers
+      },
+      recommendedPlans,
+      tenant: {
+        id: tenant.id,
+        name: tenant.name
+      }
+    });
+  } catch (error) {
+    console.error('Error checking user limits:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
