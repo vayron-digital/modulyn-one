@@ -943,7 +943,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">1,247</p>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">1,247</p>
                     <p className="text-sm text-slate-600 font-medium">Total Leads</p>
                   </div>
                   <div className="mt-4 flex items-end space-x-1 h-8">
@@ -968,7 +968,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">24.8%</p>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">24.8%</p>
                     <p className="text-sm text-slate-600 font-medium">Conversion Rate</p>
                   </div>
                   <div className="mt-4 flex items-end space-x-1 h-8">
@@ -993,7 +993,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">$210K</p>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">$210K</p>
                     <p className="text-sm text-slate-600 font-medium">Pipeline Value</p>
                   </div>
                   <div className="mt-4 flex items-end space-x-1 h-8">
@@ -1018,7 +1018,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-900 mb-1">65</p>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">65</p>
                     <p className="text-sm text-slate-600 font-medium">Active Tasks</p>
                   </div>
                   <div className="mt-4 flex items-end space-x-1 h-8">
@@ -1101,7 +1101,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 font-medium">Monthly Revenue</p>
-                    <p className="text-3xl font-bold text-slate-900">$88.2K</p>
+                    <p className="text-2xl font-bold text-slate-900">$88.2K</p>
                   </div>
                   <div className="flex items-center space-x-1 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-full">
                     <TrendingUp className="w-4 h-4" />

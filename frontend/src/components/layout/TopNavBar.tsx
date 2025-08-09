@@ -2,18 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const NAV_LINKS = [
-  { label: 'Dashboard', path: '/' },
-  { label: 'Leads', path: '/leads' },
-  { label: 'Properties', path: '/properties' },
-  { label: 'Calls', path: '/calls' },
-  { label: 'Tasks', path: '/tasks' },
-  { label: 'Team', path: '/team' },
-  { label: 'Scheduler', path: '/scheduler' },
-  { label: 'Documents', path: '/documents' },
-  { label: 'Reports', path: '/reports' },
-  { label: 'Settings', path: '/settings' },
-];
+// Clean top navigation - navigation is handled by sidebar
 
 const TopNavBar: React.FC = () => {
   const location = useLocation();
@@ -85,10 +74,10 @@ const TopNavBar: React.FC = () => {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '2.5rem 2vw 1.5rem 2vw',
+      padding: '1.2rem 2rem',
       fontFamily: 'Inter, SF Pro, Arial, Helvetica, sans-serif',
-      background: 'rgba(255, 255, 255, 0)',
-      boxShadow: 'none',
+      background: 'rgba(255, 255, 255, 0.95)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       border: 'none',
       position: 'sticky',
       top: 0,
@@ -97,58 +86,35 @@ const TopNavBar: React.FC = () => {
       maxWidth: '100vw',
       overflowX: 'hidden',
       flexWrap: 'nowrap',
-      zIndex: 300,
+      zIndex: 100,
       backdropFilter: 'blur(0.5rem)',
       WebkitBackdropFilter: 'blur(0.5rem)',
       transition: 'background 0.2s',
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75em', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75em', flexShrink: 0, marginLeft: '80px' }}>
         <img 
           src="/logoBlack.png" 
           alt="Modulyn One" 
           style={{ 
-            height: '62px', 
+            height: '36px', 
             width: 'auto',
-            objectFit: 'contain',
-            marginLeft: '50px'
+            objectFit: 'contain'
           }} 
         />
       </div>
-      {/* Nav Links */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '1.5em', flexWrap: 'nowrap', overflow: 'hidden', maxWidth: '70vw', minWidth: 0 }}>
-        {NAV_LINKS.map(link => {
-          const isActive = link.path === '/' ? location.pathname === '/' : location.pathname.startsWith(link.path);
-          return (
-            <button
-              key={link.label}
-              onClick={() => navigate(link.path)}
-              style={{
-                background: isActive ? '#101620' : 'transparent',
-                color: isActive ? '#fff' : '#23262F',
-                borderRadius: '1.375em',
-                fontWeight: 500,
-                fontSize: '1.06rem',
-                padding: isActive ? '0.625em 1.375em' : '0.625em 0.875em',
-                border: 'none',
-                cursor: 'pointer',
-                outline: 'none',
-                fontFamily: 'Inter, SF Pro, Arial, Helvetica, sans-serif',
-                boxShadow: isActive ? 'var(--card-shadow)' : 'none',
-                transition: 'background 0.2s, color 0.2s',
-                textDecoration: 'none',
-                position: 'relative',
-                whiteSpace: 'nowrap',
-                minWidth: 0,
-              }}
-              onMouseOver={e => { if (!isActive) (e.currentTarget.style.textDecoration = 'underline'); }}
-              onMouseOut={e => { if (!isActive) (e.currentTarget.style.textDecoration = 'none'); }}
-            >
-              {link.label}
-            </button>
-          );
-        })}
-      </nav>
+      {/* Breadcrumb or Current Page */}
+      <div style={{ 
+        flex: 1, 
+        textAlign: 'center',
+        fontSize: '1.1rem',
+        fontWeight: 600,
+        color: '#23262F',
+        textTransform: 'capitalize'
+      }}>
+        {location.pathname === '/' ? 'Dashboard' : 
+         location.pathname.split('/')[1]?.replace('-', ' ') || 'Dashboard'}
+      </div>
       {/* Utility Icons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.88em', flexShrink: 0 }}>
         <button 

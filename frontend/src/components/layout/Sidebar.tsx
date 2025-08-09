@@ -164,40 +164,41 @@ const Sidebar: React.FC = () => {
       <motion.aside
         initial={false}
         animate={{
-          width: isExpanded ? '280px' : '72px'
+          width: isExpanded ? '240px' : '60px'
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed left-4 top-24 bottom-4 bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
+        className="fixed left-3 top-20 bottom-3 bg-surface-primary/95 backdrop-blur-xl border border-surface-secondary/30 rounded-xl shadow-xl z-[500] flex flex-col overflow-hidden"
+        style={{ height: 'calc(100vh - 6rem)' }}
       >
         {/* Header */}
-        <div className="p-4 border-b border-slate-200/50">
-          <motion.button
+        <div className="p-2 border-b border-slate-200/30">
+              <motion.button
             onClick={toggleExpanded}
-            className="w-full flex items-center justify-center p-3 hover:bg-slate-100 rounded-xl transition-colors duration-200"
-            whileTap={{ scale: 0.95 }}
+            className="w-full flex items-center justify-center p-2 hover:bg-surface-secondary/30 rounded-lg transition-colors duration-200"
+                whileTap={{ scale: 0.95 }}
           >
             <motion.div
               animate={{ rotate: isExpanded ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
-              <ChevronRight className="h-5 w-5 text-slate-600" />
+              <ChevronRight className="h-4 w-4 text-text-secondary" />
             </motion.div>
             {isExpanded && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="ml-3 font-semibold text-slate-900"
+                className="ml-2 font-medium text-text-heading text-sm"
               >
-                Navigation
+                Menu
               </motion.span>
             )}
-          </motion.button>
+              </motion.button>
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 overflow-y-auto p-2">
-          <div className="space-y-1">
+        <div className="flex-1 overflow-y-auto p-1">
+          <div className="space-y-0.5">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
               const hasChildren = item.children && item.children.length > 0;
@@ -213,17 +214,17 @@ const Sidebar: React.FC = () => {
                         navigate(item.path);
                       }
                     }}
-                    className={`w-full flex items-center p-3 rounded-xl transition-all duration-200 group ${
+                    className={`w-full flex items-center p-2 rounded-lg transition-all duration-200 group ${
                       isActive 
-                        ? getColorClasses(item.color, true) + ' shadow-lg'
-                        : `hover:bg-slate-50 text-slate-600`
+                        ? 'bg-primary-default text-primary-on-primary shadow-sm'
+                        : `hover:bg-surface-secondary/50 text-text-secondary`
                     }`}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className={`p-2 rounded-lg transition-colors duration-200 ${
+                    <div className={`p-1.5 rounded-md transition-colors duration-200 ${
                       isActive 
                         ? 'bg-white/20' 
-                        : getColorClasses(item.color)
+                        : 'bg-surface-secondary/30'
                     }`}>
                       {item.icon}
                     </div>
@@ -234,11 +235,11 @@ const Sidebar: React.FC = () => {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -10 }}
-                          className="ml-3 flex-1 text-left"
+                          className="ml-2 flex-1 text-left"
                         >
-                          <div className="font-semibold">{item.label}</div>
+                          <div className="font-medium text-sm">{item.label}</div>
                           {item.description && (
-                            <div className="text-xs opacity-70">{item.description}</div>
+                            <div className="text-xs opacity-70 mt-0.5">{item.description}</div>
                           )}
                         </motion.div>
                       )}
@@ -268,17 +269,17 @@ const Sidebar: React.FC = () => {
                           <motion.button
                             key={index}
                             onClick={() => navigate(child.path)}
-                            className={`w-full flex items-center p-2 rounded-lg text-sm transition-colors duration-200 ${
+                            className={`w-full flex items-center p-1.5 rounded-md text-xs transition-colors duration-200 ${
                               location.pathname === child.path
-                                ? 'bg-slate-100 text-slate-900 font-medium'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                ? 'bg-surface-secondary text-text-heading font-medium'
+                                : 'text-text-secondary hover:bg-surface-secondary/30 hover:text-text-heading'
                             }`}
                             whileTap={{ scale: 0.98 }}
                           >
                             <div className="p-1">
                               {child.icon}
                             </div>
-                            <span className="ml-2">{child.label}</span>
+                            <span className="ml-1.5">{child.label}</span>
                           </motion.button>
                         ))}
                       </motion.div>
@@ -291,8 +292,8 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="p-2 border-t border-slate-200/50">
-          <div className="space-y-1">
+        <div className="p-1 border-t border-slate-200/30">
+          <div className="space-y-0.5">
             {bottomNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               
@@ -300,17 +301,17 @@ const Sidebar: React.FC = () => {
                 <motion.button
                   key={item.id}
                   onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center p-3 rounded-xl transition-all duration-200 relative ${
+                  className={`w-full flex items-center p-2 rounded-lg transition-all duration-200 relative ${
                     isActive 
-                      ? getColorClasses(item.color, true) + ' shadow-lg'
-                      : 'hover:bg-slate-50 text-slate-600'
+                      ? 'bg-primary-default text-primary-on-primary shadow-sm'
+                      : 'hover:bg-surface-secondary/50 text-text-secondary'
                   }`}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className={`p-2 rounded-lg transition-colors duration-200 ${
+                  <div className={`p-1.5 rounded-md transition-colors duration-200 ${
                     isActive 
                       ? 'bg-white/20' 
-                      : getColorClasses(item.color)
+                      : 'bg-surface-secondary/30'
                   }`}>
                     {item.icon}
                   </div>
@@ -321,7 +322,7 @@ const Sidebar: React.FC = () => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
-                        className="ml-3 font-semibold"
+                        className="ml-2 font-medium text-sm"
                       >
                         {item.label}
                       </motion.span>
@@ -334,8 +335,8 @@ const Sidebar: React.FC = () => {
                     </div>
                   )}
                 </motion.button>
-              );
-            })}
+        );
+      })}
           </div>
         </div>
       </motion.aside>
