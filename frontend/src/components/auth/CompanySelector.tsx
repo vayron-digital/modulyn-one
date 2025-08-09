@@ -47,12 +47,24 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({
       return;
     }
 
+    // Backend requires minimum 2 characters
+    if (query.trim().length < 2) {
+      setTenants([]);
+      return;
+    }
+
+    console.log('🔍 Searching tenants with query:', query);
     setLoading(true);
     try {
       const response = await api.get(`/tenants/search?q=${encodeURIComponent(query)}&limit=10`);
+      console.log('📡 Search response:', response.data);
       setTenants(response.data.tenants || []);
     } catch (error) {
-      console.error('Error searching tenants:', error);
+      console.error('❌ Error searching tenants:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
       setTenants([]);
     } finally {
       setLoading(false);
