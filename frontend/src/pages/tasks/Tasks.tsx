@@ -2492,7 +2492,6 @@ const Tasks = () => {
           </DialogFooter>
         </DialogContent>
       </DialogRoot>
-    </div>
     </LoadingState>
   );
 };
