@@ -312,7 +312,7 @@ const AccountCreation: React.FC = () => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid 400 error when no record exists
 
       if (existingProfile) {
         // Update existing profile (preview users upgrading)

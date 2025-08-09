@@ -19,7 +19,7 @@ export default function UserStatusDebugger() {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid 400 error when no record exists
 
         if (error) {
           console.error('Debug - Profile error:', error);

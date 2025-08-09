@@ -242,7 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('user_settings')
           .select('currency, secondary_currencies')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid 406 error when no record exists
         
         if (!mounted) return;
         

@@ -397,7 +397,7 @@ const Settings = () => {
           .from('profiles')
           .select('full_name, email, phone, profile_photo_url')
           .eq('id', user?.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid 400 error when no record exists
 
         if (!profileError && profile) {
           defaultSettings.full_name = profile.full_name || defaultSettings.full_name;
@@ -411,7 +411,7 @@ const Settings = () => {
           .from('user_settings')
           .select('*')
           .eq('user_id', user?.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid 406 error when no record exists
 
         if (!settingsError && userSettings) {
           defaultSettings.currency = userSettings.currency || defaultSettings.currency;
