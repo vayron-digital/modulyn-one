@@ -80,28 +80,42 @@ const AccountCreation: React.FC = () => {
   };
 
   const validateUserDetails = () => {
+    console.log('🔍 Validating user details:', userDetails);
+    console.log('🔑 isOAuthUser:', isOAuthUser);
+    
     if (!userDetails.firstName || !userDetails.lastName || !userDetails.email || !userDetails.company) {
-      setError('Please fill in all required fields');
+      const missingFields = [];
+      if (!userDetails.firstName) missingFields.push('First Name');
+      if (!userDetails.lastName) missingFields.push('Last Name');
+      if (!userDetails.email) missingFields.push('Email');
+      if (!userDetails.company) missingFields.push('Company');
+      
+      console.log('❌ Missing required fields:', missingFields);
+      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return false;
     }
 
     if (!isOAuthUser) {
       if (!userDetails.password || !userDetails.confirmPassword) {
+        console.log('❌ Missing passwords for non-OAuth user');
         setError('Please fill in all required fields');
         return false;
       }
 
       if (userDetails.password !== userDetails.confirmPassword) {
+        console.log('❌ Passwords do not match');
         setError('Passwords do not match');
         return false;
       }
 
       if (userDetails.password.length < 6) {
+        console.log('❌ Password too short');
         setError('Password must be at least 6 characters long');
         return false;
       }
     }
 
+    console.log('✅ Validation passed');
     setError('');
     return true;
   };
@@ -259,6 +273,23 @@ const AccountCreation: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log('🚀 handleSubmit called');
+    console.log('📋 userDetails:', userDetails);
+    console.log('🏢 companyMode:', companyMode);
+    console.log('🎯 selectedTenant:', selectedTenant);
+    console.log('✅ acceptedTerms:', acceptedTerms);
+    
+    // Validate required fields
+    if (!userDetails.company) {
+      setError('Please enter a company name');
+      return;
+    }
+    
+    if (!acceptedTerms) {
+      setError('Please accept the terms and conditions');
+      return;
+    }
+    
     setLoading(true);
     try {
       let tenantData;
@@ -387,6 +418,7 @@ const AccountCreation: React.FC = () => {
       }
       
     } catch (error: any) {
+      console.error('❌ Error in handleSubmit:', error);
       setError(error.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
