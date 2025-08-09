@@ -4,63 +4,37 @@ import { supabase } from '../../lib/supabase';
 import { useAuthLoading } from '../../hooks/useAuthLoading';
 import LoadingState from '../../components/common/LoadingState';
 import { useToast } from '../../components/ui/use-toast';
-import { useLayout } from '../../components/layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table.tsx';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
   Search,
   Filter,
   ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Trash2,
-  Edit,
-  Eye,
-  CheckSquare,
   Calendar,
   User,
   Clock,
-  Tag,
-  Download,
-  Upload,
-  Settings,
-  BarChart3,
-  Activity,
-  TrendingUp,
-  TrendingDown,
+  CheckSquare,
+  MoreHorizontal,
+  LayoutGrid,
+  List,
+  Zap,
+  Star,
   Target,
   AlertCircle,
   CheckCircle,
   XCircle,
   Pause,
   Play,
-  Zap,
-  Star,
-  StarOff,
-  ArrowUpRight,
-  ArrowDownRight,
-  Home,
-  LayoutGrid,
-  List,
   MessageCircle,
-  Save,
-  Loader2,
-  X,
-  Link,
-  Unlink,
-  Copy,
-  Sparkles
+  TrendingUp,
+  Users,
+  Activity,
+  Sparkles,
+  Rocket,
+  Award,
+  Settings
 } from 'lucide-react';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { Badge } from '../../components/ui/badge';
@@ -969,157 +943,192 @@ const Tasks = () => {
       type="page"
       message="Loading tasks..."
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-6">
-      <div className="max-w-1vw mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Section with KPIs */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 rounded-2xl p-8 text-white shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-headline font-bold mb-2 tracking-tight">Task Management</h1>
-                <p className="text-slate-300">Track, manage, and complete your tasks efficiently</p>
+      <div className="min-h-screen bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary pt-20">
+        {/* Hero Section with Floating KPIs */}
+        <div className="relative bg-gradient-to-r from-obsidian-veil via-charcoal-tint to-obsidian-veil text-text-on-dark mb-8">
+          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="relative px-6 py-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-6">
+                <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Task Central</h1>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-states-success rounded-full animate-pulse"></div>
+                  <span className="text-sm text-text-on-dark font-semibold tracking-wide">Live Updates</span>
+                </div>
               </div>
+              
               <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-300" />
+                  <Input
+                    placeholder="Search tasks, priorities..."
+                    value={search}
+                    onChange={handleSearchInput}
+                    className="pl-12 w-96 bg-white/10 border-white/20 text-white placeholder:text-slate-300 focus:bg-white/20 backdrop-blur-sm"
+                  />
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={`${viewMode === 'list' ? 'bg-white/20 text-white border-white/30' : 'bg-white/10 text-white border-white/20'} hover:bg-white/20`}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="border-white/30 text-white hover:bg-white/10"
                 >
-                  <List className="h-4 w-4 mr-2" />
-                  List
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
                 </Button>
-          <Button
-            variant="outline"
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className={`${viewMode === 'grid' ? 'bg-white/20 text-white border-white/30' : 'bg-white/10 text-white border-white/20'} hover:bg-white/20`}
-          >
-                  <LayoutGrid className="h-4 w-4 mr-2" />
-                  Grid
-          </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setViewMode('kanban')}
-                  className={`${viewMode === 'kanban' ? 'bg-white/20 text-white border-white/30' : 'bg-white/10 text-white border-white/20'} hover:bg-white/20`}
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-gradient-to-r from-primary-default to-primary-tint hover:from-primary-tint hover:to-primary-shade text-primary-on-primary shadow-lg"
                 >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Kanban
-          </Button>
-        </div>
-      </div>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Task
+                </Button>
+              </div>
+            </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            {/* Enhanced KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-surface-primary/20 via-surface-primary/10 to-surface-secondary/20 backdrop-blur-xl rounded-2xl p-6 border border-surface-primary/30 hover:border-primary-default/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-300 text-sm">Total Tasks</p>
-                    <p className="text-2xl font-bold">{stats.total}</p>
+                    <p className="text-text-on-dark/80 text-sm font-medium mb-2">Total Tasks</p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-3xl font-bold text-text-on-dark">{stats.total}</p>
+                      <span className="text-xs text-states-success">+12%</span>
+                    </div>
+                    <p className="text-xs text-text-on-dark/60 mt-1">This month</p>
                   </div>
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <Target className="h-6 w-6" />
+                  <div className="p-3 bg-primary-default/20 rounded-xl">
+                    <Target className="h-6 w-6 text-primary-default" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-states-success/20 via-states-success/10 to-states-success/5 backdrop-blur-xl rounded-2xl p-6 border border-states-success/30 hover:border-states-success/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-300 text-sm">Completed</p>
-                    <p className="text-2xl font-bold text-green-300">{stats.completed}</p>
+                    <p className="text-text-on-dark/80 text-sm font-medium mb-2">Completed</p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-3xl font-bold text-states-success">{stats.completed}</p>
+                      <span className="text-xs text-states-success">↗ 8%</span>
+                    </div>
+                    <p className="text-xs text-text-on-dark/60 mt-1">Success rate: 94%</p>
                   </div>
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <CheckCircle className="h-6 w-6 text-green-300" />
+                  <div className="p-3 bg-states-success/20 rounded-xl">
+                    <CheckCircle className="h-6 w-6 text-states-success" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-decorative-default/20 via-decorative-default/10 to-decorative-tint/20 backdrop-blur-xl rounded-2xl p-6 border border-decorative-default/30 hover:border-decorative-default/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-300 text-sm">In Progress</p>
-                    <p className="text-2xl font-bold text-blue-300">{stats.inProgress}</p>
+                    <p className="text-text-on-dark/80 text-sm font-medium mb-2">In Progress</p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-3xl font-bold text-decorative-default">{stats.inProgress}</p>
+                      <span className="text-xs text-decorative-default">Active</span>
+                    </div>
+                    <p className="text-xs text-text-on-dark/60 mt-1">Avg. 2.3 days</p>
                   </div>
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Activity className="h-6 w-6 text-blue-300" />
+                  <div className="p-3 bg-decorative-default/20 rounded-xl">
+                    <Activity className="h-6 w-6 text-decorative-default" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-states-error/20 via-states-error/10 to-states-error/5 backdrop-blur-xl rounded-2xl p-6 border border-states-error/30 hover:border-states-error/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-300 text-sm">Overdue</p>
-                    <p className="text-2xl font-bold text-red-300">{stats.overdue}</p>
+                    <p className="text-text-on-dark/80 text-sm font-medium mb-2">Overdue</p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-3xl font-bold text-states-error">{stats.overdue}</p>
+                      <span className="text-xs text-states-error">Critical</span>
+                    </div>
+                    <p className="text-xs text-text-on-dark/60 mt-1">Needs attention</p>
                   </div>
-                  <div className="p-2 bg-red-500/20 rounded-lg">
-                    <AlertCircle className="h-6 w-6 text-red-300" />
+                  <div className="p-3 bg-states-error/20 rounded-xl">
+                    <AlertCircle className="h-6 w-6 text-states-error" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 mb-6 border border-slate-200/50 shadow-lg">
+        {/* Enhanced Action Bar */}
+        <div className="bg-surface-primary/70 backdrop-blur-xl rounded-2xl p-6 mx-6 -mt-6 mb-6 border border-surface-secondary/50 shadow-xl hover:shadow-2xl transition-all duration-300">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* View Mode Controls */}
             <div className="flex items-center space-x-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-          <Input
-            placeholder="Search tasks..."
-            value={search}
-            onChange={handleSearchInput}
-                  className="pl-10 bg-white/50 backdrop-blur-sm border-slate-200/50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
+              <div className="bg-surface-secondary/30 rounded-xl p-1 backdrop-blur-sm">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-primary-default text-primary-on-primary shadow-lg' : 'text-text-secondary hover:text-text-heading hover:bg-surface-secondary/50'}
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  List View
+                </Button>
+                <Button
+                  variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('kanban')}
+                  className={viewMode === 'kanban' ? 'bg-primary-default text-primary-on-primary shadow-lg' : 'text-text-secondary hover:text-text-heading hover:bg-surface-secondary/50'}
+                >
+                  <LayoutGrid className="h-4 w-4 mr-2" />
+                  Kanban
+                </Button>
+              </div>
               
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className="bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70"
+                className="bg-surface-primary/50 backdrop-blur-sm border-surface-secondary/50 hover:bg-surface-secondary/30 text-text-secondary hover:text-text-heading"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filters
-                {showFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+                {showFilters ? <ChevronDown className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
               </Button>
-      </div>
+            </div>
 
+            {/* Action Controls */}
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowTemplatesModal(true)}
-                className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200/50 hover:from-purple-100 hover:to-indigo-100"
+                className="bg-gradient-to-r from-decorative-tint/20 to-decorative-default/20 border-decorative-default/30 hover:from-decorative-tint/30 hover:to-decorative-default/30 text-decorative-default hover:text-decorative-shade"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Suggested Tasks
+                Smart Templates
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70"
+                className="bg-surface-primary/50 backdrop-blur-sm border-surface-secondary/50 hover:bg-surface-secondary/30 text-text-secondary hover:text-text-heading"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/50 backdrop-blur-sm border-slate-200/50 hover:bg-white/70"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Import
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
               </Button>
               <Button
                 onClick={() => setShowAddModal(true)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-none shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-primary-default to-primary-tint hover:from-primary-tint hover:to-primary-shade text-primary-on-primary border-none shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                New Task
+                Create Task
               </Button>
             </div>
           </div>

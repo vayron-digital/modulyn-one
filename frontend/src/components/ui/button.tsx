@@ -5,36 +5,36 @@ import { cn } from "../../lib/utils";
 import { designTokens } from "../../lib/designSystem";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-default/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 hover:shadow-lg transform-gpu backdrop-blur-sm",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg active:shadow-sm dark:from-blue-400 dark:to-indigo-500 dark:hover:from-blue-500 dark:hover:to-indigo-600",
+          "bg-gradient-to-r from-primary-default to-primary-tint text-primary-on-primary shadow-lg hover:from-primary-tint hover:to-primary-shade hover:shadow-xl border border-primary-default/20",
         destructive:
-          "bg-red-500 text-white shadow-md hover:bg-red-600 hover:shadow-lg active:shadow-sm",
+          "bg-gradient-to-r from-states-error to-states-error/90 text-text-on-dark shadow-lg hover:from-states-error/90 hover:to-states-error/80 hover:shadow-xl border border-states-error/20",
         outline:
-          "border-2 border-blue-500 bg-transparent text-blue-500 shadow-sm hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-gray-900",
+          "border-2 border-primary-default/30 bg-surface-primary/50 text-primary-default shadow-sm hover:bg-primary-default hover:text-primary-on-primary hover:border-primary-default backdrop-blur-sm",
         secondary:
-          "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200 hover:shadow-md active:shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+          "bg-gradient-to-r from-surface-secondary to-surface-secondary/90 text-text-secondary shadow-sm hover:from-surface-secondary/90 hover:to-surface-secondary/80 hover:text-text-heading border border-surface-secondary/50",
         ghost: 
-          "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100",
+          "bg-transparent text-text-secondary hover:bg-surface-secondary/30 hover:text-text-heading backdrop-blur-sm",
         link: 
-          "bg-transparent text-blue-500 underline-offset-4 hover:underline dark:text-blue-400",
+          "bg-transparent text-primary-default underline-offset-4 hover:underline hover:text-primary-tint",
         success:
-          "bg-green-500 text-white shadow-md hover:bg-green-600 hover:shadow-lg active:shadow-sm",
+          "bg-gradient-to-r from-states-success to-states-success/90 text-text-on-dark shadow-lg hover:from-states-success/90 hover:to-states-success/80 hover:shadow-xl border border-states-success/20",
         warning:
-          "bg-yellow-500 text-gray-900 shadow-md hover:bg-yellow-600 hover:shadow-lg active:shadow-sm",
+          "bg-gradient-to-r from-states-warning to-states-warning/90 text-text-heading shadow-lg hover:from-states-warning/90 hover:to-states-warning/80 hover:shadow-xl border border-states-warning/20",
         info:
-          "bg-blue-500 text-white shadow-md hover:bg-blue-600 hover:shadow-lg active:shadow-sm",
+          "bg-gradient-to-r from-decorative-default to-decorative-tint text-text-on-dark shadow-lg hover:from-decorative-tint hover:to-decorative-shade hover:shadow-xl border border-decorative-default/20",
       },
       size: {
-        xs: "h-6 px-2 text-xs rounded-sm",
-        sm: "h-8 px-3 text-sm rounded-md",
-        default: "h-10 px-4 py-2 text-sm rounded-md",
-        lg: "h-12 px-6 text-base rounded-lg",
-        xl: "h-14 px-8 text-lg rounded-xl",
-        icon: "h-10 w-10 rounded-md",
+        xs: "h-7 px-3 text-xs rounded-lg font-medium",
+        sm: "h-9 px-4 text-sm rounded-xl",
+        default: "h-11 px-6 py-2.5 text-sm rounded-xl",
+        lg: "h-13 px-8 text-base rounded-2xl",
+        xl: "h-16 px-10 text-lg rounded-2xl",
+        icon: "h-11 w-11 rounded-xl",
       },
     },
     defaultVariants: {

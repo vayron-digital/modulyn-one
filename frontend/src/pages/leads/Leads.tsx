@@ -1413,171 +1413,222 @@ const Leads = () => {
       type="page"
       message="Loading leads..."
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      {/* Navigation */}
-      <LeadsNavigation />
-
-      {/* Hero Section with Floating KPIs */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-6">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-300" />
-                <Input
-                  placeholder="Search leads, emails, companies..."
-                  defaultValue={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-12 w-96 bg-white/10 border-white/20 text-white placeholder:text-slate-300 focus:bg-white/20 backdrop-blur-sm"
-                />
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowFilters(!showFilters)}
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
-          </div>
-          <div className="flex items-center space-x-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setRefreshKey(k => k + 1)}
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleExport}
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-              <Button 
-                size="sm" 
-                onClick={() => navigate('/leads/new')} 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg"
-              >
-              <Plus className="h-4 w-4 mr-2" />
-              New Lead
-            </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
-      </div>
 
-          {/* Floating KPIs */}
-          <div className="grid grid-cols-4 gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Total Leads</p>
-                  <p className="text-3xl font-bold text-white">{kpis?.totalLeads || 0}</p>
-                  <p className="text-xs text-slate-300 mt-1">+12.5% from last month</p>
+        {/* Premium Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+          <div className="relative px-8 py-12">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                  Lead Management 🎯
+                </h1>
+                <p className="text-lg text-slate-600 font-medium">
+                  Manage and nurture your sales pipeline
+                </p>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Input
+                    placeholder="Search leads, emails, companies..."
+                    defaultValue={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-12 w-80 bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl focus:bg-white/90 transition-all duration-200 shadow-lg"
+                  />
                 </div>
-                <div className="p-3 bg-blue-500/20 rounded-xl">
-                  <Users className="h-6 w-6 text-blue-300" />
-                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+                <Button 
+                  onClick={() => setRefreshKey(k => k + 1)}
+                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={() => navigate('/leads/new')} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:scale-105 transition-all duration-200 rounded-xl"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Lead
+                </Button>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Conversion Rate</p>
-                  <p className="text-3xl font-bold text-white">{kpis?.conversionRate?.toFixed(1) || 0}%</p>
-                  <p className="text-xs text-slate-300 mt-1">+2.1% from last month</p>
-                </div>
-                <div className="p-3 bg-emerald-500/20 rounded-xl">
-                  <Target className="h-6 w-6 text-emerald-300" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Avg Deal Size</p>
-                  <p className="text-3xl font-bold text-white">{formatCurrency(kpis?.avgDealSize || 0)}</p>
-                  <p className="text-xs text-slate-300 mt-1">+8.3% from last month</p>
-                </div>
-                <div className="p-3 bg-purple-500/20 rounded-xl">
-                  <DollarSign className="h-6 w-6 text-purple-300" />
+            {/* Premium KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Leads Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-100 rounded-xl">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+12.5%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">{kpis?.totalLeads || 0}</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Leads</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200">Pipeline Value</p>
-                  <p className="text-3xl font-bold text-white">{formatCurrency(kpis?.pipelineValue || 0)}</p>
-                  <p className="text-xs text-slate-300 mt-1">+15.2% from last month</p>
+              {/* Conversion Rate Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-emerald-100 rounded-xl">
+                      <Target className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+2.1%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">{kpis?.conversionRate?.toFixed(1) || 0}%</p>
+                    <p className="text-sm text-slate-600 font-medium">Conversion Rate</p>
+                  </div>
                 </div>
-                <div className="p-3 bg-orange-500/20 rounded-xl">
-                  <BarChart3 className="h-6 w-6 text-orange-300" />
+              </div>
+
+              {/* Avg Deal Size Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-100 rounded-xl">
+                      <DollarSign className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+8.3%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">{formatCurrency(kpis?.avgDealSize || 0)}</p>
+                    <p className="text-sm text-slate-600 font-medium">Avg Deal Size</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pipeline Value Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      <BarChart3 className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+15.2%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">{formatCurrency(kpis?.pipelineValue || 0)}</p>
+                    <p className="text-sm text-slate-600 font-medium">Pipeline Value</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Modern View Controls */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="bg-slate-100 rounded-xl p-1">
-              <Button
-                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('kanban')}
-                className={viewMode === 'kanban' ? 'bg-white shadow-lg text-slate-900' : 'text-slate-600 hover:text-slate-900'}
-              >
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Pipeline View
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={viewMode === 'list' ? 'bg-white shadow-lg text-slate-900' : 'text-slate-600 hover:text-slate-900'}
-              >
-                <List className="h-4 w-4 mr-2" />
-                List View
-              </Button>
-              <Button
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('table')}
-                className={viewMode === 'table' ? 'bg-white shadow-lg text-slate-900' : 'text-slate-600 hover:text-slate-900'}
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Table View
-              </Button>
+        {/* Premium View Controls */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-slate-100 rounded-2xl p-2 shadow-lg">
+                <Button
+                  variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('kanban')}
+                  className={viewMode === 'kanban' 
+                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                  }
+                >
+                  <LayoutGrid className="h-4 w-4 mr-2" />
+                  Pipeline
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' 
+                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                  }
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  List
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className={viewMode === 'table' 
+                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                  }
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Table
+                </Button>
+              </div>
+              
+              {/* Additional Actions */}
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExport}
+                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center space-x-4 text-sm text-slate-600">
-          <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="font-medium">{totalLeads} leads</span>
+            
+            <div className="flex items-center space-x-6 text-sm">
+              <div className="flex items-center space-x-3 bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="font-semibold text-slate-700">{totalLeads} leads</span>
+              </div>
+              <div className="text-slate-500">
+                <span>Last updated: {new Date().toLocaleTimeString()}</span>
+              </div>
             </div>
-            <span>•</span>
-            <span>Last updated: {new Date().toLocaleTimeString()}</span>
-          </div>
           </div>
         </div>
 

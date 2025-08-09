@@ -850,390 +850,592 @@ const Dashboard = () => {
       type="page"
       message="Loading dashboard..."
     >
-      <div className="min-h-screen bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary">
-        {/* Theme Test - Remove after verification */}
-        <div className="p-4 bg-surface-primary border border-surface-secondary m-4 rounded-lg">
-          <h3 className="text-lg font-bold text-text-heading mb-2">Theme Test</h3>
-          <div className="space-y-2">
-            <div className="p-2 bg-primary-default text-primary-on-primary rounded">Primary Button</div>
-            <div className="p-2 bg-secondary-default text-secondary-on-secondary rounded">Secondary Button</div>
-            <div className="p-2 bg-states-success text-text-on-dark rounded">Success State</div>
-            <div className="p-2 bg-states-error text-text-on-dark rounded">Error State</div>
-            <div className="p-2 bg-decorative-default text-text-on-dark rounded">Decorative Color</div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-100/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
         
-        {/* TOP SECTION: Enhanced KPI Cards with Blue Gradient Background */}
-        <div className="relative bg-gradient-to-r from-obsidian-veil via-charcoal-tint to-obsidian-veil text-text-on-dark">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative px-6 py-8">
-            {/* Header with Controls */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-6">
-                <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Command Center</h1>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-states-success rounded-full animate-pulse"></div>
-                  <span className="text-sm text-text-on-dark font-semibold tracking-wide">Live Data</span>
-                        </div>
-                      </div>
+        {/* TOP SECTION: Premium Header with Glass Morphism */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+          <div className="relative px-8 py-12">
+            {/* Header with Enhanced Controls */}
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center space-x-8">
+                <div>
+                  <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                    Welcome back! 👋
+                  </h1>
+                  <p className="text-lg text-slate-600 font-medium">
+                    Your business command center is ready
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3 bg-white/50 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-slate-700 font-semibold">Real-time sync</span>
+                </div>
+              </div>
                       
-              {/* Dashboard Controls */}
-                        <div className="flex items-center space-x-3">
+              {/* Premium Dashboard Controls */}
+              <div className="flex items-center space-x-4">
                 {/* Timeframe Selector */}
-                <select 
-                  value={selectedTimeframe}
-                  onChange={(e) => setSelectedTimeframe(e.target.value as any)}
-                  className="bg-surface-primary/10 backdrop-blur-sm text-text-on-dark border border-surface-primary/20 rounded-lg px-3 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary-default/50"
-                >
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="quarter">This Quarter</option>
-                </select>
+                <div className="relative">
+                  <select 
+                    value={selectedTimeframe}
+                    onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+                    className="bg-white/80 backdrop-blur-sm text-slate-700 border border-white/30 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg appearance-none pr-10 cursor-pointer hover:bg-white/90 transition-all duration-200"
+                  >
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                  </select>
+                  <ArrowRight className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 w-4 h-4 text-slate-500 pointer-events-none" />
+                </div>
                 
-                {/* Real-time Toggle */}
+                {/* Action Buttons */}
                 <button
                   onClick={() => setRealTimeMode(!realTimeMode)}
-                  className={`p-2 rounded-lg transition-all duration-300 ${
+                  className={`p-3 rounded-xl transition-all duration-300 shadow-lg ${
                     realTimeMode 
-                      ? 'bg-states-success/20 text-states-success border border-states-success/30' 
-                      : 'bg-surface-primary/10 text-text-on-dark border border-surface-primary/20'
-                  }`}
+                      ? 'bg-green-500/20 text-green-600 border border-green-500/30 shadow-green-500/20' 
+                      : 'bg-white/80 text-slate-600 border border-white/30 hover:bg-white/90'
+                  } backdrop-blur-sm`}
                   title={realTimeMode ? 'Real-time enabled' : 'Real-time disabled'}
                 >
-                  <Activity className="h-4 w-4" />
+                  <Activity className="h-5 w-5" />
                 </button>
                 
-                {/* Customization Mode */}
                 <button
                   onClick={() => setCustomizationMode(!customizationMode)}
-                  className={`p-2 rounded-lg transition-all duration-300 ${
+                  className={`p-3 rounded-xl transition-all duration-300 shadow-lg ${
                     customizationMode 
-                      ? 'bg-decorative-default/20 text-decorative-default border border-decorative-default/30' 
-                      : 'bg-surface-primary/10 text-text-on-dark border border-surface-primary/20'
-                  }`}
+                      ? 'bg-purple-500/20 text-purple-600 border border-purple-500/30 shadow-purple-500/20' 
+                      : 'bg-white/80 text-slate-600 border border-white/30 hover:bg-white/90'
+                  } backdrop-blur-sm`}
                   title="Customize Dashboard"
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-5 w-5" />
                 </button>
-                      </div>
-                      </div>
-                      
-            {/* Enhanced KPI Grid - Updated Typography */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <KPICard
-                title="Total Leads"
-                value={enhancedKpis.totalLeads.value}
-                trend={enhancedKpis.totalLeads.trend}
-                sparkline={enhancedKpis.totalLeads.sparkline}
-                icon={<Users className="h-6 w-6 text-white" />}
-                onClick={() => {/* Navigate to leads */}}
-              />
-              
-              <KPICard
-                title="Conversion Rate"
-                value={`${enhancedKpis.conversionRate.value}%`}
-                trend={enhancedKpis.conversionRate.trend}
-                sparkline={enhancedKpis.conversionRate.sparkline}
-                icon={<Target className="h-6 w-6 text-white" />}
-                onClick={() => {/* Navigate to analytics */}}
-              />
-              
-              <KPICard
-                title="Pipeline Value"
-                value={`$${(enhancedKpis.pipelineValue.value / 1000).toFixed(0)}K`}
-                trend={enhancedKpis.pipelineValue.trend}
-                sparkline={enhancedKpis.pipelineValue.sparkline}
-                icon={<DollarSign className="h-6 w-6 text-white" />}
-                onClick={() => {/* Navigate to pipeline */}}
-              />
-              
-              <KPICard
-                title="Active Tasks"
-                value={enhancedKpis.activeTasks.value}
-                trend={enhancedKpis.activeTasks.trend}
-                sparkline={enhancedKpis.activeTasks.sparkline}
-                icon={<Clock className="h-6 w-6 text-white" />}
-                onClick={() => {/* Navigate to tasks */}}
-              />
-                        </div>
-                        </div>
-                      </div>
-
-        {/* MIDDLE SECTION: Visual Analytics - Updated Typography */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Lead Conversion Funnel */}
-            <Widget 
-              title="Lead Conversion Funnel" 
-              className="bg-surface-primary border border-surface-secondary"
-              actions={
-                <button className="text-sm text-decorative-default hover:text-decorative-default/80 font-semibold">
-                  View Details <ArrowRight className="ml-1 h-4 w-4" />
-                </button>
-              }
-            >
-                    <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-decorative-default rounded-full"></div>
-                    <span className="text-sm font-semibold">New Leads</span>
-                          </div>
-                  <span className="text-lg text-decorative-default font-bold tracking-tight">1,247</span>
-                          </div>
                 
-                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
-                        <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-decorative-default/80 rounded-full"></div>
-                    <span className="text-sm font-semibold">Qualified</span>
-                          </div>
-                  <span className="text-lg text-decorative-default font-bold tracking-tight">892</span>
-                      </div>
+                <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-300 shadow-lg hover:scale-105 backdrop-blur-sm border border-blue-500/20">
+                  <RefreshCw className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
                       
-                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
-                        <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-decorative-default/60 rounded-full"></div>
-                    <span className="text-sm font-semibold">Proposals</span>
-                          </div>
-                  <span className="text-lg text-decorative-default font-bold tracking-tight">445</span>
-                      </div>
-                      
-                <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg">
-                        <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-decorative-default/40 rounded-full"></div>
-                    <span className="text-sm font-semibold">Closed</span>
-                          </div>
-                  <span className="text-lg text-decorative-default font-bold tracking-tight">234</span>
-                      </div>
+            {/* Premium KPI Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Leads Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-100 rounded-xl">
+                      <Users className="h-6 w-6 text-blue-600" />
                     </div>
-                  </Widget>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+12.5%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">1,247</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Leads</p>
+                  </div>
+                  <div className="mt-4 flex items-end space-x-1 h-8">
+                    {[12, 19, 15, 22, 18, 24, 20].map((height, i) => (
+                      <div key={i} className="flex-1 bg-blue-200 rounded-sm transition-all duration-300 hover:bg-blue-300" style={{ height: `${height * 2}px` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Conversion Rate Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-emerald-100 rounded-xl">
+                      <Target className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+5.2%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">24.8%</p>
+                    <p className="text-sm text-slate-600 font-medium">Conversion Rate</p>
+                  </div>
+                  <div className="mt-4 flex items-end space-x-1 h-8">
+                    {[68, 72, 75, 78, 82, 85, 88].map((height, i) => (
+                      <div key={i} className="flex-1 bg-emerald-200 rounded-sm transition-all duration-300 hover:bg-emerald-300" style={{ height: `${height / 2}px` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Pipeline Value Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-100 rounded-xl">
+                      <DollarSign className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+22.1%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">$210K</p>
+                    <p className="text-sm text-slate-600 font-medium">Pipeline Value</p>
+                  </div>
+                  <div className="mt-4 flex items-end space-x-1 h-8">
+                    {[45, 52, 48, 55, 62, 58, 65].map((height, i) => (
+                      <div key={i} className="flex-1 bg-purple-200 rounded-sm transition-all duration-300 hover:bg-purple-300" style={{ height: `${height / 2}px` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Tasks Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      <Clock className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+5.2%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900 mb-1">65</p>
+                    <p className="text-sm text-slate-600 font-medium">Active Tasks</p>
+                  </div>
+                  <div className="mt-4 flex items-end space-x-1 h-8">
+                    {[45, 52, 48, 55, 62, 58, 65].map((height, i) => (
+                      <div key={i} className="flex-1 bg-orange-200 rounded-sm transition-all duration-300 hover:bg-orange-300" style={{ height: `${height / 2}px` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* MIDDLE SECTION: Premium Analytics Dashboard */}
+        <div className="px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Lead Conversion Funnel */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-slate-900">Lead Pipeline</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View Details</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="relative">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-slate-700">New Leads</span>
+                    </div>
+                    <span className="text-xl font-bold text-blue-600">1,247</span>
+                  </div>
+                  <div className="absolute -bottom-2 left-8 w-px h-4 bg-slate-300"></div>
+                </div>
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-slate-700">Qualified</span>
+                    </div>
+                    <span className="text-xl font-bold text-emerald-600">892</span>
+                  </div>
+                  <div className="absolute -bottom-2 left-8 w-px h-4 bg-slate-300"></div>
+                </div>
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-slate-700">Proposals</span>
+                    </div>
+                    <span className="text-xl font-bold text-yellow-600">445</span>
+                  </div>
+                  <div className="absolute -bottom-2 left-8 w-px h-4 bg-slate-300"></div>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-semibold text-slate-700">Closed Won</span>
+                  </div>
+                  <span className="text-xl font-bold text-purple-600">234</span>
+                </div>
+              </div>
+            </div>
 
             {/* Revenue Trends Chart */}
-            <Widget 
-              title="Revenue Trends" 
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              actions={
-                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
-                  View Reports <ArrowRight className="ml-1 h-4 w-4" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-slate-900">Revenue Trends</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View Reports</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              }
-            >
-                    <div className="space-y-4">
+              </div>
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                            <div>
-                    <p className="text-label text-gray-600 dark:text-gray-400 font-medium">Monthly Revenue</p>
-                    <p className="text-metric text-gray-900 dark:text-white font-bold tracking-tight">$88.2K</p>
-                            </div>
-                  <div className="flex items-center text-emerald-600">
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    <span className="text-caption font-bold tracking-wide">+12.5%</span>
-                          </div>
-                          </div>
+                  <div>
+                    <p className="text-sm text-slate-600 font-medium">Monthly Revenue</p>
+                    <p className="text-3xl font-bold text-slate-900">$88.2K</p>
+                  </div>
+                  <div className="flex items-center space-x-1 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-full">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-sm font-bold">+12.5%</span>
+                  </div>
+                </div>
                 
-                {/* Simple Revenue Chart */}
-                <div className="h-32 flex items-end space-x-1">
+                {/* Enhanced Revenue Chart */}
+                <div className="h-32 flex items-end space-x-2">
                   {[65, 78, 82, 75, 88, 92, 85, 95, 88, 92, 96, 89].map((value, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 bg-blue-200 dark:bg-blue-600 rounded-sm transition-all duration-300 hover:bg-blue-300 dark:hover:bg-blue-500"
-                      style={{ height: `${value}%` }}
-                    />
-                  ))}
+                    <div key={index} className="flex-1 flex flex-col items-center group">
+                      <div
+                        className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-500 cursor-pointer relative"
+                        style={{ height: `${value}%` }}
+                      >
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          ${(value * 1.2).toFixed(0)}K
+                        </div>
                       </div>
+                      <span className="text-xs text-slate-500 mt-2">{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index]}</span>
                     </div>
-                  </Widget>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* Team Performance */}
-            <Widget 
-              title="Team Performance" 
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              actions={
-                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
-                  View Team <ArrowRight className="ml-1 h-4 w-4" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-slate-900">Team Performance</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View Team</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              }
-            >
-                    <div className="space-y-4">
-                      {[
-                  { name: 'Sarah Johnson', deals: 8, revenue: '$45K', avatar: 'SJ' },
-                  { name: 'Mike Chen', deals: 6, revenue: '$32K', avatar: 'MC' },
-                  { name: 'Alex Rivera', deals: 4, revenue: '$28K', avatar: 'AR' }
+              </div>
+              <div className="space-y-4">
+                {[
+                  { name: 'Sarah Johnson', deals: 8, revenue: '$45K', avatar: 'SJ', trend: '+15%', color: 'emerald' },
+                  { name: 'Mike Chen', deals: 6, revenue: '$32K', avatar: 'MC', trend: '+8%', color: 'blue' },
+                  { name: 'Alex Rivera', deals: 4, revenue: '$28K', avatar: 'AR', trend: '+5%', color: 'purple' }
                 ].map((member, index) => (
-                  <div key={index} className="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  <div key={index} className="group flex items-center space-x-4 p-4 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all duration-200 cursor-pointer">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${
+                      member.color === 'emerald' ? 'from-emerald-500 to-emerald-600' :
+                      member.color === 'blue' ? 'from-blue-500 to-blue-600' :
+                      'from-purple-500 to-purple-600'
+                    } rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-110 transition-transform duration-200`}>
                       {member.avatar}
                     </div>
-                            <div className="flex-1">
-                      <p className="text-body-small font-semibold text-gray-900 dark:text-white">{member.name}</p>
-                      <p className="text-caption text-gray-500 dark:text-gray-400 font-medium">{member.deals} deals</p>
-                            </div>
-                    <div className="text-right">
-                      <p className="text-body font-bold text-blue-600 dark:text-blue-400 tracking-tight">{member.revenue}</p>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900">{member.name}</p>
+                      <p className="text-sm text-slate-600">{member.deals} deals closed</p>
                     </div>
-                  </Widget>
-                      </div>
-                      </div>
+                    <div className="text-right">
+                      <p className="font-bold text-slate-900">{member.revenue}</p>
+                      <p className="text-sm text-emerald-600 font-medium">{member.trend}</p>
+                    </div>
+                    <div className="w-2 h-8 bg-gradient-to-t from-slate-200 to-slate-300 rounded-full overflow-hidden">
+                      <div className={`w-full bg-gradient-to-t ${
+                        member.color === 'emerald' ? 'from-emerald-400 to-emerald-500' :
+                        member.color === 'blue' ? 'from-blue-400 to-blue-500' :
+                        'from-purple-400 to-purple-500'
+                      } rounded-full transition-all duration-300`} style={{ height: `${(member.deals / 10) * 100}%` }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
                       
-        {/* BOTTOM SECTION: Actionable Items - Updated Typography */}
-            <div className="p-6">
+        {/* BOTTOM SECTION: Premium Activity Dashboard */}
+        <div className="px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Real-time Activity Feed */}
-            <Widget 
-              title="Live Activity Feed" 
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              actions={
-                <div className="flex items-center space-x-2">
-                <button 
-                    onClick={() => setRealTimeMode(!realTimeMode)}
-                    className={`p-1 rounded ${
-                      realTimeMode ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    <Activity className="h-3 w-3" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <h3 className="text-lg font-bold text-slate-900">Live Activity</h3>
+                  <div className={`p-2 rounded-lg transition-all duration-300 ${
+                    realTimeMode ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    <Activity className="h-4 w-4" />
+                  </div>
+                </div>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View All</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-                  <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
-                    View All <ArrowRight className="ml-1 h-4 w-4" />
-                  </button>
-                </div>
-              }
-            >
-              <div className="space-y-2 max-h-80 overflow-y-auto">
+              </div>
+              <div className="space-y-3 max-h-80 overflow-y-auto">
                 {realTimeActivity.map((activity) => (
-                  <ActivityItem key={activity.id} activity={activity} />
-                  ))}
-                </div>
-            </Widget>
-
-            {/* Upcoming Events & Tasks */}
-            <Widget 
-              title="Upcoming Events" 
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              actions={
-                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
-                  View Calendar <ArrowRight className="ml-1 h-4 w-4" />
-                      </button>
-              }
-            >
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      event.type === 'meeting' ? 'bg-blue-100 text-blue-600' :
-                      event.type === 'call' ? 'bg-green-100 text-green-600' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      {event.type === 'meeting' && <Calendar className="h-5 w-5" />}
-                      {event.type === 'call' && <Phone className="h-5 w-5" />}
-                      {event.type === 'task' && <CheckCircle className="h-5 w-5" />}
+                  <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-all duration-200 cursor-pointer group">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      activity.priority === 'high' ? 'bg-red-100 text-red-600' :
+                      activity.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-blue-100 text-blue-600'
+                    } group-hover:scale-110 transition-transform duration-200`}>
+                      {activity.type === 'lead' && <Users className="h-5 w-5" />}
+                      {activity.type === 'call' && <Phone className="h-5 w-5" />}
+                      {activity.type === 'task' && <CheckCircle className="h-5 w-5" />}
+                      {activity.type === 'meeting' && <Calendar className="h-5 w-5" />}
+                      {activity.type === 'deal' && <DollarSign className="h-5 w-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-body-small font-semibold text-gray-900 dark:text-white truncate">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {activity.action}
+                      </p>
+                      <p className="text-xs text-slate-600 truncate">
+                        {activity.details}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {activity.time}
+                      </p>
+                    </div>
+                    {activity.priority === 'high' && (
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Events & Tasks */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-slate-900">Upcoming Events</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View Calendar</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                {upcomingEvents.map((event) => (
+                  <div key={event.id} className="group flex items-center space-x-4 p-4 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all duration-200 cursor-pointer">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200 ${
+                      event.type === 'meeting' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' :
+                      event.type === 'call' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white' :
+                      'bg-gradient-to-br from-slate-500 to-slate-600 text-white'
+                    }`}>
+                      {event.type === 'meeting' && <Calendar className="h-6 w-6" />}
+                      {event.type === 'call' && <Phone className="h-6 w-6" />}
+                      {event.type === 'task' && <CheckCircle className="h-6 w-6" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">
                         {event.title}
                       </p>
-                      <p className="text-caption text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-sm text-slate-600">
                         {event.time} • {event.duration}
                       </p>
+                      {event.attendees > 0 && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          {event.attendees} attendees
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end space-y-1">
+                      {event.priority === 'high' && (
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      )}
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        event.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        event.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-slate-100 text-slate-700'
+                      }`}>
+                        {event.priority}
+                      </div>
+                    </div>
                   </div>
-                    {event.priority === 'high' && (
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              )}
-            </div>
                 ))}
-                  </div>
-            </Widget>
+              </div>
+            </div>
 
             {/* AI Insights & Quick Actions */}
-            <Widget 
-              title="AI Insights" 
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-              actions={
-                <button className="text-ui text-blue-600 hover:text-blue-700 font-semibold">
-                  View All <ArrowRight className="ml-1 h-4 w-4" />
-                    </button>
-              }
-            >
-              <div className="space-y-3">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <h3 className="text-lg font-bold text-slate-900">AI Insights</h3>
+                  <div className="p-2 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg">
+                    <Brain className="h-4 w-4 text-purple-600" />
+                  </div>
+                </div>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1">
+                  <span>View All</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-4">
                 {aiInsights.slice(0, 3).map((insight) => (
-                  <InsightCard key={insight.id} insight={insight} />
+                  <div key={insight.id} className={`p-4 rounded-xl border-l-4 transition-all duration-200 hover:scale-[1.02] cursor-pointer ${
+                    insight.priority === 'high' ? 'bg-red-50 border-red-500 hover:bg-red-100' :
+                    insight.priority === 'medium' ? 'bg-yellow-50 border-yellow-500 hover:bg-yellow-100' :
+                    'bg-blue-50 border-blue-500 hover:bg-blue-100'
+                  }`}>
+                    <div className="flex items-start space-x-3">
+                      <div className={`p-2 rounded-lg ${
+                        insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                        insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
+                        <Brain className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-slate-900 mb-1">
+                          {insight.title}
+                        </h4>
+                        <p className="text-sm text-slate-600 mb-2">
+                          {insight.description}
+                        </p>
+                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                          {insight.action} →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
                 
                 {/* Quick Actions */}
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-body font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
-                      Add Lead
-            </button>
-                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
-                      Schedule Call
-            </button>
-                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
-                      Create Task
-            </button>
-                    <button className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-caption font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors tracking-wide">
-                      Send Report
-            </button>
-          </div>
-        </div>
-          </div>
-            </Widget>
-        </div>
+                <div className="pt-4 border-t border-slate-200">
+                  <p className="font-semibold text-slate-900 mb-4">Quick Actions</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button className="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl text-sm font-semibold text-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 group">
+                      <Users className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>Add Lead</span>
+                    </button>
+                    <button className="p-3 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-sm font-semibold text-emerald-700 transition-colors duration-200 flex items-center justify-center space-x-2 group">
+                      <Phone className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>Schedule Call</span>
+                    </button>
+                    <button className="p-3 bg-purple-50 hover:bg-purple-100 rounded-xl text-sm font-semibold text-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2 group">
+                      <CheckCircle className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>Create Task</span>
+                    </button>
+                    <button className="p-3 bg-orange-50 hover:bg-orange-100 rounded-xl text-sm font-semibold text-orange-700 transition-colors duration-200 flex items-center justify-center space-x-2 group">
+                      <BarChart3 className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>Send Report</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-
-        {/* PREMIUM UX FEATURES */}
-        
-        {/* Floating Action Button for Quick Access */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="flex flex-col space-y-3">
-            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
-              <Plus className="h-6 w-6" />
-              </button>
-            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
-              <Phone className="h-6 w-6" />
-                </button>
-            <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110">
-              <Bell className="h-6 w-6" />
-            </button>
             </div>
-                    </div>
+          </div>
+        </div>
 
-        {/* Customization Panel (when in customization mode) */}
+        {/* Premium Floating Action Buttons */}
+        <div className="fixed bottom-8 right-8 z-50">
+          <div className="flex flex-col space-y-4">
+            {/* Main FAB */}
+            <button className="group relative p-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl">
+              <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
+              <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-slate-900 text-white text-sm py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                Quick Add
+              </div>
+            </button>
+            
+            {/* Secondary FABs */}
+            <button className="group relative p-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-105">
+              <Phone className="h-5 w-5" />
+              <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-slate-900 text-white text-sm py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                Make Call
+              </div>
+            </button>
+            
+            <button className="group relative p-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-105">
+              <Bell className="h-5 w-5" />
+              <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-slate-900 text-white text-sm py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                Notifications
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Premium Customization Sidebar */}
         {customizationMode && (
-          <div className="fixed inset-y-0 right-0 w-80 bg-white dark:bg-gray-900 shadow-2xl z-40 transform transition-transform duration-300">
-            <div className="p-6">
-              <h3 className="text-title font-bold text-gray-900 dark:text-white mb-4 tracking-tight">Customize Dashboard</h3>
+          <div className="fixed inset-y-0 right-0 w-96 bg-white/95 backdrop-blur-xl shadow-2xl z-40 transform transition-transform duration-300 border-l border-slate-200">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl font-bold text-slate-900">Customize Dashboard</h3>
+                <button 
+                  onClick={() => setCustomizationMode(false)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                >
+                  <ArrowRight className="h-5 w-5 text-slate-600" />
+                </button>
+              </div>
               
               {/* Widget Visibility */}
-              <div className="space-y-4">
-                <h4 className="text-label font-semibold text-gray-700 dark:text-gray-300 tracking-wide">Widget Visibility</h4>
+              <div className="space-y-6 mb-8">
+                <h4 className="text-lg font-semibold text-slate-900">Widget Visibility</h4>
                 {['KPI Cards', 'Activity Feed', 'Revenue Chart', 'Team Performance', 'AI Insights'].map((widget) => (
-                  <label key={widget} className="flex items-center space-x-3">
-                    <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                    <span className="text-body-small font-medium text-gray-900 dark:text-white">{widget}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <label key={widget} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
+                    <span className="font-medium text-slate-900">{widget}</span>
+                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-2" />
+                  </label>
+                ))}
+              </div>
               
               {/* Role-based Views */}
-              <div className="mt-6">
-                <h4 className="text-label font-semibold text-gray-700 dark:text-gray-300 mb-3 tracking-wide">Role-based View</h4>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Role-based View</h4>
                 <select 
                   value={roleBasedView}
                   onChange={(e) => setRoleBasedView(e.target.value as any)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-body font-medium text-gray-900 dark:text-white"
+                  className="w-full p-4 border border-slate-300 rounded-xl bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="founder">Founder View</option>
-                  <option value="manager">Manager View</option>
-                  <option value="sales">Sales View</option>
-                  <option value="admin">Admin View</option>
+                  <option value="founder">👑 Founder View</option>
+                  <option value="manager">👔 Manager View</option>
+                  <option value="sales">💼 Sales View</option>
+                  <option value="admin">⚙️ Admin View</option>
                 </select>
-                        </div>
-                      </div>
-                    </div>
-      )}
+              </div>
+
+              {/* Theme Preferences */}
+              <div className="mt-8">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4">Theme Preferences</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <button className="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl border-2 border-blue-200 transition-colors duration-200">
+                    <div className="w-full h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-md mb-2"></div>
+                    <span className="text-xs font-medium text-blue-700">Blue</span>
+                  </button>
+                  <button className="p-3 bg-purple-50 hover:bg-purple-100 rounded-xl border border-purple-200 transition-colors duration-200">
+                    <div className="w-full h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-md mb-2"></div>
+                    <span className="text-xs font-medium text-purple-700">Purple</span>
+                  </button>
+                  <button className="p-3 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-200 transition-colors duration-200">
+                    <div className="w-full h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-md mb-2"></div>
+                    <span className="text-xs font-medium text-emerald-700">Green</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </LoadingState>
   );

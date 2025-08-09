@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../components/ui/use-toast';
-import { useLayout } from '../../components/layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Table, TableHead, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table';
@@ -12,49 +11,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Search, 
   Filter, 
   ChevronDown, 
-  ChevronUp, 
-  ChevronLeft, 
-  ChevronRight,
-  MoreHorizontal,
-  Trash2,
-  Edit,
-  Eye,
-  Download,
-  Upload,
-  Check,
-  X,
-  Phone,
-  Mail,
-  Calendar,
   Clock,
+  Phone,
+  PhoneCall,
+  Calendar,
   User,
-  Building,
-  MapPin,
-  Tag,
-  Star,
-  StarOff,
-  ArrowUpRight,
-  ArrowDownRight,
-  BarChart3,
   Activity,
   TrendingUp,
-  TrendingDown,
-  UserPlus,
-  PhoneCall,
   CheckSquare,
   XSquare,
-  DollarSign as DollarSignIcon,
-  Home,
-  Save,
-  Loader2,
-  LayoutGrid,
-  List,
-  MessageCircle
+  MessageCircle,
+  BarChart3,
+  Target,
+  Award,
+  Zap,
+  Users,
+  Settings,
+  Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '../../components/ui/badge';
@@ -483,13 +462,21 @@ const Calls: React.FC = () => {
   if (loading) return <FullScreenLoader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-6">
-      {/* Hero Section with Floating Stats */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary pt-20">
+      {/* Hero Section with Enhanced Analytics */}
+      <div className="relative bg-gradient-to-r from-obsidian-veil via-charcoal-tint to-obsidian-veil text-text-on-dark mb-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-6">
+              <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Call Center</h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-states-success rounded-full animate-pulse"></div>
+                <span className="text-sm text-text-on-dark font-semibold tracking-wide">Live Call Tracking</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-300" />
                 <Input
@@ -508,8 +495,6 @@ const Calls: React.FC = () => {
                 <Filter className="h-4 w-4 mr-2" />
                 Filters
               </Button>
-            </div>
-            <div className="flex items-center space-x-3">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -519,69 +504,92 @@ const Calls: React.FC = () => {
                 Export
               </Button>
               <Button 
-                size="sm" 
                 onClick={() => setShowAddModal(true)} 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg"
+                className="bg-gradient-to-r from-primary-default to-primary-tint hover:from-primary-tint hover:to-primary-shade text-primary-on-primary shadow-lg"
               >
-          <Plus className="h-4 w-4 mr-2" />
-          New Call
-        </Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Log Call
+              </Button>
             </div>
-      </div>
+          </div>
 
-          {/* Floating Stats */}
-          <div className="grid grid-cols-4 gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+          {/* Enhanced Analytics KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-gradient-to-br from-surface-primary/20 via-surface-primary/10 to-surface-secondary/20 backdrop-blur-xl rounded-2xl p-6 border border-surface-primary/30 hover:border-primary-default/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Total Calls</p>
-                  <p className="text-3xl font-bold text-white">{stats.total}</p>
-                  <p className="text-xs text-slate-300 mt-1">All time calls</p>
+                  <p className="text-text-on-dark/80 text-sm font-medium mb-2">Total Calls</p>
+                  <div className="flex items-baseline space-x-2">
+                    <p className="text-3xl font-bold text-text-on-dark">{stats.total}</p>
+                    <span className="text-xs text-states-success">+15%</span>
+                  </div>
+                  <p className="text-xs text-text-on-dark/60 mt-1">This month</p>
                 </div>
-                <div className="p-3 bg-blue-500/20 rounded-xl">
-                  <Phone className="h-6 w-6 text-blue-300" />
+                <div className="p-3 bg-primary-default/20 rounded-xl">
+                  <PhoneCall className="h-6 w-6 text-primary-default" />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-gradient-to-br from-states-success/20 via-states-success/10 to-states-success/5 backdrop-blur-xl rounded-2xl p-6 border border-states-success/30 hover:border-states-success/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Completed</p>
-                  <p className="text-3xl font-bold text-white">{stats.completed}</p>
-                  <p className="text-xs text-slate-300 mt-1">+{((stats.completed / stats.total) * 100).toFixed(1)}% success rate</p>
+                  <p className="text-text-on-dark/80 text-sm font-medium mb-2">Completed</p>
+                  <div className="flex items-baseline space-x-2">
+                    <p className="text-3xl font-bold text-states-success">{stats.completed}</p>
+                    <span className="text-xs text-states-success">↗ 22%</span>
+                  </div>
+                  <p className="text-xs text-text-on-dark/60 mt-1">Success rate: {((stats.completed / Math.max(stats.total, 1)) * 100).toFixed(1)}%</p>
                 </div>
-                <div className="p-3 bg-emerald-500/20 rounded-xl">
-                  <CheckSquare className="h-6 w-6 text-emerald-300" />
+                <div className="p-3 bg-states-success/20 rounded-xl">
+                  <CheckSquare className="h-6 w-6 text-states-success" />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-gradient-to-br from-decorative-default/20 via-decorative-default/10 to-decorative-tint/20 backdrop-blur-xl rounded-2xl p-6 border border-decorative-default/30 hover:border-decorative-default/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Scheduled</p>
-                  <p className="text-3xl font-bold text-white">{stats.scheduled}</p>
-                  <p className="text-xs text-slate-300 mt-1">Upcoming calls</p>
+                  <p className="text-text-on-dark/80 text-sm font-medium mb-2">Scheduled</p>
+                  <div className="flex items-baseline space-x-2">
+                    <p className="text-3xl font-bold text-decorative-default">{stats.scheduled}</p>
+                    <span className="text-xs text-decorative-default">Today</span>
+                  </div>
+                  <p className="text-xs text-text-on-dark/60 mt-1">Upcoming calls</p>
                 </div>
-                <div className="p-3 bg-purple-500/20 rounded-xl">
-                  <Calendar className="h-6 w-6 text-purple-300" />
+                <div className="p-3 bg-decorative-default/20 rounded-xl">
+                  <Calendar className="h-6 w-6 text-decorative-default" />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <motion.div 
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-gradient-to-br from-states-warning/20 via-states-warning/10 to-states-warning/5 backdrop-blur-xl rounded-2xl p-6 border border-states-warning/30 hover:border-states-warning/50 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">No Answer</p>
-                  <p className="text-3xl font-bold text-white">{stats.noAnswer}</p>
-                  <p className="text-xs text-slate-300 mt-1">Missed calls</p>
+                  <p className="text-text-on-dark/80 text-sm font-medium mb-2">No Answer</p>
+                  <div className="flex items-baseline space-x-2">
+                    <p className="text-3xl font-bold text-states-warning">{stats.noAnswer}</p>
+                    <span className="text-xs text-states-warning">Follow-up</span>
+                  </div>
+                  <p className="text-xs text-text-on-dark/60 mt-1">Retry rate: 67%</p>
                 </div>
-                <div className="p-3 bg-red-500/20 rounded-xl">
-                  <XSquare className="h-6 w-6 text-red-300" />
+                <div className="p-3 bg-states-warning/20 rounded-xl">
+                  <XSquare className="h-6 w-6 text-states-warning" />
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
