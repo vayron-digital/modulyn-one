@@ -12,6 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { CompanySelector } from '../../components/auth/CompanySelector';
+import { PhoneInput } from '../../components/ui/PhoneInput';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
@@ -23,6 +24,8 @@ interface UserDetails {
   confirmPassword: string;
   company: string;
   phone: string;
+  phoneCountryCode: string;
+  fullPhoneNumber: string;
   jobTitle: string;
 }
 
@@ -59,6 +62,8 @@ const AccountCreation: React.FC = () => {
     confirmPassword: '',
     company: '',
     phone: '',
+    phoneCountryCode: 'AE',
+    fullPhoneNumber: '',
     jobTitle: ''
   });
 
@@ -160,7 +165,8 @@ const AccountCreation: React.FC = () => {
               firstName,
               lastName,
               email: profile.email || session.user.email || '',
-              phone: profile.phone || '',
+              phone: profile.phone ? profile.phone.replace(/^\+\d+\s*/, '') : '', // Remove country code
+              fullPhoneNumber: profile.phone || '',
               jobTitle: profile.designation || '',
               // For OAuth users, no password needed
               password: isOAuth ? 'oauth-user' : '',
@@ -516,15 +522,16 @@ const AccountCreation: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
+                    <PhoneInput
                       value={userDetails.phone}
-                      onChange={(e) => updateUserDetails('phone', e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your phone number"
+                      onChange={(phone, fullNumber, countryCode) => {
+                        setUserDetails(prev => ({
+                          ...prev,
+                          phone,
+                          fullPhoneNumber: fullNumber,
+                          phoneCountryCode: countryCode
+                        }));
+                      }}
                     />
                   </div>
                   <div className="md:col-span-2">
