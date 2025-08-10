@@ -938,33 +938,51 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-20">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-headline font-bold mb-2 tracking-tight">Settings</h1>
-              <p className="text-slate-300">Manage your account and team settings</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-100/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+      
+      {/* TOP SECTION: Premium Header with Glass Morphism */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+        <div className="relative px-8 py-12">
+          {/* Header with Enhanced Controls */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-8">
+              <div>
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                  Settings Center ⚙️
+                </h1>
+                <p className="text-lg text-slate-600 font-medium">
+                  Manage your account, team, and preferences
+                </p>
+              </div>
+              <div className="flex items-center space-x-3 bg-white/50 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-slate-700 font-semibold">Real-time sync</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
+                    
+            {/* Premium Settings Controls */}
+            <div className="flex items-center space-x-4">
+              <button
                 onClick={() => window.location.reload()}
-                className="border-white/30 text-white hover:bg-white/10"
+                className="p-3 bg-white/80 text-slate-600 border border-white/30 hover:bg-white/90 rounded-xl transition-all duration-300 shadow-lg backdrop-blur-sm"
+                title="Refresh Settings"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
+                <RefreshCw className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-8 space-y-8">
+      <div className="relative px-8 pb-8">
 
               {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
