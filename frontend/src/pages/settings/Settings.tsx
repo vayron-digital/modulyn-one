@@ -1030,11 +1030,11 @@ const Settings = () => {
         </TabsList>
 
         {/* Profile Settings */}
-        <TabsContent value="profile" className="space-y-6">
+        <TabsContent value="profile" className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Picture & Basic Info */}
             <div className="lg:col-span-1">
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
