@@ -124,4 +124,7 @@ export const UIComponents = {
   Alert,
   AlertTitle,
   AlertDescription,
-}; 
+};
+
+// Default export for convenience
+export default UIComponents; 
