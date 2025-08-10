@@ -986,44 +986,44 @@ const Settings = () => {
 
               {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full flex-wrap bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-1 shadow-sm gap-1">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
+          <TabsList className="flex w-full flex-wrap bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl p-2 shadow-xl gap-2 mb-8">
+          <TabsTrigger value="profile" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
             <User className="h-4 w-4" />
             Profile
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            <TabsTrigger value="users" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
               <Users className="h-4 w-4" />
               Users
             </TabsTrigger>
           )}
           {isAdmin && (
-            <TabsTrigger value="teams" className="flex items-center gap-2">
+            <TabsTrigger value="teams" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
               <Building className="h-4 w-4" />
               Teams
             </TabsTrigger>
           )}
           {isOwner && (
-            <TabsTrigger value="permissions" className="flex items-center gap-2">
+            <TabsTrigger value="permissions" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
               <Shield className="h-4 w-4" />
               Permissions
             </TabsTrigger>
           )}
-          <TabsTrigger value="integrations" className="flex items-center gap-2">
+          <TabsTrigger value="integrations" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
             <Zap className="h-4 w-4" />
             Integrations
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="jobs" className="flex items-center gap-2">
+            <TabsTrigger value="jobs" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
               <Clock className="h-4 w-4" />
               Jobs
             </TabsTrigger>
           )}
-          <TabsTrigger value="preferences" className="flex items-center gap-2">
+          <TabsTrigger value="preferences" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
             <SettingsIcon className="h-4 w-4" />
             Preferences
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
+          <TabsTrigger value="security" className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/50 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105">
             <Shield className="h-4 w-4" />
             Security
           </TabsTrigger>
