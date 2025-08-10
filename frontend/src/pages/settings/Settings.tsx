@@ -1030,7 +1030,7 @@ const Settings = () => {
         </TabsList>
 
         {/* Profile Settings */}
-        <TabsContent value="profile" className="space-y-8">
+        <TabsContent value="profile" className="space-y-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Picture & Basic Info */}
             <div className="lg:col-span-1">
@@ -1080,7 +1080,7 @@ const Settings = () => {
                       />
                       <label 
                         htmlFor="profile-image-upload"
-                        className="absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                        className="absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 cursor-pointer"
                       >
                         <Camera className="h-4 w-4 text-white" />
                       </label>
@@ -1291,21 +1291,21 @@ const Settings = () => {
 
         {/* User Management */}
         {isAdmin && (
-          <TabsContent value="users" className="space-y-6">
+          <TabsContent value="users" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
             <UserManagement />
           </TabsContent>
         )}
 
         {/* Team Management */}
         {isAdmin && (
-          <TabsContent value="teams" className="space-y-6">
+          <TabsContent value="teams" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
             <TeamManagement />
           </TabsContent>
         )}
 
         {/* Permissions Management */}
         {isOwner && (
-          <TabsContent value="permissions" className="space-y-6">
+          <TabsContent value="permissions" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
             <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1352,13 +1352,13 @@ const Settings = () => {
 
         {/* Jobs Management */}
         {isAdmin && (
-          <TabsContent value="jobs" className="space-y-6">
+          <TabsContent value="jobs" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
             <JobsManagement />
           </TabsContent>
         )}
 
         {/* Integrations */}
-        <TabsContent value="integrations" className="space-y-6">
+        <TabsContent value="integrations" className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader>
               <div className="flex items-center justify-between">
