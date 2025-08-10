@@ -1138,7 +1138,7 @@ const Settings = () => {
                         placeholder="Enter your full name"
                         value={settings.full_name || ""}
                         onChange={e => setSettings(prev => ({ ...prev, full_name: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1149,7 +1149,7 @@ const Settings = () => {
                         placeholder="your.email@company.com"
                         value={settings.email || ""}
                         onChange={e => setSettings(prev => ({ ...prev, email: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1160,7 +1160,7 @@ const Settings = () => {
                         placeholder="+1 (555) 123-4567"
                         value={settings.phone || ""}
                         onChange={e => setSettings(prev => ({ ...prev, phone: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1170,7 +1170,7 @@ const Settings = () => {
                         placeholder="e.g., Sales Manager"
                         value={settings.job_title || ""}
                         onChange={e => setSettings(prev => ({ ...prev, job_title: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                   </div>
@@ -1249,7 +1249,7 @@ const Settings = () => {
                         placeholder="https://linkedin.com/in/yourprofile"
                         value={settings.linkedin || ""}
                         onChange={e => setSettings(prev => ({ ...prev, linkedin: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1259,7 +1259,7 @@ const Settings = () => {
                         placeholder="https://twitter.com/yourhandle"
                         value={settings.twitter || ""}
                         onChange={e => setSettings(prev => ({ ...prev, twitter: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1269,7 +1269,7 @@ const Settings = () => {
                         placeholder="https://yourwebsite.com"
                         value={settings.website || ""}
                         onChange={e => setSettings(prev => ({ ...prev, website: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                     <div>
@@ -1279,7 +1279,7 @@ const Settings = () => {
                         placeholder="https://github.com/yourusername"
                         value={settings.github || ""}
                         onChange={e => setSettings(prev => ({ ...prev, github: e.target.value }))}
-                        className="mt-1"
+                        className="mt-1 bg-white/80 backdrop-blur-sm border border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200"
                       />
                     </div>
                   </div>
