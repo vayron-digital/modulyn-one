@@ -67,6 +67,7 @@ export { Separator } from './separator';
 export { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './sheet';
 export { ToggleGroup, ToggleGroupItem } from './toggle-group';
 export { FormGroup, formGroupVariants } from './form-group';
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants } from './card';
 
 // Data Table Component
 export { DataTable } from './DataTable';
