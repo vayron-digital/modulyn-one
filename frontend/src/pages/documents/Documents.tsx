@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FileTextIcon,
   DocumentTextIcon,
   PhotoIcon,
   DocumentIcon,
@@ -144,7 +143,7 @@ const Documents: React.FC = () => {
       case 'presentation':
         return <DocumentIcon className="h-8 w-8 text-orange-500" />;
       default:
-        return <FileTextIcon className="h-8 w-8 text-gray-500" />;
+        return <DocumentTextIcon className="h-8 w-8 text-gray-500" />;
     }
   };
 
