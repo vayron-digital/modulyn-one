@@ -28,6 +28,7 @@ import { DataTable } from './DataTable';
 import { FilterBar } from './FilterBar';
 import { Skeleton, SkeletonTable } from './skeleton';
 import { Progress } from './progress';
+import { Alert, AlertTitle, AlertDescription } from './alert';
 
 // Dialog/Modal Components
 export {
@@ -79,6 +80,9 @@ export { Skeleton, SkeletonTable } from './skeleton';
 // Progress Component
 export { Progress } from './progress';
 
+// Alert Components
+export { Alert, AlertTitle, AlertDescription } from './alert';
+
 // Date Picker Components
 // export { Calendar } from './date-picker/calendar';
 // export { DatePicker } from './date-picker/date-picker';
@@ -116,4 +120,7 @@ export const UIComponents = {
   FilterBar,
   Skeleton,
   Progress,
+  Alert,
+  AlertTitle,
+  AlertDescription,
 }; 
