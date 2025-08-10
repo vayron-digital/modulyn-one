@@ -81,6 +81,7 @@ import { useLocation } from 'react-router-dom';
 import UserManagement from '../../components/settings/UserManagement';
 import TeamManagement from '../../components/settings/TeamManagement';
 import JobsManagement from '../../components/settings/JobsManagement';
+import PasswordChange from '../../components/settings/PasswordChange';
 import ImageCropModal from '../../components/common/ImageCropModal';
 import ConfirmUploadModal from '../../components/common/ConfirmUploadModal';
 
@@ -1004,6 +1005,10 @@ const Settings = () => {
             <SettingsIcon className="h-4 w-4" />
             Preferences
           </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Security
+          </TabsTrigger>
         </TabsList>
 
         {/* Profile Settings */}
@@ -1897,6 +1902,19 @@ const Settings = () => {
               </Button>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Security Settings */}
+        <TabsContent value="security" className="space-y-6">
+          <PasswordChange 
+            onSuccess={() => {
+              toast({
+                title: "Password Updated",
+                description: "Your password has been changed successfully.",
+                variant: "default",
+              });
+            }}
+          />
         </TabsContent>
       </Tabs>
 

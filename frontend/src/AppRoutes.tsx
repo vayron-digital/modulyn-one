@@ -78,6 +78,11 @@ const UploadBrochurePage = React.lazy(() => import('./pages/brochures/UploadBroc
 const ManageDevelopersPage = React.lazy(() => import('./pages/brochures/ManageDevelopersPage'));
 const ManageBrochuresPage = React.lazy(() => import('./pages/brochures/ManageBrochuresPage'));
 
+// New Pages - Lazy loaded
+const Notifications = React.lazy(() => import('./pages/notifications/Notifications'));
+const Extensions = React.lazy(() => import('./pages/extensions/Extensions'));
+const Profile = React.lazy(() => import('./pages/profile/Profile'));
+
 // Admin Pages - Lazy loaded
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const EditUser = React.lazy(() => import('./pages/admin/EditUser'));
@@ -220,6 +225,9 @@ const AppRoutes: React.FC = () => {
           <Route path="/chat/templates" element={<SuspenseWrapper skeletonType="table"><ChatTemplates /></SuspenseWrapper>} />
           <Route path="/activity/live" element={<SuspenseWrapper skeletonType="card"><LiveActivityTracker /></SuspenseWrapper>} />
           <Route path="/cold-calls" element={<SuspenseWrapper skeletonType="table"><ColdCalls /></SuspenseWrapper>} />
+          <Route path="/notifications" element={<SuspenseWrapper skeletonType="table" pageName="Notifications"><Notifications /></SuspenseWrapper>} />
+          <Route path="/extensions" element={<SuspenseWrapper skeletonType="card" pageName="Extensions"><Extensions /></SuspenseWrapper>} />
+          <Route path="/profile" element={<SuspenseWrapper skeletonType="form" pageName="Profile"><Profile /></SuspenseWrapper>} />
           <Route path="/brochures/upload" element={user?.is_admin === true ? <SuspenseWrapper skeletonType="form"><UploadBrochurePage onUploadSuccess={() => {}} /></SuspenseWrapper> : <Navigate to="/" />} />
           <Route path="/brochures/developers" element={user?.is_admin === true ? <SuspenseWrapper skeletonType="form"><ManageDevelopersPage onDataChange={() => {}} /></SuspenseWrapper> : <Navigate to="/" />} />
           <Route path="/brochures/manage" element={user?.is_admin === true ? <SuspenseWrapper skeletonType="form"><ManageBrochuresPage onDataChange={() => {}} /></SuspenseWrapper> : <Navigate to="/" />} />

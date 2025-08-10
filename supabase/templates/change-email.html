@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your New Email Address - Modulyn CRM</title>
+    <style>
+        /* Import Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #4a4a4f;
+            background-color: #f4f4f6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #ff0141 0%, #ff3366 100%);
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .tagline {
+            font-size: 16px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.9);
+        }
+        .email-content { padding: 32px 24px; }
+        .email-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0e0e11;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+        .email-subtitle {
+            font-size: 18px;
+            font-weight: 500;
+            color: #4a4a4f;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #4a4a4f;
+            margin-bottom: 32px;
+        }
+        .button-container { text-align: center; margin: 32px 0; }
+        .primary-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff0141 0%, #ff3366 100%);
+            color: #fff !important;
+            text-decoration: none !important;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(255,1,65,0.2);
+            border: none;
+        }
+        .primary-button:hover {
+            background: linear-gradient(135deg, #e6003c 0%, #ff0141 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px -1px rgba(255,1,65,0.3);
+        }
+        .info-box {
+            background-color: #f4f4f6;
+            border-left: 4px solid #ff0141;
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .info-box-title {
+            font-weight: 600;
+            color: #0e0e11;
+            margin-bottom: 8px;
+        }
+        .info-box-content {
+            font-size: 14px;
+            color: #4a4a4f;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffb703;
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        .warning-box-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        .warning-box-content {
+            font-size: 14px;
+            color: #856404;
+        }
+        .email-footer {
+            background-color: #f4f4f6;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #d1d1d6;
+        }
+        .footer-text {
+            font-size: 14px;
+            color: #4a4a4f;
+            margin-bottom: 16px;
+        }
+        .footer-links { margin-bottom: 16px; }
+        .footer-link {
+            color: #ff0141;
+            text-decoration: none;
+            margin: 0 8px;
+            font-size: 14px;
+        }
+        .footer-link:hover {
+            color: #e6003c;
+            text-decoration: underline;
+        }
+        .footer-copyright {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container { margin: 0; border-radius: 0; }
+            .email-header, .email-content, .email-footer { padding: 24px 16px; }
+            .email-title { font-size: 20px; }
+            .email-subtitle { font-size: 16px; }
+            .primary-button { padding: 14px 28px; font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <div class="logo">Modulyn CRM</div>
+            <div class="tagline">Streamline Your Real Estate Business</div>
+        </div>
+        <div class="email-content">
+            <h1 class="email-title">Confirm Your New Email Address</h1>
+            <p class="email-subtitle">Please confirm this email address to update your account</p>
+            <div class="email-body">
+                <p>Hello,</p>
+                <p>We received a request to change the email address associated with your Modulyn CRM account. To complete this change, please confirm this new email address by clicking the button below.</p>
+                <p>This will update your account to use this email address for all future communications and sign-ins.</p>
+            </div>
+            <div class="button-container">
+                <!-- Use a full, explicit URL and avoid variables in the href for deliverability -->
+                <a href="{{ .ConfirmationURL | safe }}" class="primary-button" rel="noopener noreferrer" target="_blank">
+                    Confirm New Email Address
+                </a>
+            </div>
+            <div class="email-body">
+                <div class="warning-box">
+                    <div class="warning-box-title">Security Notice</div>
+                    <div class="warning-box-content">
+                        This confirmation link will expire in 24 hours. If you did not request this change, please contact our support team.
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="info-box-title">What happens next?</div>
+                    <div class="info-box-content">
+                        Once confirmed, this email address will become your new login email. You'll receive a confirmation at your old address too.
+                    </div>
+                </div>
+                <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; font-size: 14px; color: #ff0141; background-color: #f4f4f6; padding: 12px; border-radius: 6px; margin: 16px 0;">
+                    <a href="{{ .ConfirmationURL | safe }}" style="color: #ff0141; text-decoration: underline;" rel="noopener noreferrer" target="_blank">{{ .ConfirmationURL }}</a>
+                </p>
+                <p>Questions? Just reply to this email or reach out to our support team.</p>
+            </div>
+        </div>
+        <div class="email-footer">
+            <div class="footer-text">
+                Need help? Contact our support team
+            </div>
+            <div class="footer-links">
+                <a href="https://modulyn.com/support" class="footer-link" rel="noopener noreferrer" target="_blank">Support</a>
+                <a href="https://modulyn.com/privacy" class="footer-link" rel="noopener noreferrer" target="_blank">Privacy Policy</a>
+                <a href="https://modulyn.com/terms" class="footer-link" rel="noopener noreferrer" target="_blank">Terms of Service</a>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2024 Modulyn CRM. All rights reserved.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
