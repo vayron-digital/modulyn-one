@@ -1121,7 +1121,7 @@ const Settings = () => {
             {/* Personal Information */}
             <div className="lg:col-span-2 space-y-6">
               {/* Basic Information */}
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
@@ -1178,7 +1178,7 @@ const Settings = () => {
               </Card>
 
               {/* Additional Information */}
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Info className="h-5 w-5" />
@@ -1232,7 +1232,7 @@ const Settings = () => {
               </Card>
 
               {/* Social Links */}
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Link className="h-5 w-5" />
@@ -1306,7 +1306,7 @@ const Settings = () => {
         {/* Permissions Management */}
         {isOwner && (
           <TabsContent value="permissions" className="space-y-6">
-            <Card>
+            <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
@@ -1359,7 +1359,7 @@ const Settings = () => {
 
         {/* Integrations */}
         <TabsContent value="integrations" className="space-y-6">
-          <Card>
+          <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -1533,7 +1533,7 @@ const Settings = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Appearance Section */}
                 {activePreferenceSection === 'appearance' && (
-                  <Card>
+                  <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -1634,7 +1634,7 @@ const Settings = () => {
 
                 {/* Currency Section */}
                 {activePreferenceSection === 'currency' && (
-                  <Card>
+                  <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
@@ -1698,7 +1698,7 @@ const Settings = () => {
 
                 {/* Timezone Section */}
                 {activePreferenceSection === 'timezone' && (
-                  <Card>
+                  <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -1768,7 +1768,7 @@ const Settings = () => {
 
                 {/* Notifications Section */}
                 {activePreferenceSection === 'notifications' && (
-                  <Card>
+                  <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
@@ -1848,7 +1848,7 @@ const Settings = () => {
 
                 {/* Privacy Section */}
                 {activePreferenceSection === 'privacy' && (
-                  <Card>
+                  <Card className="bg-white/90 backdrop-blur-sm border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
