@@ -968,7 +968,7 @@ const Settings = () => {
 
               {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-1 shadow-sm">
+          <TabsList className="flex w-full flex-wrap bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-1 shadow-sm gap-1">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
