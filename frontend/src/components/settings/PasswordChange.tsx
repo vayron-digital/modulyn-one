@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../ui';
-import { Button, Input, Label, Alert, AlertDescription } from '../../ui';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../ui/card';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Label } from '../../ui/label';
+import { Alert, AlertDescription } from '../../ui/alert';
 import { 
   Lock, 
   Eye, 
