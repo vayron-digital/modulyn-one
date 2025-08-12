@@ -63,7 +63,10 @@ import {
   Settings,
   LayoutGrid,
   List,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
 import DataTable from '../../components/ui/DataTable';
 import { useLayout } from '../../components/layout/DashboardLayout';
 import { format } from 'date-fns';
@@ -125,11 +128,7 @@ const Properties = () => {
         { label: 'Dashboard', href: '/dashboard' },
         { label: 'Properties' }
       ],
-      tabs: [
-        { label: 'All Properties', href: '/properties', active: true },
-        { label: 'Available', href: '/properties/available' },
-        { label: 'Sold', href: '/properties/sold' }
-      ]
+      tabs: []
     });
   }, [setHeader]);
 
@@ -146,8 +145,8 @@ const Properties = () => {
   const columns = [
     {
       key: 'title',
-      label: 'Property',
-      render: (value: string, row: Property) => (
+      header: 'Property',
+      render: (item: Property) => (
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -155,10 +154,10 @@ const Properties = () => {
             </div>
           </div>
           <div>
-            <div className="font-medium">{value}</div>
+            <div className="font-medium">{item.title}</div>
             <div className="text-sm text-gray-500 flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
-              {row.address}
+              {item.address}
             </div>
           </div>
         </div>
@@ -166,51 +165,51 @@ const Properties = () => {
     },
     {
       key: 'developer',
-      label: 'Developer',
-      render: (value: any) => (
+      header: 'Developer',
+      render: (item: Property) => (
         <div className="flex items-center space-x-2">
-          {value?.logo_url ? (
+          {item.developer?.logo_url ? (
             <Avatar className="h-6 w-6">
               <AvatarFallback className="text-xs">
-                {value.name?.charAt(0) || 'D'}
+                {item.developer.name?.charAt(0) || 'D'}
               </AvatarFallback>
             </Avatar>
           ) : (
             <Building className="h-4 w-4 text-gray-400" />
           )}
-          <span className="text-sm">{value?.name || 'Unknown'}</span>
+          <span className="text-sm">{item.developer?.name || 'Unknown'}</span>
         </div>
       )
     },
     {
       key: 'property_type',
-      label: 'Type',
-      render: (value: string) => (
+      header: 'Type',
+      render: (item: Property) => (
         <Badge variant="outline" className="capitalize">
-          {value.replace('_', ' ')}
+          {item.property_type.replace('_', ' ')}
         </Badge>
       )
     },
     {
       key: 'price',
-      label: 'Price',
-      render: (value: number) => (
+      header: 'Price',
+      render: (item: Property) => (
         <div className="text-sm font-medium">
-          {getCurrencyDisplay(value)}
+          {getCurrencyDisplay(item.price)}
         </div>
       )
     },
     {
       key: 'status',
-      label: 'Status',
-      render: (value: string) => {
+      header: 'Status',
+      render: (item: Property) => {
         const statusConfig = {
           available: { label: 'Available', variant: 'default' as const, icon: CheckCircle },
           sold: { label: 'Sold', variant: 'outline' as const, icon: CheckCircle },
           pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
           off_market: { label: 'Off Market', variant: 'destructive' as const, icon: XCircle }
         };
-        const config = statusConfig[value as keyof typeof statusConfig] || statusConfig.available;
+        const config = statusConfig[item.status as keyof typeof statusConfig] || statusConfig.available;
         const Icon = config.icon;
         return (
           <Badge variant={config.variant} className="flex items-center space-x-1">
@@ -222,21 +221,21 @@ const Properties = () => {
     },
     {
       key: 'bedrooms',
-      label: 'Details',
-      render: (value: number, row: Property) => (
+      header: 'Details',
+      render: (item: Property) => (
         <div className="text-sm text-gray-600">
-          {row.bedrooms && `${row.bedrooms} bed`}
-          {row.bathrooms && ` • ${row.bathrooms} bath`}
-          {row.area && ` • ${row.area} sqft`}
+          {item.bedrooms && `${item.bedrooms} bed`}
+          {item.bathrooms && ` • ${item.bathrooms} bath`}
+          {item.area && ` • ${item.area} sqft`}
         </div>
       )
     },
     {
       key: 'created_at',
-      label: 'Listed',
-      render: (value: string) => (
+      header: 'Listed',
+      render: (item: Property) => (
         <div className="text-sm text-gray-600">
-          {format(new Date(value), 'MMM dd, yyyy')}
+          {format(new Date(item.created_at), 'MMM dd, yyyy')}
         </div>
       )
     }
@@ -369,181 +368,185 @@ const Properties = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header - Matching Dashboard/Leads pattern */}
-      <div className="space-y-2">
-        <nav className="text-sm text-gray-500">
-          <span>Dashboard</span>
-          <span className="mx-2">/</span>
-          <span>Property Management</span>
-        </nav>
-        <div className="flex items-center space-x-2">
-          <h1 className="text-3xl font-bold text-gray-900">Property Management</h1>
-          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+    <TooltipProvider>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
-        <p className="text-gray-600">Manage your property portfolio</p>
-      </div>
+        
+        {/* TOP SECTION: Premium Header with Glass Morphism */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+          <div className="relative px-8 py-12">
+            {/* Header with Enhanced Controls */}
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center space-x-8">
+                <div>
+                  <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                    Property Portfolio
+                  </h1>
+                  <p className="text-lg text-slate-600 font-medium">
+                    Manage your real estate assets with precision
+                  </p>
+                </div>
+              </div>
+                      
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-4">
+                 <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Input
+                    placeholder="Search properties, addresses..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-12 w-80 bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl focus:bg-white/90 transition-all duration-200 shadow-lg"
+                  />
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={() => {}}
+                      className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:scale-105 transition-all duration-200 rounded-xl"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Property
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a new property to your portfolio</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+                      
+            {/* Premium KPI Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Properties */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-100 rounded-xl">
+                      <Home className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+12.5%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.total}</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Properties</p>
+                  </div>
+                </div>
+              </div>
 
-      {/* Stats Cards - Matching Dashboard pattern */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Properties</CardTitle>
-            <Home className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="flex items-center space-x-1 mt-1">
-              <span className="text-green-600 text-sm font-medium">+12.5%</span>
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="w-full bg-blue-100 h-1 mt-2 rounded-full">
-              <div className="bg-blue-500 h-1 rounded-full" style={{ width: '75%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
+             {/* Available Properties */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-emerald-100 rounded-xl">
+                      <CheckCircle className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+5.2%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.available}</p>
+                    <p className="text-sm text-slate-600 font-medium">Available</p>
+                  </div>
+                </div>
+              </div>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Available</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.available}</div>
-            <div className="flex items-center space-x-1 mt-1">
-              <span className="text-green-600 text-sm font-medium">+5.2%</span>
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="w-full bg-green-100 h-1 mt-2 rounded-full">
-              <div className="bg-green-500 h-1 rounded-full" style={{ width: '85%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Total Value */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-100 rounded-xl">
+                      <DollarSign className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+22.1%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{getCurrencyDisplay(stats.totalValue)}</p>
+                    <p className="text-sm text-slate-600 font-medium">Portfolio Value</p>
+                  </div>
+                </div>
+              </div>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Sold</CardTitle>
-            <DollarSign className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.sold}</div>
-            <div className="flex items-center space-x-1 mt-1">
-              <span className="text-green-600 text-sm font-medium">+22.1%</span>
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-              </svg>
+             {/* Sold Properties */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      <Check className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div className="flex items-center space-x-1 text-emerald-600">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="text-sm font-semibold">+8%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.sold}</p>
+                    <p className="text-sm text-slate-600 font-medium">Sold</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="w-full bg-purple-100 h-1 mt-2 rounded-full">
-              <div className="bg-purple-500 h-1 rounded-full" style={{ width: '60%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
-            <TrendingUp className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{getCurrencyDisplay(stats.totalValue)}</div>
-            <div className="flex items-center space-x-1 mt-1">
-              <span className="text-green-600 text-sm font-medium">+15.2%</span>
-              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="w-full bg-orange-100 h-1 mt-2 rounded-full">
-              <div className="bg-orange-500 h-1 rounded-full" style={{ width: '90%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Action Bar - Matching Leads pattern */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center space-x-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search properties, addresses, developers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-200"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="flex items-center space-x-2">
-            <Filter className="h-4 w-4" />
-            <span>Filters</span>
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          New Property
-        </Button>
-      </div>
-
-      {/* View Options - Matching Leads pattern */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
-            <LayoutGrid className="h-4 w-4 mr-2" />
-            Table
-          </Button>
-          <Button variant="outline" size="sm">
-            <List className="h-4 w-4 mr-2" />
-            List
-          </Button>
-          <Button variant="outline" size="sm">
-            <Home className="h-4 w-4 mr-2" />
-            Grid
-          </Button>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <div className="text-sm text-gray-500">
-            • {totalItems} properties Last updated: {new Date().toLocaleTimeString()}
           </div>
         </div>
-      </div>
 
-      {/* Main Content - Matching Leads pattern */}
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-0">
-          <DataTable
-            data={properties}
-            columns={columns}
-            pagination={{
-              currentPage,
-              totalPages,
-              totalItems,
-              pageSize: 10,
-              onPageChange: setCurrentPage
-            }}
-            filters={filters}
-            onFiltersChange={setFilters}
-            onEdit={handleEditProperty}
-            onDelete={handleDeleteProperty}
-            selectable={false}
-            sortable={true}
-            onSort={handleSort}
-            loading={loading}
-          />
-        </CardContent>
-      </Card>
+      {/* Main Content with Enhanced Layout */}
+      <div className="p-6">
+       <Card className="border-slate-200 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns}
+                  data={properties.map(prop => ({ ...prop, _rowKey: prop.id }))}
+                  loading={loading}
+                  onSort={handleSort}
+                  sortKey={sortColumn}
+                  sortDirection={sortDirection}
+                  onRowClick={(item) => handleViewProperty(item as Property)}
+                  selectable={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+           {/* Pagination */}
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalItems)} of {totalItems} properties
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
       {/* Add/Edit Modal */}
       <Dialog open={showAddModal || showEditModal} onOpenChange={setShowAddModal}>
@@ -661,6 +664,7 @@ const Properties = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </TooltipProvider>
     </div>
   );
 };

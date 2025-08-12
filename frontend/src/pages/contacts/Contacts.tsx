@@ -42,6 +42,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ContactDetailModal from './ContactDetailModal';
+import { useLayout } from '../../components/layout/DashboardLayout';
 
 interface Contact {
   id: string;
@@ -98,6 +99,7 @@ const Contacts: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const { setHeader } = useLayout();
 
   // Mock data for now - we'll replace with real API calls later
   const mockContacts: Contact[] = [
@@ -157,6 +159,17 @@ const Contacts: React.FC = () => {
       notes: 'Current customer. Very satisfied with our services.'
     }
   ];
+
+  useEffect(() => {
+    setHeader({
+      title: 'Contacts Management',
+      breadcrumbs: [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Contacts' }
+      ],
+      tabs: []
+    });
+  }, [setHeader]);
 
   useEffect(() => {
     // Simulate API call
@@ -223,88 +236,93 @@ const Contacts: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Contacts Management</h1>
-          <p className="text-gray-600 mt-1">Manage your contacts and interactions</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button onClick={() => navigate('/contacts/new')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative">
+       {/* Header */}
+      <div className="relative bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl text-text-on-dark mb-8">
+        <div className="relative px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-6">
+              <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Contacts Management</h1>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+              <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button onClick={() => navigate('/contacts/new')} className="bg-gradient-to-r from-primary-default to-primary-tint hover:from-primary-tint hover:to-primary-shade text-primary-on-primary shadow-lg">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Contact
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-white/10 border-white/20 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <Users className="h-8 w-8" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">Total Contacts</p>
+                    <p className="text-2xl font-bold">{contacts.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/10 border-white/20 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <CheckCircle className="h-8 w-8" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">Active</p>
+                    <p className="text-2xl font-bold">
+                      {contacts.filter(c => c.status === 'active' || c.status === 'customer').length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/10 border-white/20 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <Clock className="h-8 w-8" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">Prospects</p>
+                    <p className="text-2xl font-bold">
+                      {contacts.filter(c => c.status === 'prospect').length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/10 border-white/20 text-white">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <Activity className="h-8 w-8" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">This Month</p>
+                    <p className="text-2xl font-bold">
+                      {contacts.filter(c => new Date(c.created_at).getMonth() === new Date().getMonth()).length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600">Total Contacts</p>
-                <p className="text-2xl font-bold text-gray-900">{contacts.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {contacts.filter(c => c.status === 'active' || c.status === 'customer').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-yellow-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600">Prospects</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {contacts.filter(c => c.status === 'prospect').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Activity className="h-8 w-8 text-purple-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600">This Month</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {contacts.filter(c => new Date(c.created_at).getMonth() === new Date().getMonth()).length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      
+      <div className="container mx-auto p-6 space-y-6">
       {/* Filters and Search */}
-      <Card>
+      <Card className="bg-white/80 backdrop-blur-sm border-slate-200/50 shadow-lg">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -314,7 +332,7 @@ const Contacts: React.FC = () => {
                   placeholder="Search contacts..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white/70"
                 />
               </div>
             </div>
@@ -323,7 +341,7 @@ const Contacts: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/70"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -333,7 +351,7 @@ const Contacts: React.FC = () => {
                 <option value="partner">Partner</option>
               </select>
               
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="bg-white/70">
                 <Filter className="h-4 w-4 mr-2" />
                 More Filters
               </Button>
@@ -343,7 +361,7 @@ const Contacts: React.FC = () => {
       </Card>
 
       {/* Contacts List */}
-      <Card>
+      <Card className="bg-white/80 backdrop-blur-sm border-slate-200/50 shadow-lg">
         <CardHeader>
           <CardTitle>All Contacts ({filteredContacts.length})</CardTitle>
         </CardHeader>
@@ -354,7 +372,7 @@ const Contacts: React.FC = () => {
                 key={contact.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="border rounded-lg p-4 bg-white/60 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedContact(contact)}
               >
                 <div className="flex items-center justify-between">
@@ -434,6 +452,7 @@ const Contacts: React.FC = () => {
         isOpen={!!selectedContact}
         onClose={() => setSelectedContact(null)}
       />
+    </div>
     </div>
   );
 };

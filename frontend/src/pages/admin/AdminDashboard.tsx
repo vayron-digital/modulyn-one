@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
-import { ShieldCheckIcon, UserGroupIcon, HomeIcon, BuildingOfficeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { ShieldCheck, Users, Home, Building, User, TrendingUp } from 'lucide-react';
 
 interface AdminStats {
   totalUsers: number;
@@ -200,106 +200,140 @@ function AdminDashboard() {
   }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground dark:text-foreground-dark">Admin Dashboard</h1>
-        <div className="flex space-x-4">
-          <Link
-            to="/admin/users"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80"
-          >
-            <UserGroupIcon className="h-5 w-5 mr-2" />
-            Manage Users
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      {/* TOP SECTION: Premium Header with Glass Morphism */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+        <div className="relative px-8 py-12">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center space-x-8">
+              <div>
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                  Admin Control Center
+                </h1>
+                <p className="text-lg text-slate-600 font-medium">
+                  Oversee and manage your entire CRM ecosystem
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/admin/users"
+                className="inline-flex items-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-105"
+              >
+                <Users className="h-5 w-5 mr-2" />
+                Manage Users
+              </Link>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* KPI Cards */}
+            <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-100 rounded-xl">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.totalUsers}</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Users</p>
+                  </div>
+                </div>
+            </div>
+             <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-emerald-100 rounded-xl">
+                      <User className="h-6 w-6 text-emerald-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.activeUsers}</p>
+                    <p className="text-sm text-slate-600 font-medium">Active Users</p>
+                  </div>
+                </div>
+            </div>
+            <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-100 rounded-xl">
+                      <Home className="h-6 w-6 text-purple-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.totalProperties}</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Properties</p>
+                  </div>
+                </div>
+            </div>
+             <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      <Building className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 mb-1">{stats.totalLeads}</p>
+                    <p className="text-sm text-slate-600 font-medium">Total Leads</p>
+                  </div>
+                </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card dark:bg-card-dark rounded-lg shadow p-6 text-foreground dark:text-foreground-dark">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-primary/10 dark:bg-primary/20">
-              <UserGroupIcon className="h-6 w-6 text-primary" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground-dark">Total Users</p>
-              <p className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{stats.totalUsers}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card dark:bg-card-dark rounded-lg shadow p-6 text-foreground dark:text-foreground-dark">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900">
-              <UserIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground-dark">Active Users</p>
-              <p className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{stats.activeUsers}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card dark:bg-card-dark rounded-lg shadow p-6 text-foreground dark:text-foreground-dark">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-              <HomeIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground-dark">Total Properties</p>
-              <p className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{stats.totalProperties}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card dark:bg-card-dark rounded-lg shadow p-6 text-foreground dark:text-foreground-dark">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-              <BuildingOfficeIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground-dark">Total Leads</p>
-              <p className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{stats.totalLeads}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <div className="p-6">
       {/* Users List */}
-      <div className="bg-card dark:bg-card-dark rounded-lg shadow overflow-hidden">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-foreground dark:text-foreground-dark">Active Users</h3>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground dark:text-muted-foreground-dark">Real-time status of all users</p>
-        </div>
-        <div className="border-t border-border dark:border-border-dark">
+      <Card className="border-slate-200 bg-white/80 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle>Active Users</CardTitle>
+          <p className="text-sm text-slate-600">Real-time status of all users</p>
+        </CardHeader>
+        <CardContent>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border dark:divide-border-dark">
-              <thead className="bg-background dark:bg-background-dark">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Name
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Role
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground dark:text-muted-foreground-dark uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Last Active
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-slate-200">
                 {users.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className="hover:bg-slate-50 transition-colors duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium text-slate-900">{user.full_name}</div>
+                          <div className="text-sm text-slate-500">{user.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.role}</div>
+                      <div className="text-sm text-slate-900">{user.role}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -308,12 +342,12 @@ function AdminDashboard() {
                           : 'bg-gray-100 text-gray-800'
                       }`}>
                         <span className={`h-2 w-2 rounded-full mr-1.5 ${
-                          user.is_online ? 'bg-green-400' : 'bg-gray-400'
+                          user.is_online ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
                         }`}></span>
                         {user.is_online ? 'Online' : 'Offline'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       {formatLastActive(user.last_seen)}
                     </td>
                   </tr>
@@ -321,9 +355,10 @@ function AdminDashboard() {
               </tbody>
             </table>
           </div>
-        </div>
+        </CardContent>
+      </Card>
       </div>
-    </>
+    </div>
   );
 }
 

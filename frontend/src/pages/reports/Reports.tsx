@@ -74,7 +74,7 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    if (!user?.is_admin) {
+    if (user && !user.is_admin) {
       navigate('/dashboard');
       return;
     }
@@ -226,62 +226,31 @@ const Reports = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Page Header */}
-      <PageHeader
-        title="Analytics & Reports"
-        subtitle="Comprehensive insights into your CRM performance"
-        icon={<BarChart3 className="h-6 w-6 text-purple-600" />}
-        stats={[
-          {
-            label: 'Total Revenue',
-            value: getCurrencyDisplay(reportData.totalRevenue),
-            change: reportData.revenueChange,
-            trend: 'up'
-          },
-          {
-            label: 'Total Leads',
-            value: reportData.totalLeads,
-            change: 8,
-            trend: 'up'
-          },
-          {
-            label: 'Properties Sold',
-            value: reportData.soldProperties,
-            change: 12,
-            trend: 'up'
-          },
-          {
-            label: 'Conversion Rate',
-            value: `${((reportData.convertedLeads / reportData.totalLeads) * 100).toFixed(1)}%`,
-            change: 5,
-            trend: 'up'
-          }
-        ]}
-        actions={[
-          {
-            label: 'Export Report',
-            icon: <Download className="h-4 w-4" />,
-            onClick: () => toast({ title: "Coming Soon", description: "Export feature will be available soon" }),
-            variant: 'outline'
-          },
-          {
-            label: 'Schedule Report',
-            icon: <Calendar className="h-4 w-4" />,
-            onClick: () => toast({ title: "Coming Soon", description: "Schedule feature will be available soon" }),
-            variant: 'outline'
-          }
-        ]}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
 
-      {/* Date Range Selector */}
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+      {/* TOP SECTION: Premium Header with Glass Morphism */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
+        <div className="relative px-8 py-12">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center space-x-8">
+              <div>
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                  Analytics & Reports
+                </h1>
+                <p className="text-lg text-slate-600 font-medium">
+                  Comprehensive insights into your CRM performance
+                </p>
+              </div>
+            </div>
             <div className="flex items-center space-x-4">
-              <Label className="text-sm font-medium">Date Range:</Label>
               <Select value={dateRange} onValueChange={(value: 'week' | 'month' | 'year') => setDateRange(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-40 bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl focus:bg-white/90 transition-all duration-200 shadow-lg">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -290,22 +259,25 @@ const Reports = () => {
                   <SelectItem value="year">This Year</SelectItem>
                 </SelectContent>
               </Select>
+              <Button 
+                onClick={() => {}}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:scale-105 transition-all duration-200 rounded-xl"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Report
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchReportData}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* KPI Cards */}
+          </div>
+        </div>
+      </div>
 
+      <div className="p-6">
       {/* Reports Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-white/30">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
@@ -549,6 +521,7 @@ const Reports = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

@@ -33,7 +33,13 @@ import {
   Zap,
   Users,
   Settings,
-  Download
+  Download,
+  LayoutGrid,
+  List,
+  Edit,
+  Trash2,
+  Save,
+  Tag
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '../../components/ui/badge';
@@ -44,6 +50,7 @@ import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { Separator } from '../../components/ui/separator';
 
 import { isValidUUID } from '../../lib/utils';
+import { useLayout } from '../../components/layout/DashboardLayout';
 
 interface Call {
   id: string;
@@ -462,10 +469,9 @@ const Calls: React.FC = () => {
   if (loading) return <FullScreenLoader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative">
       {/* Hero Section with Enhanced Analytics */}
-      <div className="relative bg-gradient-to-r from-obsidian-veil via-charcoal-tint to-obsidian-veil text-text-on-dark mb-8">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl text-text-on-dark mb-8">
         <div className="relative px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-6">
