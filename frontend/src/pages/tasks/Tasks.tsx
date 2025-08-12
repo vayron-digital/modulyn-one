@@ -456,96 +456,181 @@ const Tasks = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Page Header - Matching Dashboard/Leads pattern */}
+      <div className="space-y-2">
+        <nav className="text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span className="mx-2">/</span>
+          <span>Task Management</span>
+        </nav>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
+          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+        </div>
+        <p className="text-gray-600">Manage and track your tasks</p>
+      </div>
+
+      {/* Stats Cards - Matching Dashboard pattern */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Total Tasks</CardTitle>
+            <Target className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              All tasks
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+8.3%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-blue-100 h-1 mt-2 rounded-full">
+              <div className="bg-blue-500 h-1 rounded-full" style={{ width: '75%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-yellow-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting action
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.pending}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+3.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-yellow-100 h-1 mt-2 rounded-full">
+              <div className="bg-yellow-500 h-1 rounded-full" style={{ width: '45%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">In Progress</CardTitle>
+            <Activity className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.inProgress}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently working
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.inProgress}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+12.5%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-blue-100 h-1 mt-2 rounded-full">
+              <div className="bg-blue-500 h-1 rounded-full" style={{ width: '65%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Completed</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
-            <p className="text-xs text-muted-foreground">
-              Finished tasks
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.completed}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+15.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-green-100 h-1 mt-2 rounded-full">
+              <div className="bg-green-500 h-1 rounded-full" style={{ width: '85%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Overdue</CardTitle>
+            <AlertCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            <p className="text-xs text-muted-foreground">
-              Past due date
-            </p>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-red-600 text-sm font-medium">+2.1%</span>
+              <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1v-5a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586l-4.293-4.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-red-100 h-1 mt-2 rounded-full">
+              <div className="bg-red-500 h-1 rounded-full" style={{ width: '25%' }}></div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Tasks</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Manage and track your tasks
-              </p>
-            </div>
-            <Button onClick={() => setShowAddModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
-            </Button>
+      {/* Action Bar - Matching Leads pattern */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search tasks, descriptions, assignees..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-gray-50 border-gray-200"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
+          <Button variant="outline" size="sm" className="flex items-center space-x-2">
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          New Task
+        </Button>
+      </div>
+
+      {/* View Options - Matching Leads pattern */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Table
+          </Button>
+          <Button variant="outline" size="sm">
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
+          <Button variant="outline" size="sm">
+            <CheckSquare className="h-4 w-4 mr-2" />
+            Kanban
+          </Button>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <div className="text-sm text-gray-500">
+            • {totalItems} tasks Last updated: {new Date().toLocaleTimeString()}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Matching Leads pattern */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-0">
           <DataTable
             data={tasks}
             columns={columns}
-            search={search}
-            onSearchChange={setSearch}
             pagination={{
               currentPage,
               totalPages,

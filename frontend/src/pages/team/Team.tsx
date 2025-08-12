@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Separator } from '../../components/ui/separator';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { Label } from '../../components/ui/label';
-import { Plus, Mail, Phone, UserPlus, Building, Shield, Users, Crown, Star, Target, TrendingUp, Activity, Calendar, Eye, Edit } from 'lucide-react';
+import { Plus, Mail, Phone, UserPlus, Building, Shield, Users, Crown, Star, Target, TrendingUp, Activity, Calendar, Eye, Edit, Search, Filter, RefreshCw, LayoutGrid, List, Download, Upload } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import PageHeader from '../../components/ui/PageHeader';
@@ -331,78 +331,159 @@ const Team = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Page Header - Matching Dashboard/Leads pattern */}
+      <div className="space-y-2">
+        <nav className="text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span className="mx-2">/</span>
+          <span>Team Management</span>
+        </nav>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-3xl font-bold text-gray-900">Team Management</h1>
+          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+        </div>
+        <p className="text-gray-600">Manage your team members and hierarchy</p>
+      </div>
+
+      {/* Stats Cards - Matching Dashboard pattern */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Total Members</CardTitle>
+            <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              All team members
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+12.5%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-blue-100 h-1 mt-2 rounded-full">
+              <div className="bg-blue-500 h-1 rounded-full" style={{ width: '75%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Members</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Active Members</CardTitle>
+            <Activity className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently active
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.active}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+5.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-green-100 h-1 mt-2 rounded-full">
+              <div className="bg-green-500 h-1 rounded-full" style={{ width: '85%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Managers</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">Managers</CardTitle>
+            <Shield className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.managers}</div>
-            <p className="text-xs text-muted-foreground">
-              Leadership team
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.managers}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+22.1%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-purple-100 h-1 mt-2 rounded-full">
+              <div className="bg-purple-500 h-1 rounded-full" style={{ width: '60%' }}></div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New This Month</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">New This Month</CardTitle>
+            <TrendingUp className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.newThisMonth}</div>
-            <p className="text-xs text-muted-foreground">
-              Recent additions
-            </p>
+            <div className="text-2xl font-bold text-gray-900">{stats.newThisMonth}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+5.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-orange-100 h-1 mt-2 rounded-full">
+              <div className="bg-orange-500 h-1 rounded-full" style={{ width: '45%' }}></div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Team Members</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Manage your team members and their roles
-              </p>
-            </div>
-            <Button onClick={() => setShowAddModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Member
-            </Button>
+      {/* Action Bar - Matching Leads pattern */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search team members, emails, roles..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-gray-50 border-gray-200"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
+          <Button variant="outline" size="sm" className="flex items-center space-x-2">
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          New Member
+        </Button>
+      </div>
+
+      {/* View Options - Matching Leads pattern */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Table
+          </Button>
+          <Button variant="outline" size="sm">
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
+          <Button variant="outline" size="sm">
+            <Users className="h-4 w-4 mr-2" />
+            Grid
+          </Button>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <div className="text-sm text-gray-500">
+            • {totalItems} members Last updated: {new Date().toLocaleTimeString()}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Matching Leads pattern */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-0">
           <DataTable
             data={teamMembers}
             columns={columns}

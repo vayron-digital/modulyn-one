@@ -61,6 +61,8 @@ import {
   Globe,
   Heart,
   Settings,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import DataTable from '../../components/ui/DataTable';
 import { useLayout } from '../../components/layout/DashboardLayout';
@@ -367,37 +369,181 @@ const Properties = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Page Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-slate-900">Properties</h1>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Add Property
+    <div className="space-y-6">
+      {/* Page Header - Matching Dashboard/Leads pattern */}
+      <div className="space-y-2">
+        <nav className="text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span className="mx-2">/</span>
+          <span>Property Management</span>
+        </nav>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-3xl font-bold text-gray-900">Property Management</h1>
+          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+        </div>
+        <p className="text-gray-600">Manage your property portfolio</p>
+      </div>
+
+      {/* Stats Cards - Matching Dashboard pattern */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Properties</CardTitle>
+            <Home className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+12.5%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-blue-100 h-1 mt-2 rounded-full">
+              <div className="bg-blue-500 h-1 rounded-full" style={{ width: '75%' }}></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Available</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.available}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+5.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-green-100 h-1 mt-2 rounded-full">
+              <div className="bg-green-500 h-1 rounded-full" style={{ width: '85%' }}></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Sold</CardTitle>
+            <DollarSign className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.sold}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+22.1%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-purple-100 h-1 mt-2 rounded-full">
+              <div className="bg-purple-500 h-1 rounded-full" style={{ width: '60%' }}></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50 to-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
+            <TrendingUp className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{getCurrencyDisplay(stats.totalValue)}</div>
+            <div className="flex items-center space-x-1 mt-1">
+              <span className="text-green-600 text-sm font-medium">+15.2%</span>
+              <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="w-full bg-orange-100 h-1 mt-2 rounded-full">
+              <div className="bg-orange-500 h-1 rounded-full" style={{ width: '90%' }}></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Action Bar - Matching Leads pattern */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search properties, addresses, developers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-gray-50 border-gray-200"
+            />
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center space-x-2">
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          New Property
         </Button>
       </div>
 
-      {/* Properties Table/Grid */}
-      <DataTable
-        data={properties}
-        columns={columns}
-        loading={loading}
-        emptyMessage="No properties found"
-        onRowClick={handleViewProperty}
-        onEdit={handleEditProperty}
-        onDelete={handleDeleteProperty}
-        selectable={false} // Removed selectable for now
-        pagination={{
-          currentPage,
-          totalPages,
-          pageSize: 10,
-          totalItems,
-          onPageChange: setCurrentPage
-        }}
-        sortable={true}
-        onSort={handleSort}
-        sortColumn={sortColumn}
-        sortDirection={sortDirection}
-      />
+      {/* View Options - Matching Leads pattern */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Table
+          </Button>
+          <Button variant="outline" size="sm">
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
+          <Button variant="outline" size="sm">
+            <Home className="h-4 w-4 mr-2" />
+            Grid
+          </Button>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <div className="text-sm text-gray-500">
+            • {totalItems} properties Last updated: {new Date().toLocaleTimeString()}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Matching Leads pattern */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-0">
+          <DataTable
+            data={properties}
+            columns={columns}
+            pagination={{
+              currentPage,
+              totalPages,
+              totalItems,
+              pageSize: 10,
+              onPageChange: setCurrentPage
+            }}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onEdit={handleEditProperty}
+            onDelete={handleDeleteProperty}
+            selectable={false}
+            sortable={true}
+            onSort={handleSort}
+            loading={loading}
+          />
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Modal */}
       <Dialog open={showAddModal || showEditModal} onOpenChange={setShowAddModal}>
