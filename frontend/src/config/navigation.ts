@@ -37,11 +37,6 @@ export const navigationItems: NavigationItem[] = [
     icon: HomeIcon,
   },
   {
-    name: 'Properties',
-    href: '/properties',
-    icon: BuildingOfficeIcon,
-  },
-  {
     name: 'Leads',
     href: '/leads',
     icon: UserGroupIcon,
@@ -59,9 +54,40 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
+    name: 'Properties',
+    href: '/properties',
+    icon: BuildingOfficeIcon,
+    children: [
+      {
+        name: 'All Properties',
+        href: '/properties',
+        icon: BuildingOfficeIcon,
+      },
+    ],
+  },
+  {
+    name: 'Contacts',
+    href: '/contacts',
+    icon: UserGroupIcon,
+    children: [
+      {
+        name: 'All Contacts',
+        href: '/contacts',
+        icon: UserGroupIcon,
+      },
+    ],
+  },
+  {
     name: 'Tasks',
     href: '/tasks',
     icon: ClipboardDocumentListIcon,
+    children: [
+      {
+        name: 'All Tasks',
+        href: '/tasks',
+        icon: ClipboardDocumentListIcon,
+      },
+    ],
   },
   {
     name: 'Documents',
@@ -153,11 +179,6 @@ export function getNavigationItems(features: any) {
       href: '/',
       icon: HomeIcon,
     },
-    features.properties !== false && {
-      name: 'Properties',
-      href: '/properties',
-      icon: BuildingOfficeIcon,
-    },
     features.leads !== false && {
       name: 'Leads',
       href: '/leads',
@@ -175,10 +196,41 @@ export function getNavigationItems(features: any) {
         },
       ],
     },
+    features.properties !== false && {
+      name: 'Properties',
+      href: '/properties',
+      icon: BuildingOfficeIcon,
+      children: [
+        {
+          name: 'All Properties',
+          href: '/properties',
+          icon: BuildingOfficeIcon,
+        },
+      ],
+    },
+    features.contacts !== false && {
+      name: 'Contacts',
+      href: '/contacts',
+      icon: UserGroupIcon,
+      children: [
+        {
+          name: 'All Contacts',
+          href: '/contacts',
+          icon: UserGroupIcon,
+        },
+      ],
+    },
     features.tasks !== false && {
       name: 'Tasks',
       href: '/tasks',
       icon: ClipboardDocumentListIcon,
+      children: [
+        {
+          name: 'All Tasks',
+          href: '/tasks',
+          icon: ClipboardDocumentListIcon,
+        },
+      ],
     },
     features.documents && {
       name: 'Documents',

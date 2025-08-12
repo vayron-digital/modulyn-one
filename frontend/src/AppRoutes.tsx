@@ -54,11 +54,7 @@ const EditLead = React.lazy(() => import('./pages/leads/EditLead'));
 const LeadForm = React.lazy(() => import('./pages/leads/LeadForm'));
 const LeadsList = React.lazy(() => import('./pages/leads/LeadsList'));
 const DumpedLeads = React.lazy(() => import('./pages/leads/DumpedLeads'));
-const Calls = React.lazy(() => import('./pages/calls/Calls'));
-const AddCall = React.lazy(() => import('./pages/calls/AddCall'));
-const CallsList = React.lazy(() => import('./pages/calls/CallsList'));
-const UploadCalls = React.lazy(() => import('./pages/calls/UploadCalls'));
-const NewCall = React.lazy(() => import('./pages/calls/NewCall'));
+
 const Contacts = React.lazy(() => import('./pages/contacts/Contacts'));
 const AddContact = React.lazy(() => import('./pages/contacts/AddContact'));
 const Scheduler = React.lazy(() => import('./pages/scheduler/Scheduler'));
@@ -195,11 +191,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/leads/form" element={<SuspenseWrapper skeletonType="form"><LeadForm /></SuspenseWrapper>} />
           <Route path="/leads/list" element={<SuspenseWrapper skeletonType="table"><LeadsList /></SuspenseWrapper>} />
           <Route path="/leads/dumped" element={<SuspenseWrapper skeletonType="table"><DumpedLeads /></SuspenseWrapper>} />
-          <Route path="/calls" element={<PreviewProtectedRoute><SuspenseWrapper skeletonType="table"><Calls /></SuspenseWrapper></PreviewProtectedRoute>} />
-          <Route path="/calls/add" element={<SuspenseWrapper skeletonType="form"><AddCall /></SuspenseWrapper>} />
-          <Route path="/calls/list" element={<SuspenseWrapper skeletonType="table"><CallsList /></SuspenseWrapper>} />
-          <Route path="/calls/upload" element={<SuspenseWrapper skeletonType="form"><UploadCalls /></SuspenseWrapper>} />
-          <Route path="/calls/new" element={<SuspenseWrapper skeletonType="form"><NewCall /></SuspenseWrapper>} />
+
           <Route path="/contacts" element={<PreviewProtectedRoute><SuspenseWrapper skeletonType="table" pageName="Contacts"><Contacts /></SuspenseWrapper></PreviewProtectedRoute>} />
           <Route path="/contacts/new" element={<SuspenseWrapper skeletonType="form"><AddContact /></SuspenseWrapper>} />
           <Route path="/scheduler" element={<SuspenseWrapper skeletonType="card"><Scheduler /></SuspenseWrapper>} />
