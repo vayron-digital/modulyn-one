@@ -59,6 +59,8 @@ const AddCall = React.lazy(() => import('./pages/calls/AddCall'));
 const CallsList = React.lazy(() => import('./pages/calls/CallsList'));
 const UploadCalls = React.lazy(() => import('./pages/calls/UploadCalls'));
 const NewCall = React.lazy(() => import('./pages/calls/NewCall'));
+const Contacts = React.lazy(() => import('./pages/contacts/Contacts'));
+const AddContact = React.lazy(() => import('./pages/contacts/AddContact'));
 const Scheduler = React.lazy(() => import('./pages/scheduler/Scheduler'));
 const Calendar = React.lazy(() => import('./pages/scheduler/Calendar'));
 const Team = React.lazy(() => import('./pages/team/Team'));
@@ -198,6 +200,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/calls/list" element={<SuspenseWrapper skeletonType="table"><CallsList /></SuspenseWrapper>} />
           <Route path="/calls/upload" element={<SuspenseWrapper skeletonType="form"><UploadCalls /></SuspenseWrapper>} />
           <Route path="/calls/new" element={<SuspenseWrapper skeletonType="form"><NewCall /></SuspenseWrapper>} />
+          <Route path="/contacts" element={<PreviewProtectedRoute><SuspenseWrapper skeletonType="table" pageName="Contacts"><Contacts /></SuspenseWrapper></PreviewProtectedRoute>} />
+          <Route path="/contacts/new" element={<SuspenseWrapper skeletonType="form"><AddContact /></SuspenseWrapper>} />
           <Route path="/scheduler" element={<SuspenseWrapper skeletonType="card"><Scheduler /></SuspenseWrapper>} />
           <Route path="/calendar" element={<SuspenseWrapper skeletonType="card"><Calendar /></SuspenseWrapper>} />
           <Route path="/reports" element={

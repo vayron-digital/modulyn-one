@@ -28,6 +28,11 @@ export const SIDEBAR_NAV: SidebarNavItem[] = [
   { name: 'Notifications', href: '/notifications', icon: BellAlertIcon, featureKey: 'notifications', badgeKey: 'unreadNotifications' },
   { name: 'Team', href: '/team', icon: UserGroupIcon, featureKey: 'team' },
   { name: 'Scheduler', href: '/scheduler', icon: CalendarDaysIcon, featureKey: 'calendar', quickAction: true },
+  { name: 'Contacts', href: '/contacts', icon: UserGroupIcon, featureKey: 'contacts', quickAction: true, children: [
+    { name: 'All Contacts', href: '/contacts', icon: UserGroupIcon },
+    { name: 'Add Contact', href: '/contacts/new', icon: PlusCircleIcon, quickAction: true },
+    { name: 'Import Contacts', href: '/contacts/import', icon: PlusCircleIcon },
+  ] },
   { name: 'Cold Calls', href: '/cold-calls', icon: PhoneArrowUpRightIcon, featureKey: 'cold_calls', adminOnly: true, quickAction: true },
   { name: 'Tasks', href: '/tasks', icon: ClipboardDocumentListIcon, featureKey: 'tasks', quickAction: true, children: [
     { name: 'New Task', href: '/tasks/new', icon: PlusCircleIcon, quickAction: true },
