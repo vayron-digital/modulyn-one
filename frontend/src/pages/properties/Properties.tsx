@@ -361,7 +361,7 @@ const Properties = () => {
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">Authentication Error</h3>
-          <p className="text-slate-600">{authError}</p>
+          <p className="text-slate-600">{authError.toString()}</p>
         </div>
       </div>
     );
