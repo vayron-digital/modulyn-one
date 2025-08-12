@@ -783,8 +783,7 @@ const Leads = () => {
         
         // Rollback optimistic update on error
         if (isDragOperation) {
-          setLeads(originalLeads);
-          setPipeline(originalPipeline);
+          setRefreshKey(prev => prev + 1);
         }
         
         toast({
@@ -818,8 +817,7 @@ const Leads = () => {
       
       // Rollback optimistic update on error
       if (isDragOperation) {
-        setLeads(originalLeads);
-        setPipeline(originalPipeline);
+        setRefreshKey(prev => prev + 1);
       }
       
       toast({
@@ -1191,7 +1189,7 @@ const Leads = () => {
   const columns = useMemo(() => [
     {
       key: 'name',
-      header: 'Name',
+      label: 'Name',
       accessorKey: 'full_name',
       render: (item: any) => (
         <div className="flex items-center space-x-3">
@@ -1209,7 +1207,7 @@ const Leads = () => {
     },
     {
       key: 'phone',
-      header: 'Phone',
+      label: 'Phone',
       accessorKey: 'phone',
       render: (item: any) => (
         <div className="flex items-center space-x-2">
@@ -1220,7 +1218,7 @@ const Leads = () => {
     },
     {
       key: 'status',
-      header: 'Status',
+      label: 'Status',
       accessorKey: 'status',
       render: (item: any) => (
         <Select
@@ -1242,7 +1240,7 @@ const Leads = () => {
     },
     {
       key: 'source',
-      header: 'Source',
+      label: 'Source',
       accessorKey: 'source',
       render: (item: any) => (
         <span className="capitalize">{item.source}</span>
@@ -1250,7 +1248,7 @@ const Leads = () => {
     },
     {
       key: 'budget',
-      header: 'Budget',
+      label: 'Budget',
       accessorKey: 'budget',
       render: (item: any) => (
         <span className="font-medium">{formatCurrency(item.budget || 0)}</span>
@@ -1259,7 +1257,7 @@ const Leads = () => {
     ...(isAdmin ? [
       {
         key: 'agent',
-        header: 'Agent',
+        label: 'Agent',
         accessorKey: 'assigned_user',
         render: (item: any) => (
           <select
@@ -1291,13 +1289,13 @@ const Leads = () => {
     ] : []),
     {
       key: 'created',
-      header: 'Created',
+      label: 'Created',
       accessorKey: 'created_at',
       render: (item: any) => formatDate(item.created_at),
     },
     {
       key: 'actions',
-      header: 'Actions',
+      label: 'Actions',
       render: (item: any) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -1421,25 +1419,14 @@ const Leads = () => {
       type="page"
       message="Loading leads..."
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
+      <div className="min-h-screen bg-surface-secondary">
 
         {/* Premium Header Section */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
-          <div className="relative px-8 py-12">
+        <div className="px-8 py-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
-                  Lead Management 🎯
-                </h1>
-                <p className="text-lg text-slate-600 font-medium">
-                  Manage and nurture your sales pipeline
-                </p>
+                <h1 className="text-3xl font-bold tracking-tight text-text-heading mb-1">Lead Management</h1>
+                <p className="text-sm text-text-secondary">Manage and nurture your sales pipeline</p>
               </div>
               
               {/* Action Buttons */}
@@ -1450,27 +1437,27 @@ const Leads = () => {
                     placeholder="Search leads, emails, companies..."
                     defaultValue={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-12 w-80 bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl focus:bg-white/90 transition-all duration-200 shadow-lg"
+                    className="pl-12 w-80 bg-surface-primary border border-fields-border rounded-lg focus-visible:ring-primary-default/30"
                   />
                 </div>
                 <Button 
                   variant="outline" 
                   onClick={() => setShowFilters(!showFilters)}
-                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                  className="rounded-lg"
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
                 </Button>
                 <Button 
                   onClick={() => setRefreshKey(k => k + 1)}
-                  className="bg-white/80 backdrop-blur-sm border border-white/30 hover:bg-white/90 shadow-lg rounded-xl"
+                  className="rounded-lg"
                   variant="outline"
                 >
                   <RefreshCw className="h-4 w-4" />
                 </Button>
                 <Button 
                   onClick={() => navigate('/leads/new')} 
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:scale-105 transition-all duration-200 rounded-xl"
+                  className=""
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   New Lead
@@ -1479,11 +1466,10 @@ const Leads = () => {
             </div>
 
             {/* Premium KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Leads Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-blue-100 rounded-xl">
                       <Users className="h-6 w-6 text-blue-600" />
@@ -1502,8 +1488,7 @@ const Leads = () => {
 
               {/* Conversion Rate Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-emerald-100 rounded-xl">
                       <Target className="h-6 w-6 text-emerald-600" />
@@ -1522,8 +1507,7 @@ const Leads = () => {
 
               {/* Avg Deal Size Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-purple-100 rounded-xl">
                       <DollarSign className="h-6 w-6 text-purple-600" />
@@ -1542,8 +1526,7 @@ const Leads = () => {
 
               {/* Pipeline Value Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-orange-100 rounded-xl">
                       <BarChart3 className="h-6 w-6 text-orange-600" />
@@ -1564,17 +1547,17 @@ const Leads = () => {
         </div>
 
         {/* Premium View Controls */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 px-8 py-6">
+        <div className="bg-surface-primary border-b border-fields-border px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="bg-slate-100 rounded-2xl p-2 shadow-lg">
+              <div className="bg-surface-secondary rounded-lg p-1 border border-fields-border">
                 <Button
                   variant={viewMode === 'kanban' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('kanban')}
                   className={viewMode === 'kanban' 
-                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                    ? '' 
+                    : 'text-text-secondary hover:text-text-heading'
                   }
                 >
                   <LayoutGrid className="h-4 w-4 mr-2" />
@@ -1585,8 +1568,8 @@ const Leads = () => {
                   size="sm"
                   onClick={() => setViewMode('list')}
                   className={viewMode === 'list' 
-                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                    ? '' 
+                    : 'text-text-secondary hover:text-text-heading'
                   }
                 >
                   <List className="h-4 w-4 mr-2" />
@@ -1597,8 +1580,8 @@ const Leads = () => {
                   size="sm"
                   onClick={() => setViewMode('table')}
                   className={viewMode === 'table' 
-                    ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 rounded-xl' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white rounded-xl'
+                    ? '' 
+                    : 'text-text-secondary hover:text-text-heading'
                   }
                 >
                   <BarChart3 className="h-4 w-4 mr-2" />
@@ -1629,11 +1612,11 @@ const Leads = () => {
             </div>
             
             <div className="flex items-center space-x-6 text-sm">
-              <div className="flex items-center space-x-3 bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-semibold text-slate-700">{totalLeads} leads</span>
+                <div className="flex items-center space-x-2 bg-surface-secondary rounded-full px-3 py-1 border border-fields-border">
+                <div className="w-2 h-2 bg-states-success rounded-full"></div>
+                <span className="text-sm font-medium text-text-secondary">{totalLeads} leads</span>
               </div>
-              <div className="text-slate-500">
+              <div className="text-text-secondary text-sm">
                 <span>Last updated: {new Date().toLocaleTimeString()}</span>
               </div>
             </div>
@@ -1831,7 +1814,6 @@ const Leads = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
     </LoadingState>
   );
 };

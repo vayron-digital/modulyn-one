@@ -139,6 +139,18 @@ export const journeysApi = {
 export const dashboardApi = {
   getKPIs: () => api.get('/dashboard/kpis'),
   getJourneyCards: (journeyId: string) => api.get(`/dashboard/journey-cards?journeyId=${journeyId}`),
+  createJourneyCard: (data: { title: string; stage: string; status?: string }) =>
+    api.post('/dashboard/journey-cards', data),
+  updateJourneyCard: (id: string, data: { title?: string; stage?: string; status?: string; position?: number }) =>
+    api.patch(`/dashboard/journey-cards/${id}`, data),
+  deleteJourneyCard: (id: string) => api.delete(`/dashboard/journey-cards/${id}`),
+  reorderJourneyCards: (data: {
+    sourceStage: string;
+    destinationStage: string;
+    sourceIndex: number;
+    destinationIndex: number;
+    cardId: string;
+  }) => api.patch('/dashboard/journey-cards/reorder', data),
 };
 
 export const journeyColumnsApi = {

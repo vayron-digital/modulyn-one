@@ -3,7 +3,7 @@ import { useLayout } from '../../components/layout/DashboardLayout';
 import { useAuthLoading } from '../../hooks/useAuthLoading';
 import LoadingState from '../../components/common/LoadingState';
 import { dashboardApi, journeysApi, journeyColumnsApi } from '../../lib/api';
-import { Plus, TrendingUp, TrendingDown, Users, DollarSign, Target, Clock, Calendar, Bell, Settings, BarChart3, Activity, Brain, ArrowRight, RefreshCw, Phone, CheckCircle } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Settings, Activity, ArrowRight, RefreshCw, Target, Clock, Phone, CheckCircle, Calendar, Bell, BarChart3, Plus, Brain } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 
@@ -41,25 +41,23 @@ const Dashboard = () => {
   const { theme } = useTheme();
   
   const [journeyStages, setJourneyStages] = useState<JourneyStage[]>([]);
-  const [modalCard, setModalCard] = useState<JourneyCard | null>(null);
+  // const [modalCard, setModalCard] = useState<JourneyCard | null>(null);
   const [editCard, setEditCard] = useState<{ colIdx: number; cardIdx: number; card: JourneyCard } | null>(null);
   const [deleteCard, setDeleteCard] = useState<{ colIdx: number; cardIdx: number; card: JourneyCard } | null>(null);
   const [addCardCol, setAddCardCol] = useState<number | null>(null);
   const [newCardTitle, setNewCardTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Add a pendingCards state to track cards being updated
   const [pendingCards, setPendingCards] = useState<string[]>([]);
-  // Add dragVersion state to force re-render after drop
   const [dragVersion, setDragVersion] = useState(0);
-  // Add a tempId counter for new cards
   const [tempId, setTempId] = useState(0);
   const [kpis, setKpis] = useState<any>(null);
   const [kpisLoading, setKpisLoading] = useState(true);
   
   // Add dashboard layer state
-  const [dashboardLayer, setDashboardLayer] = useState<'overview' | 'analytics' | 'team' | 'automation' | 'insights'>('overview');
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  // Simplified UI state
+  const [dashboardLayer] = useState<'overview' | 'analytics' | 'team' | 'automation' | 'insights'>('overview');
+  const [sidebarExpanded] = useState(false);
 
   // Dashboard layer configurations
   const dashboardLayers = {
@@ -104,12 +102,12 @@ const Dashboard = () => {
   const [recentActivityError, setRecentActivityError] = useState<string | null>(null);
 
   // Add at the top of the component:
-  const [drawerTab, setDrawerTab] = useState<'Details' | 'Subtasks' | 'Comments' | 'Activity'>('Details');
-  const [drawerDescription, setDrawerDescription] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'journeys'>('overview');
-  const [journeyView, setJourneyView] = useState<'kanban' | 'list'>('kanban');
-  const [journeySearchTerm, setJourneySearchTerm] = useState('');
-  const [journeySortBy, setJourneySortBy] = useState<'name' | 'value' | 'date'>('name');
+  const [drawerTab] = useState<'Details' | 'Subtasks' | 'Comments' | 'Activity'>('Details');
+  const [drawerDescription] = useState('');
+  const [activeTab] = useState<'overview' | 'journeys'>('overview');
+  const [journeyView] = useState<'kanban' | 'list'>('kanban');
+  const [journeySearchTerm] = useState('');
+  const [journeySortBy] = useState<'name' | 'value' | 'date'>('name');
 
   // When opening the drawer (setModalCard), also set drawerTab and drawerDescription
   // Replace all modalCard._tab with drawerTab
@@ -135,7 +133,8 @@ const Dashboard = () => {
   const [newJourneyDesc, setNewJourneyDesc] = useState('');
 
   // Dynamic columns state
-  const [columns, setColumns] = useState<any[]>([]);
+  type JourneyColumn = { id: string; name: string; position: number };
+  const [columns, setColumns] = useState<JourneyColumn[]>([]);
   const [columnsLoading, setColumnsLoading] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
   const [editedColumnName, setEditedColumnName] = useState('');
@@ -698,133 +697,11 @@ const Dashboard = () => {
   ]);
 
   // Enhanced KPI Card Component - Updated Typography
-  const KPICard = ({ title, value, trend, sparkline, icon, onClick }: any) => (
-    <div 
-      className="bg-surface-primary/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:bg-surface-primary/20 hover:scale-[1.02] border border-surface-primary/20 group"
-      onClick={onClick}
-    >
-      <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-          <div className="p-3 bg-surface-primary/20 rounded-xl group-hover:scale-110 transition-transform duration-300">
-            {icon}
-                    </div>
-                    <div>
-            <p className="text-sm text-text-on-dark font-medium tracking-wide">{title}</p>
-            <p className="text-2xl text-text-on-dark font-extrabold tracking-tight">{value}</p>
-                    </div>
-                    </div>
-        <div className="flex items-center space-x-2">
-          {trend > 0 ? (
-            <TrendingUp className="h-5 w-5 text-states-success" />
-          ) : (
-            <TrendingDown className="h-5 w-5 text-states-error" />
-          )}
-          <span className={`text-xs font-semibold ${trend > 0 ? 'text-states-success' : 'text-states-error'}`}>
-            {trend > 0 ? '+' : ''}{trend}%
-          </span>
-                  </div>
-                    </div>
-      
-      {/* Sparkline Chart - Simplified */}
-      <div className="flex items-end space-x-1 h-12">
-        {sparkline.map((point: number, index: number) => (
-          <div
-            key={index}
-            className="flex-1 bg-surface-primary/30 rounded-sm transition-all duration-300 hover:bg-surface-primary/40"
-            style={{ height: `${(point / Math.max(...sparkline)) * 100}%` }}
-          />
-        ))}
-                    </div>
-                    </div>
-  );
+  // Removed experimental components for cleanliness
 
-  // Real-time Activity Item Component - Updated Typography
-  const ActivityItem = ({ activity }: any) => (
-    <div className="flex items-start space-x-3 p-3 hover:bg-surface-secondary rounded-lg transition-colors duration-200">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-        activity.priority === 'high' ? 'bg-states-error/10 text-states-error' :
-        activity.priority === 'medium' ? 'bg-decorative-default/10 text-decorative-default' :
-        'bg-text-body/10 text-text-body'
-      }`}>
-        {activity.type === 'lead' && <Users className="h-4 w-4" />}
-        {activity.type === 'call' && <Phone className="h-4 w-4" />}
-        {activity.type === 'task' && <CheckCircle className="h-4 w-4" />}
-        {activity.type === 'meeting' && <Calendar className="h-4 w-4" />}
-        {activity.type === 'deal' && <DollarSign className="h-4 w-4" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text-heading truncate">
-          {activity.action}
-        </p>
-        <p className="text-xs text-text-body truncate font-medium">
-          {activity.details}
-        </p>
-        <p className="text-xs text-text-body/60 font-normal">
-          {activity.time}
-                                </p>
-                              </div>
-      {activity.priority === 'high' && (
-        <div className="w-2 h-2 bg-states-error rounded-full"></div>
-                      )}
-                    </div>
-  );
+  // const fadeInKeyframes = `@keyframes fadeInCard { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }`;
 
-  // AI Insight Card Component - Updated Typography
-  const InsightCard = ({ insight }: any) => (
-    <div className={`p-4 rounded-xl border-l-4 ${
-      insight.priority === 'high' ? 'bg-states-error/10 border-states-error' :
-      insight.priority === 'medium' ? 'bg-decorative-default/10 border-decorative-default' :
-      'bg-text-body/10 border-text-body'
-    }`}>
-      <div className="flex items-start space-x-3">
-        <div className={`p-2 rounded-lg ${
-          insight.priority === 'high' ? 'bg-states-error/20 text-states-error' :
-          insight.priority === 'medium' ? 'bg-decorative-default/20 text-decorative-default' :
-          'bg-text-body/20 text-text-body'
-        }`}>
-          <Brain className="h-4 w-4" />
-                          </div>
-        <div className="flex-1">
-          <h4 className="text-base font-bold text-text-heading mb-1 tracking-tight">
-            {insight.title}
-          </h4>
-          <p className="text-sm text-text-body mb-2 font-normal">
-            {insight.description}
-          </p>
-          <button className="text-xs font-semibold text-decorative-default hover:text-decorative-default/80 transition-colors tracking-wide">
-            {insight.action} →
-                      </button>
-                          </div>
-                        </div>
-                          </div>
-  );
-
-  const statusColors = {
-    green: '#10B981',
-    blue: '#3B82F6',
-    red: '#EF4444',
-    yellow: '#F59E0B'
-  };
-
-  const fadeInKeyframes = `@keyframes fadeInCard { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }`;
-
-  const DragHandle = () => (
-    <span 
-      style={{ 
-        cursor: 'grab', 
-        marginRight: '8px', 
-        fontSize: '20px', 
-        color: '#94A3B8', 
-        userSelect: 'none', 
-        display: 'flex', 
-        alignItems: 'center',
-        fontFamily: 'sans-serif'
-      }} 
-      title="Drag"
-    >
-      <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="5" cy="5" r="1.5"/><circle cx="5" cy="9" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="13" cy="5" r="1.5"/><circle cx="13" cy="9" r="1.5"/><circle cx="13" cy="13" r="1.5"/></svg>
-    </span>
-  );
+  // const DragHandle = () => (<span />);
 
   return (
     <LoadingState
@@ -833,32 +710,23 @@ const Dashboard = () => {
       type="page"
       message="Loading dashboard..."
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-100/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        </div>
+      <div className="min-h-screen bg-surface-secondary">
         
         {/* TOP SECTION: Premium Header with Glass Morphism */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 backdrop-blur-xl"></div>
-          <div className="relative px-8 py-12">
+          <div className="relative px-8 py-10">
             {/* Header with Enhanced Controls */}
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center space-x-8">
                 <div>
-                  <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
-                    Welcome back! 👋
-                  </h1>
-                  <p className="text-lg text-slate-600 font-medium">
+                  <h1 className="text-3xl font-bold tracking-tight text-text-heading mb-1">Welcome back</h1>
+                  <p className="text-sm text-text-secondary">
                     Your business command center is ready
                   </p>
                 </div>
-                <div className="flex items-center space-x-3 bg-white/50 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-slate-700 font-semibold">Real-time sync</span>
+                <div className="flex items-center space-x-2 bg-surface-primary rounded-full px-3 py-1 border border-fields-border">
+                  <div className="w-2 h-2 bg-states-success rounded-full"></div>
+                  <span className="text-xs text-text-secondary font-medium">Real-time sync</span>
                 </div>
               </div>
                       
@@ -869,7 +737,7 @@ const Dashboard = () => {
                   <select 
                     value={selectedTimeframe}
                     onChange={(e) => setSelectedTimeframe(e.target.value as any)}
-                    className="bg-white/80 backdrop-blur-sm text-slate-700 border border-white/30 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg appearance-none pr-10 cursor-pointer hover:bg-white/90 transition-all duration-200"
+                    className="bg-surface-primary text-text-heading border border-fields-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-default/30 appearance-none pr-8 cursor-pointer"
                   >
                     <option value="today">Today</option>
                     <option value="week">This Week</option>
@@ -880,42 +748,29 @@ const Dashboard = () => {
                 </div>
                 
                 {/* Action Buttons */}
-                <button
-                  onClick={() => setRealTimeMode(!realTimeMode)}
-                  className={`p-3 rounded-xl transition-all duration-300 shadow-lg ${
-                    realTimeMode 
-                      ? 'bg-green-500/20 text-green-600 border border-green-500/30 shadow-green-500/20' 
-                      : 'bg-white/80 text-slate-600 border border-white/30 hover:bg-white/90'
-                  } backdrop-blur-sm`}
-                  title={realTimeMode ? 'Real-time enabled' : 'Real-time disabled'}
-                >
-                  <Activity className="h-5 w-5" />
+                <button onClick={() => setRealTimeMode(!realTimeMode)}
+                  className={`p-2 rounded-lg border ${realTimeMode ? 'bg-surface-primary text-states-success border-fields-border' : 'bg-surface-primary text-text-secondary border-fields-border'}`}
+                  title={realTimeMode ? 'Real-time enabled' : 'Real-time disabled'}>
+                  <Activity className="h-4 w-4" />
                 </button>
                 
-                <button
-                  onClick={() => setCustomizationMode(!customizationMode)}
-                  className={`p-3 rounded-xl transition-all duration-300 shadow-lg ${
-                    customizationMode 
-                      ? 'bg-purple-500/20 text-purple-600 border border-purple-500/30 shadow-purple-500/20' 
-                      : 'bg-white/80 text-slate-600 border border-white/30 hover:bg-white/90'
-                  } backdrop-blur-sm`}
-                  title="Customize Dashboard"
-                >
-                  <Settings className="h-5 w-5" />
+                <button onClick={() => setCustomizationMode(!customizationMode)}
+                  className="p-2 rounded-lg border bg-surface-primary text-text-secondary border-fields-border"
+                  title="Customize Dashboard">
+                  <Settings className="h-4 w-4" />
                 </button>
                 
-                <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-300 shadow-lg hover:scale-105 backdrop-blur-sm border border-blue-500/20">
-                  <RefreshCw className="h-5 w-5" />
+                <button className="p-2 bg-primary-default hover:bg-primary-shade text-primary-on-primary rounded-lg">
+                  <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
             </div>
                       
             {/* Premium KPI Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Leads Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-blue-100 rounded-xl">
                       <Users className="h-6 w-6 text-blue-600" />
@@ -939,8 +794,7 @@ const Dashboard = () => {
 
               {/* Conversion Rate Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-emerald-100 rounded-xl">
                       <Target className="h-6 w-6 text-emerald-600" />
@@ -964,8 +818,7 @@ const Dashboard = () => {
 
               {/* Pipeline Value Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-purple-100 rounded-xl">
                       <DollarSign className="h-6 w-6 text-purple-600" />
@@ -989,8 +842,7 @@ const Dashboard = () => {
 
               {/* Active Tasks Card */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="relative bg-surface-primary rounded-xl p-5 border border-fields-border shadow-sm cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
                     <div className="p-3 bg-orange-100 rounded-xl">
                       <Clock className="h-6 w-6 text-orange-600" />
