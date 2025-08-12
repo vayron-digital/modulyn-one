@@ -1,47 +1,50 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuthLoading } from '../../hooks/useAuthLoading';
 import LoadingState from '../../components/common/LoadingState';
 import { useToast } from '../../components/ui/use-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import {
-  Plus,
-  Search,
-  Filter,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Trash2,
-  Edit,
-  Eye,
-  Download,
-  Upload,
+import { Badge } from '../../components/ui/badge';
+import { Input } from '../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  Home,
   Building,
   MapPin,
-  Tag,
   DollarSign,
-  Home,
-  Calendar,
-  User,
+  Eye,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Download,
+  Upload,
   Check,
   X,
-  Star,
-  StarOff,
-  ArrowUpRight,
-  ArrowDownRight,
-  BarChart3,
-  Activity,
+  Phone,
+  Mail,
+  Calendar,
+  Clock,
+  User,
+  Target,
   TrendingUp,
-  TrendingDown,
-  Settings,
-  Pencil,
-  Trash,
-  Grid,
-  List,
+  Activity,
+  Zap,
+  Brain,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Users,
+  PieChart,
+  LineChart,
   RefreshCw,
   Save,
   Share2,
@@ -53,261 +56,105 @@ import {
   Crown,
   Sparkles,
   Rocket,
-  Zap,
   Award,
   Briefcase,
   Globe,
   Heart,
-  AlertCircle,
-  CheckCircle,
-  Clock,
+  Settings,
 } from 'lucide-react';
-import FullScreenLoader from '../../components/common/FullScreenLoader';
-import { getCurrencyDisplay } from '../../utils/currency';
-import { PropertyStatus, PROPERTY_STATUSES } from '../../utils/propertyStatuses';
-import { getStatusBadgeColor as getStatusColor } from '../../utils/propertyStatuses';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '../../components/ui/dialog';
-import { Input } from '../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
-import { Textarea } from '../../components/ui/textarea';
-import { Separator } from '../../components/ui/separator';
-import { Avatar, AvatarFallback } from '../../components/ui/avatar';
-import { Label } from '../../components/ui/label';
-import { Checkbox } from '../../components/ui/checkbox';
-import useDebounce from '../../hooks/useDebounce';
-import { PropertyType, RESIDENTIAL_TYPES, COMMERCIAL_TYPES, ALL_PROPERTY_TYPES } from '../../utils/propertyTypes';
-import PageHeader from '../../components/ui/PageHeader';
 import DataTable from '../../components/ui/DataTable';
-import FilterBar from '../../components/ui/FilterBar';
-import { formatPropertyTypeDisplay } from '../../utils/propertyTypesByLocation';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
-import { ToggleGroup, ToggleGroupItem } from '../../components/ui/toggle-group';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { AlertCircle } from 'lucide-react';
+import { useLayout } from '../../components/layout/DashboardLayout';
+import { format } from 'date-fns';
+import { getCurrencyDisplay } from '../../utils/currency';
 
 interface Property {
   id: string;
   title: string;
-  type: PropertyType;
-  property_type_detailed?: string;
-  status: string;
+  description: string;
+  address: string;
   price: number;
-  current_price?: number;
+  status: 'available' | 'sold' | 'pending' | 'off_market';
+  property_type: 'apartment' | 'house' | 'villa' | 'commercial' | 'land';
   bedrooms?: number;
   bathrooms?: number;
-  bathroom_options?: number[];
-  size_options?: number[];
-  square_footage?: number;
-  address: string;
-  tags?: string[];
+  area?: number;
+  developer_id?: string;
+  created_by: string;
   created_at: string;
   updated_at: string;
-  owner?: string;
-  images?: string[];
-  bedroom_options?: number[];
-}
-
-const ALL_STATUS_OPTIONS: { label: string; status: PropertyStatus | null }[] = [
-  { label: 'All Properties', status: null },
-  ...PROPERTY_STATUSES.CORE.map(s => ({ label: s, status: s })),
-  ...PROPERTY_STATUSES.DEVELOPMENT.map(s => ({ label: s, status: s })),
-  ...PROPERTY_STATUSES.TRANSACTIONAL.map(s => ({ label: s, status: s })),
-  ...PROPERTY_STATUSES.RENTAL.map(s => ({ label: s, status: s })),
-  ...PROPERTY_STATUSES.MARKET.map(s => ({ label: s, status: s })),
-];
-
-const DEFAULT_TABS: Tab[] = [
-  { label: 'All Properties', status: null },
-  { label: 'Available', status: 'Available' as PropertyStatus },
-  { label: 'Under Offer', status: 'Under Offer' as PropertyStatus },
-  { label: 'Sold', status: 'Sold' as PropertyStatus },
-  { label: 'Rented', status: 'Rented' as PropertyStatus },
-  { label: 'Off Market', status: 'Off Market' as PropertyStatus }
-];
-
-const PAGE_SIZE = 12;
-
-interface FilterPreset {
-  name: string;
-  filters: {
-    type?: PropertyType[];
-    min_price?: number;
-    max_price?: number;
-    status?: string[];
+  developer?: {
+    id: string;
+    name: string;
+    logo_url?: string;
   };
 }
 
-const DEFAULT_FILTER_PRESETS: FilterPreset[] = [
-  {
-    name: 'Premium Properties',
-    filters: {
-      type: ['apartment', 'villa', 'penthouse'] as unknown as PropertyType[],
-      min_price: 1000000
-    }
-  },
-  {
-    name: 'Commercial Spaces',
-    filters: {
-      type: ['office', 'retail', 'warehouse', 'commercial-building'] as unknown as PropertyType[]
-    }
-  },
-  {
-    name: 'Land Plots',
-    filters: {
-      type: ['land'] as unknown as PropertyType[]
-    }
-  }
-];
-
-interface Filters {
-  type: PropertyType | 'All';
-  status: PropertyStatus | 'All';
-  minPrice: string;
-  maxPrice: string;
-  bedrooms: string;
-  bathrooms: string;
-  location: string;
-  tags: string;
-}
-
-interface SortConfig {
-  field: keyof Property;
-  order: 'asc' | 'desc';
-}
-
-interface Tab {
-  label: string;
-  status: PropertyStatus | null;
-}
-
-interface TabProps {
-  tab: Tab;
-  isActive: boolean;
-  onClick: (tab: Tab) => void;
-}
-
-type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info';
-
-type TabName = 'Overview' | 'Details' | 'Media' | 'Location' | 'Pricing' | 'Documents' | 'History';
-
 const Properties = () => {
   const { user, loading: authLoading, error: authError } = useAuthLoading();
+  const { setHeader } = useLayout();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
+
   // State management
   const [properties, setProperties] = useState<Property[]>([]);
+  const [developers, setDevelopers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({
-    type: '',
-    status: '',
-    minPrice: '',
-    maxPrice: '',
-    location: ''
-  });
-  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
+  const [filters, setFilters] = useState({
+    status: '',
+    property_type: '',
+    developer_id: '',
+    price_range: ''
+  });
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
-  // Stats
+  // Set up header
+  useEffect(() => {
+    setHeader({
+      title: 'Property Management',
+      breadcrumbs: [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Properties' }
+      ],
+      tabs: [
+        { label: 'All Properties', href: '/properties', active: true },
+        { label: 'Available', href: '/properties/available' },
+        { label: 'Sold', href: '/properties/sold' }
+      ]
+    });
+  }, [setHeader]);
+
+  // Stats state
   const [stats, setStats] = useState({
     total: 0,
     available: 0,
     sold: 0,
-    underOffer: 0,
+    pending: 0,
     totalValue: 0
   });
 
-  const debouncedSearch = useDebounce(search, 500);
-  const debouncedFilters = useDebounce(filters, 500);
-
-  // Filter options
-  const filterOptions = [
-    {
-      key: 'type',
-      label: 'Property Type',
-      type: 'select' as const,
-      options: [
-        { value: '', label: 'All Types' },
-        { value: 'residential', label: 'Residential' },
-        { value: 'apartment', label: 'Apartment' },
-        { value: 'villa', label: 'Villa' },
-        { value: 'penthouse', label: 'Penthouse' },
-        { value: 'commercial', label: 'Commercial' },
-        { value: 'office', label: 'Office' },
-        { value: 'retail', label: 'Retail' },
-        { value: 'warehouse', label: 'Warehouse' },
-        { value: 'land', label: 'Land' }
-      ]
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select' as const,
-      options: [
-        { value: '', label: 'All Statuses' },
-        { value: 'Available', label: 'Available' },
-        { value: 'Under Offer', label: 'Under Offer' },
-        { value: 'Sold', label: 'Sold' },
-        { value: 'Rented', label: 'Rented' },
-        { value: 'Off Market', label: 'Off Market' }
-      ]
-    },
-    {
-      key: 'minPrice',
-      label: 'Min Price',
-      type: 'input' as const,
-      placeholder: 'Enter minimum price'
-    },
-    {
-      key: 'maxPrice',
-      label: 'Max Price',
-      type: 'input' as const,
-      placeholder: 'Enter maximum price'
-    },
-    {
-      key: 'location',
-      label: 'Location',
-      type: 'input' as const,
-      placeholder: 'Search by location'
-    }
-  ];
-
-  // Table columns
+  // Table columns configuration
   const columns = [
     {
       key: 'title',
       label: 'Property',
       render: (value: string, row: Property) => (
         <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>
-              <Building className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+              <Home className="h-6 w-6 text-gray-500" />
+            </div>
+          </div>
           <div>
-            <div className="font-medium text-slate-900">{row.title}</div>
-            <div className="text-sm text-slate-500 flex items-center">
+            <div className="font-medium">{value}</div>
+            <div className="text-sm text-gray-500 flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
               {row.address}
             </div>
@@ -316,20 +163,29 @@ const Properties = () => {
       )
     },
     {
-      key: 'type',
-      label: 'Type',
-      render: (value: string) => (
-        <Badge variant="outline" className="capitalize">
-          {formatPropertyTypeDisplay(value)}
-        </Badge>
+      key: 'developer',
+      label: 'Developer',
+      render: (value: any) => (
+        <div className="flex items-center space-x-2">
+          {value?.logo_url ? (
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs">
+                {value.name?.charAt(0) || 'D'}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <Building className="h-4 w-4 text-gray-400" />
+          )}
+          <span className="text-sm">{value?.name || 'Unknown'}</span>
+        </div>
       )
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: 'property_type',
+      label: 'Type',
       render: (value: string) => (
-        <Badge variant={getStatusColor(value) as any}>
-          {value}
+        <Badge variant="outline" className="capitalize">
+          {value.replace('_', ' ')}
         </Badge>
       )
     },
@@ -337,38 +193,48 @@ const Properties = () => {
       key: 'price',
       label: 'Price',
       render: (value: number) => (
-        <div className="font-medium text-slate-900">
+        <div className="text-sm font-medium">
           {getCurrencyDisplay(value)}
         </div>
-      ),
-      align: 'right' as const
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (value: string) => {
+        const statusConfig = {
+          available: { label: 'Available', variant: 'default' as const, icon: CheckCircle },
+          sold: { label: 'Sold', variant: 'outline' as const, icon: CheckCircle },
+          pending: { label: 'Pending', variant: 'secondary' as const, icon: Clock },
+          off_market: { label: 'Off Market', variant: 'destructive' as const, icon: XCircle }
+        };
+        const config = statusConfig[value as keyof typeof statusConfig] || statusConfig.available;
+        const Icon = config.icon;
+        return (
+          <Badge variant={config.variant} className="flex items-center space-x-1">
+            <Icon className="h-3 w-3" />
+            <span>{config.label}</span>
+          </Badge>
+        );
+      }
     },
     {
       key: 'bedrooms',
-      label: 'Bedrooms',
-      render: (value: number) => (
-        <div className="text-sm text-slate-600">
-          {value || '-'}
+      label: 'Details',
+      render: (value: number, row: Property) => (
+        <div className="text-sm text-gray-600">
+          {row.bedrooms && `${row.bedrooms} bed`}
+          {row.bathrooms && ` • ${row.bathrooms} bath`}
+          {row.area && ` • ${row.area} sqft`}
         </div>
-      ),
-      align: 'center' as const
-    },
-    {
-      key: 'bathrooms',
-      label: 'Bathrooms',
-      render: (value: number) => (
-        <div className="text-sm text-slate-600">
-          {value || '-'}
-        </div>
-      ),
-      align: 'center' as const
+      )
     },
     {
       key: 'created_at',
-      label: 'Created',
+      label: 'Listed',
       render: (value: string) => (
-        <div className="text-sm text-slate-600">
-          {new Date(value).toLocaleDateString()}
+        <div className="text-sm text-gray-600">
+          {format(new Date(value), 'MMM dd, yyyy')}
         </div>
       )
     }
@@ -385,25 +251,24 @@ const Properties = () => {
         .select('*', { count: 'exact' });
 
       // Apply search
-      if (debouncedSearch) {
-        query = query.or(`title.ilike.%${debouncedSearch}%,address.ilike.%${debouncedSearch}%`);
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,address.ilike.%${search}%`);
       }
 
       // Apply filters
-      if (debouncedFilters.type) {
-        query = query.eq('type', debouncedFilters.type);
+      if (filters.status) {
+        query = query.eq('status', filters.status);
       }
-      if (debouncedFilters.status) {
-        query = query.eq('status', debouncedFilters.status);
+      if (filters.property_type) {
+        query = query.eq('property_type', filters.property_type);
       }
-      if (debouncedFilters.minPrice) {
-        query = query.gte('price', parseFloat(debouncedFilters.minPrice));
+      if (filters.developer_id) {
+        query = query.eq('developer_id', filters.developer_id);
       }
-      if (debouncedFilters.maxPrice) {
-        query = query.lte('price', parseFloat(debouncedFilters.maxPrice));
-      }
-      if (debouncedFilters.location) {
-        query = query.ilike('address', `%${debouncedFilters.location}%`);
+      if (filters.price_range) {
+        const [minPrice, maxPrice] = filters.price_range.split('-').map(Number);
+        if (!isNaN(minPrice)) query = query.gte('price', minPrice);
+        if (!isNaN(maxPrice)) query = query.lte('price', maxPrice);
       }
 
       // Apply sorting
@@ -425,12 +290,12 @@ const Properties = () => {
       // Calculate stats
       if (data) {
         const total = data.length;
-        const available = data.filter(p => p.status === 'Available').length;
-        const sold = data.filter(p => p.status === 'Sold').length;
-        const underOffer = data.filter(p => p.status === 'Under Offer').length;
+        const available = data.filter(p => p.status === 'available').length;
+        const sold = data.filter(p => p.status === 'sold').length;
+        const pending = data.filter(p => p.status === 'pending').length;
         const totalValue = data.reduce((sum, p) => sum + (p.price || 0), 0);
 
-        setStats({ total, available, sold, underOffer, totalValue });
+        setStats({ total, available, sold, pending, totalValue });
       }
 
     } catch (err) {
@@ -444,7 +309,7 @@ const Properties = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, debouncedFilters, sortColumn, sortDirection, currentPage, toast]);
+  }, [search, filters, sortColumn, sortDirection, currentPage, toast]);
 
   // Fetch properties on mount and when dependencies change
   useEffect(() => {
@@ -465,76 +330,24 @@ const Properties = () => {
 
   // Handle property actions
   const handleViewProperty = (property: Property) => {
-    navigate(`/properties/${property.id}`);
+    // Placeholder for navigation to property detail page
+    toast({
+      title: "Coming Soon",
+      description: "View property detail page is under development."
+    });
   };
 
   const handleEditProperty = (property: Property) => {
-    navigate(`/properties/edit/${property.id}`);
+    setSelectedProperty(property);
+    setShowEditModal(true);
   };
 
   const handleDeleteProperty = (property: Property) => {
-    setPropertyToDelete(property);
-    setShowDeleteModal(true);
-  };
-
-  const confirmDeleteProperty = async () => {
-    if (!propertyToDelete) return;
-
-    try {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', propertyToDelete.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Property deleted successfully"
-      });
-
-      fetchProperties();
-      setShowDeleteModal(false);
-      setPropertyToDelete(null);
-
-    } catch (err) {
-      console.error('Error deleting property:', err);
-      toast({
-        title: "Error",
-        description: "Failed to delete property",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Handle bulk actions
-  const handleBulkDelete = async () => {
-    if (selectedProperties.length === 0) return;
-
-    try {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .in('id', selectedProperties);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `${selectedProperties.length} properties deleted successfully`
-      });
-
-      setSelectedProperties([]);
-      fetchProperties();
-
-    } catch (err) {
-      console.error('Error deleting properties:', err);
-      toast({
-        title: "Error",
-        description: "Failed to delete properties",
-        variant: "destructive"
-      });
-    }
+    // Placeholder for delete functionality
+    toast({
+      title: "Coming Soon",
+      description: "Delete property functionality is under development."
+    });
   };
 
   if (authLoading) {
@@ -556,221 +369,148 @@ const Properties = () => {
   return (
     <div className="space-y-6 p-6">
       {/* Page Header */}
-      <PageHeader
-        title="Properties"
-        subtitle="Manage your property portfolio"
-        icon={<Building className="h-6 w-6 text-blue-600" />}
-        stats={[
-          {
-            label: 'Total Properties',
-            value: stats.total,
-            change: 12,
-            trend: 'up'
-          },
-          {
-            label: 'Available',
-            value: stats.available,
-            change: 5,
-            trend: 'up'
-          },
-          {
-            label: 'Sold',
-            value: stats.sold,
-            change: -3,
-            trend: 'down'
-          },
-          {
-            label: 'Total Value',
-            value: getCurrencyDisplay(stats.totalValue),
-            change: 8,
-            trend: 'up'
-          }
-        ]}
-        actions={[
-          {
-            label: 'Add Property',
-            icon: <Plus className="h-4 w-4" />,
-            onClick: () => navigate('/properties/new'),
-            variant: 'default'
-          },
-          {
-            label: 'Import',
-            icon: <Upload className="h-4 w-4" />,
-            onClick: () => toast({ title: "Coming Soon", description: "Import feature will be available soon" }),
-            variant: 'outline'
-          },
-          {
-            label: 'Export',
-            icon: <Download className="h-4 w-4" />,
-            onClick: () => toast({ title: "Coming Soon", description: "Export feature will be available soon" }),
-            variant: 'outline'
-          }
-        ]}
-        search={{
-          placeholder: "Search properties...",
-          value: search,
-          onChange: setSearch
-        }}
-        filters={
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'card' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('card')}
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            {selectedProperties.length > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete ({selectedProperties.length})
-              </Button>
-            )}
-          </div>
-        }
-      >
-        <FilterBar
-          filters={filterOptions}
-          activeFilters={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={() => setFilters({
-            type: '',
-            status: '',
-            minPrice: '',
-            maxPrice: '',
-            location: ''
-          })}
-          onClearFilter={(key) => handleFilterChange(key, '')}
-        />
-      </PageHeader>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-slate-900">Properties</h1>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="h-4 w-4 mr-2" /> Add Property
+        </Button>
+      </div>
 
       {/* Properties Table/Grid */}
-      {viewMode === 'table' ? (
-        <DataTable
-          data={properties}
-          columns={columns}
-          loading={loading}
-          emptyMessage="No properties found"
-          onRowClick={handleViewProperty}
-          onEdit={handleEditProperty}
-          onDelete={handleDeleteProperty}
-          selectable={true}
-          selectedRows={selectedProperties}
-          onSelectionChange={setSelectedProperties}
-          sortable={true}
-          onSort={handleSort}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          pagination={{
-            currentPage,
-            totalPages,
-            pageSize: 10,
-            totalItems,
-            onPageChange: setCurrentPage
-          }}
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <AnimatePresence>
-            {properties.map((property, index) => (
-              <motion.div
-                key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-              >
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={getStatusColor(property.status) as any}>
-                          {property.status}
-                        </Badge>
-                        <div className="flex items-center space-x-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewProperty(property);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditProperty(property);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="font-medium text-slate-900 truncate">{property.title}</h3>
-                        <p className="text-sm text-slate-500 flex items-center mt-1">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {property.address}
-                        </p>
-                      </div>
+      <DataTable
+        data={properties}
+        columns={columns}
+        loading={loading}
+        emptyMessage="No properties found"
+        onRowClick={handleViewProperty}
+        onEdit={handleEditProperty}
+        onDelete={handleDeleteProperty}
+        selectable={false} // Removed selectable for now
+        pagination={{
+          currentPage,
+          totalPages,
+          pageSize: 10,
+          totalItems,
+          onPageChange: setCurrentPage
+        }}
+        sortable={true}
+        onSort={handleSort}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+      />
 
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">
-                          {property.bedrooms || '-'} bed • {property.bathrooms || '-'} bath
-                        </span>
-                        <span className="font-medium text-slate-900">
-                          {getCurrencyDisplay(property.price)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="capitalize">
-                          {formatPropertyTypeDisplay(property.type)}
-                        </Badge>
-                        <span className="text-xs text-slate-500">
-                          {new Date(property.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+      {/* Add/Edit Modal */}
+      <Dialog open={showAddModal || showEditModal} onOpenChange={setShowAddModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Property</DialogTitle>
+            <DialogTitle>{showAddModal ? 'Add New Property' : 'Edit Property'}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{propertyToDelete?.title}"? This action cannot be undone.
+              {showAddModal ? 'Fill in the details to add a new property.' : 'Update the property details.'}
             </DialogDescription>
           </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Title
+              </Label>
+              <Input id="title" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Description
+              </Label>
+              <Textarea id="description" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="address" className="text-right">
+                Address
+              </Label>
+              <Input id="address" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="price" className="text-right">
+                Price
+              </Label>
+              <Input id="price" type="number" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Status
+              </Label>
+              <Select onValueChange={(value) => setSelectedProperty(prev => prev ? { ...prev, status: value as Property['status'] } : null)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="sold">Sold</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="off_market">Off Market</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="property_type" className="text-right">
+                Property Type
+              </Label>
+              <Select onValueChange={(value) => setSelectedProperty(prev => prev ? { ...prev, property_type: value as Property['property_type'] } : null)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="apartment">Apartment</SelectItem>
+                  <SelectItem value="house">House</SelectItem>
+                  <SelectItem value="villa">Villa</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                  <SelectItem value="land">Land</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="bedrooms" className="text-right">
+                Bedrooms
+              </Label>
+              <Input id="bedrooms" type="number" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="bathrooms" className="text-right">
+                Bathrooms
+              </Label>
+              <Input id="bathrooms" type="number" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="area" className="text-right">
+                Area (sqft)
+              </Label>
+              <Input id="area" type="number" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="developer" className="text-right">
+                Developer
+              </Label>
+              <Select onValueChange={(value) => setSelectedProperty(prev => prev ? { ...prev, developer_id: value } : null)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a developer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {developers.map(dev => (
+                    <SelectItem key={dev.id} value={dev.id}>{dev.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteProperty}>
-              Delete
+            <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
+            <Button onClick={() => {
+              // Placeholder for save logic
+              toast({
+                title: "Coming Soon",
+                description: "Save property functionality is under development."
+              });
+              setShowAddModal(false);
+            }}>
+              {showAddModal ? 'Add Property' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
