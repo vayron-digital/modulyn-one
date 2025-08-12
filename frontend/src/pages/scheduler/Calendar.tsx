@@ -51,21 +51,35 @@ export default function Calendar() {
       const { data, error } = await supabase
         .from('events')
         .select(`
-          *,
-          lead:leads (
-            first_name,
-            last_name
-          )
+          id,
+          title,
+          description,
+          start,
+          "end",
+          type,
+          status,
+          lead_id
         `)
-        .gte('start_time', startOfMonth.toISOString())
-        .lte('start_time', endOfMonth.toISOString())
-        .order('start_time', { ascending: true });
+        .gte('start', startOfMonth.toISOString())
+        .lte('start', endOfMonth.toISOString())
+        .order('start', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, set empty events and don't show error
+        if (error.code === '42P01') { // Table doesn't exist
+          console.log('Events table not found, using empty events list');
+          setEvents([]);
+          return;
+        }
+        throw error;
+      }
       setEvents(data || []);
     } catch (error: any) {
       console.error('Error fetching events:', error);
-      setError(error.message);
+      // Don't set error for missing table
+      if (!error.message?.includes('does not exist')) {
+        setError(error.message);
+      }
     } finally {
       setLoading(false);
     }

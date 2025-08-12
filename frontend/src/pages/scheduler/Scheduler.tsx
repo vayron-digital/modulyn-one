@@ -112,14 +112,23 @@ const Scheduler = () => {
       setLoading(true);
       setError(null);
 
+      // Check if events table exists by trying a simple query first
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select('id, title, type, start, "end", description, location, status, color, recurring, assigned_to, created_by')
         .gte('start', startOfMonth(currentDate).toISOString())
-        .lte('end', endOfMonth(currentDate).toISOString())
+        .lte('"end"', endOfMonth(currentDate).toISOString())
         .order('start');
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, set empty events and don't show error
+        if (error.code === '42P01') { // Table doesn't exist
+          console.log('Events table not found, using empty events list');
+          setEvents([]);
+          return;
+        }
+        throw error;
+      }
 
       const formattedEvents = (data || []).map(event => ({
         ...event,
@@ -132,11 +141,14 @@ const Scheduler = () => {
     } catch (err) {
       console.error('Error fetching events:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
-      toast({
-        title: "Error",
-        description: "Failed to fetch events",
-        variant: "destructive"
-      });
+      // Don't show toast for table not found errors
+      if (!err.message?.includes('does not exist')) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch events",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }

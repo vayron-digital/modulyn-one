@@ -211,10 +211,7 @@ const Team = () => {
 
       let query = supabase
         .from('profiles')
-        .select(`
-          *,
-          manager:profiles!reports_to(id, full_name, email)
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
       // Apply search
       if (search) {
@@ -244,16 +241,28 @@ const Team = () => {
 
       if (error) throw error;
 
-      setTeamMembers(data || []);
+      // Process the data to add manager information if reports_to exists
+      const processedData = (data || []).map(member => {
+        const manager = data?.find(m => m.id === member.reports_to);
+        return {
+          ...member,
+          manager: manager ? {
+            full_name: manager.full_name,
+            email: manager.email
+          } : null
+        };
+      });
+
+      setTeamMembers(processedData);
       setTotalItems(count || 0);
       setTotalPages(Math.ceil((count || 0) / 10));
 
       // Calculate stats
-      if (data) {
-        const total = data.length;
-        const active = data.filter(m => m.status === 'active').length;
-        const managers = data.filter(m => m.role === 'manager').length;
-        const newThisMonth = data.filter(m => {
+      if (processedData) {
+        const total = processedData.length;
+        const active = processedData.filter(m => m.status === 'active').length;
+        const managers = processedData.filter(m => m.role === 'manager').length;
+        const newThisMonth = processedData.filter(m => {
           const joinedDate = new Date(m.joined_date);
           const now = new Date();
           return joinedDate.getMonth() === now.getMonth() && 
@@ -265,16 +274,11 @@ const Team = () => {
 
     } catch (err) {
       console.error('Error fetching team members:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch team members');
-      toast({
-        title: "Error",
-        description: "Failed to fetch team members",
-        variant: "destructive"
-      });
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [search, filters, sortColumn, sortDirection, currentPage, toast]);
+  }, [search, filters, sortColumn, sortDirection, currentPage]);
 
   // Fetch data on mount and when dependencies change
   useEffect(() => {

@@ -429,12 +429,22 @@ const ChatPage: React.FC = () => {
       if (!user) throw new Error('Not signed in');
       const { data, error } = await supabase
         .from('events')
-        .select('id, title, description, event_date')
+        .select('id, title, description, start')
         .limit(10);
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, set empty events
+        if (error.code === '42P01') {
+          setCrmEvents([]);
+          return;
+        }
+        throw error;
+      }
       setCrmEvents(data || []);
     } catch (err: any) {
-      setEventsError(err.message || 'Failed to fetch events');
+      // Don't set error for missing table
+      if (!err.message?.includes('does not exist')) {
+        setEventsError(err.message || 'Failed to fetch events');
+      }
     } finally {
       setEventsLoading(false);
     }
