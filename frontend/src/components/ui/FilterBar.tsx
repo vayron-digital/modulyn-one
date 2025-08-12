@@ -1,140 +1,252 @@
 import React, { useState } from 'react';
+import { Button } from './button';
+import { Badge } from './badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+import { Input } from './input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { cn } from '../../lib/utils';
+import { 
+  Filter, 
+  X, 
+  ChevronDown, 
+  ChevronUp,
+  Search,
+  Calendar,
+  Tag,
+  User,
+  Building,
+  Clock,
+  Star,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from 'lucide-react';
 
 interface FilterOption {
-  label: string;
-  value: string;
-}
-
-interface Filter {
   key: string;
   label: string;
-  type: 'select' | 'date' | 'text' | 'number';
-  options?: FilterOption[];
+  type: 'select' | 'input' | 'date' | 'multiselect';
+  options?: { value: string; label: string; icon?: React.ReactNode }[];
   placeholder?: string;
+  multiple?: boolean;
 }
 
 interface FilterBarProps {
-  filters: Filter[];
+  filters: FilterOption[];
   activeFilters: Record<string, any>;
-  onFilterChange: (filters: Record<string, any>) => void;
+  onFilterChange: (key: string, value: any) => void;
   onClearFilters: () => void;
+  onClearFilter?: (key: string) => void;
+  className?: string;
 }
 
-export function FilterBar({
+const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   activeFilters,
   onFilterChange,
   onClearFilters,
-}: FilterBarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  onClearFilter,
+  className = ''
+}) => {
+  const [expandedFilters, setExpandedFilters] = useState<string[]>([]);
 
-  const handleFilterChange = (key: string, value: any) => {
-    onFilterChange({
-      ...activeFilters,
-      [key]: value,
-    });
+  const toggleFilter = (key: string) => {
+    setExpandedFilters(prev => 
+      prev.includes(key) 
+        ? prev.filter(f => f !== key)
+        : [...prev, key]
+    );
   };
 
-  const activeFilterCount = Object.keys(activeFilters).length;
+  const getActiveFilterCount = () => {
+    return Object.keys(activeFilters).filter(key => 
+      activeFilters[key] !== undefined && 
+      activeFilters[key] !== '' && 
+      activeFilters[key] !== null &&
+      (Array.isArray(activeFilters[key]) ? activeFilters[key].length > 0 : true)
+    ).length;
+  };
+
+  const renderFilterInput = (filter: FilterOption) => {
+    const value = activeFilters[filter.key];
+
+    switch (filter.type) {
+      case 'select':
+        return (
+          <Select
+            value={value || ''}
+            onValueChange={(val) => onFilterChange(filter.key, val)}
+          >
+            <SelectTrigger className="w-full min-w-[150px]">
+              <SelectValue placeholder={filter.placeholder || `Select ${filter.label}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {filter.options?.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex items-center space-x-2">
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case 'multiselect':
+        return (
+          <Select
+            value={Array.isArray(value) ? value[0] || '' : value || ''}
+            onValueChange={(val) => {
+              const currentValues = Array.isArray(value) ? value : [];
+              const newValues = currentValues.includes(val)
+                ? currentValues.filter(v => v !== val)
+                : [...currentValues, val];
+              onFilterChange(filter.key, newValues);
+            }}
+          >
+            <SelectTrigger className="w-full min-w-[150px]">
+              <SelectValue placeholder={filter.placeholder || `Select ${filter.label}`} />
+            </SelectTrigger>
+            <SelectContent>
+              {filter.options?.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex items-center space-x-2">
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case 'input':
+        return (
+          <Input
+            type="text"
+            placeholder={filter.placeholder || `Search ${filter.label}`}
+            value={value || ''}
+            onChange={(e) => onFilterChange(filter.key, e.target.value)}
+            className="min-w-[200px]"
+          />
+        );
+
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={value || ''}
+            onChange={(e) => onFilterChange(filter.key, e.target.value)}
+            className="min-w-[150px]"
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const renderActiveFilterBadge = (filter: FilterOption) => {
+    const value = activeFilters[filter.key];
+    
+    if (!value || value === '' || value === null || (Array.isArray(value) && value.length === 0)) {
+      return null;
+    }
+
+    const displayValue = Array.isArray(value) 
+      ? value.join(', ')
+      : filter.options?.find(opt => opt.value === value)?.label || value;
+
+    return (
+      <Badge 
+        variant="secondary" 
+        className="flex items-center space-x-1 px-2 py-1"
+      >
+        <span className="text-xs font-medium">{filter.label}:</span>
+        <span className="text-xs">{displayValue}</span>
+        {onClearFilter && (
+          <button
+            onClick={() => onClearFilter(filter.key)}
+            className="ml-1 hover:text-red-600"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </Badge>
+    );
+  };
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={cn(
-            'inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm font-medium',
-            'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-            'hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
+    <div className={`space-y-4 ${className}`}>
+      {/* Filter Controls */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setExpandedFilters(prev => 
+            prev.length === filters.length ? [] : filters.map(f => f.key)
           )}
+          className="flex items-center space-x-2"
         >
-          <FunnelIcon className="h-5 w-5 mr-2" />
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-white">
-              {activeFilterCount}
-            </span>
+          <Filter className="h-4 w-4" />
+          <span>Filters</span>
+          {getActiveFilterCount() > 0 && (
+            <Badge variant="default" className="ml-1">
+              {getActiveFilterCount()}
+            </Badge>
           )}
-        </button>
+          {expandedFilters.length === filters.length ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
 
-        {activeFilterCount > 0 && (
-          <button
+        {getActiveFilterCount() > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClearFilters}
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            className="text-red-600 hover:text-red-700"
           >
-            Clear all
-          </button>
+            <X className="h-4 w-4 mr-1" />
+            Clear All
+          </Button>
         )}
       </div>
 
+      {/* Expanded Filters */}
       <AnimatePresence>
-        {isOpen && (
+        {expandedFilters.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg border border-slate-200 p-4 space-y-4"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filters.map((filter) => (
-                <div key={filter.key} className="space-y-1">
-                  <label
-                    htmlFor={filter.key}
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
+                <div key={filter.key} className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">
                     {filter.label}
                   </label>
-                  {filter.type === 'select' && filter.options ? (
-                    <select
-                      id={filter.key}
-                      value={activeFilters[filter.key] || ''}
-                      onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-900"
-                    >
-                      <option value="">All</option>
-                      {filter.options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : filter.type === 'date' ? (
-                    <input
-                      type="date"
-                      id={filter.key}
-                      value={activeFilters[filter.key] || ''}
-                      onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-700 focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-900"
-                    />
-                  ) : (
-                    <input
-                      type={filter.type}
-                      id={filter.key}
-                      value={activeFilters[filter.key] || ''}
-                      onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                      placeholder={filter.placeholder}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-700 focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-900"
-                    />
-                  )}
+                  {renderFilterInput(filter)}
                 </div>
               ))}
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                <XMarkIcon className="h-5 w-5 mr-2" />
-                Close
-              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Active Filter Badges */}
+      {getActiveFilterCount() > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {filters.map((filter) => renderActiveFilterBadge(filter))}
+        </div>
+      )}
     </div>
   );
-} 
+};
+
+export default FilterBar; 

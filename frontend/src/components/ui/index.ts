@@ -24,8 +24,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
 import { Separator } from './separator';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './sheet';
 import { ToggleGroup, ToggleGroupItem } from './toggle-group';
-import { DataTable } from './DataTable';
-import { FilterBar } from './FilterBar';
+import DataTable from './DataTable';
+import FilterBar from './FilterBar';
+import PageHeader from './PageHeader';
 import { Skeleton, SkeletonTable } from './skeleton';
 import { Progress } from './progress';
 import { Alert, AlertTitle, AlertDescription } from './alert';
@@ -70,10 +71,13 @@ export { FormGroup, formGroupVariants } from './form-group';
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants } from './card';
 
 // Data Table Component
-export { DataTable } from './DataTable';
+export { default as DataTable } from './DataTable';
 
 // Filter Bar Component
-export { FilterBar } from './FilterBar';
+export { default as FilterBar } from './FilterBar';
+
+// Page Header Component
+export { default as PageHeader } from './PageHeader';
 
 // Skeleton Components
 export { Skeleton, SkeletonTable } from './skeleton';
@@ -119,6 +123,7 @@ export const UIComponents = {
   ToggleGroup,
   DataTable,
   FilterBar,
+  PageHeader,
   Skeleton,
   Progress,
   Alert,

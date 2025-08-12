@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../components/ui/use-toast';
 
 interface Notification {
   id: string;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
+import { useToast } from '../../components/ui/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -148,6 +148,28 @@ export default function TeamManagement() {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const handleDelete = async (memberId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'inactive' })
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      setTeamMembers(teamMembers.filter(member => member.id !== memberId));
+      showToast('Team member deactivated successfully', 'success');
+    } catch (error: any) {
+      console.error('Error deactivating team member:', error);
+      showToast('Error deactivating team member: ' + error.message, 'error');
+    }
+  };
+
+  // Calculate pagination values
+  const startIndex = (page - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, teamMembers.length);
+  const totalMembers = teamMembers.length;
 
   if (loading) {
     return <FullScreenLoader />;
