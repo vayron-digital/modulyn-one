@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Table, TableHead, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
@@ -39,10 +39,10 @@ import { format } from 'date-fns';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 import { getCurrencyDisplay } from '../../utils/currency';
-import { DialogDescription } from '../../components/ui/dialog';
+
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { Separator } from '../../components/ui/separator';
-import { DialogRoot } from '../../components/ui/dialog';
+
 import { isValidUUID } from '../../lib/utils';
 
 interface Call {
@@ -998,7 +998,7 @@ const Calls: React.FC = () => {
       </div>
 
       {/* Enhanced Add Call Modal */}
-      <DialogRoot open={showAddModal} onOpenChange={setShowAddModal}>
+              <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-slate-200/50 max-w-lg max-h-[90vh] z-[500] flex flex-col">
           <DialogHeader className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/50 pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -1237,10 +1237,10 @@ const Calls: React.FC = () => {
             </div>
           </DialogFooter>
         </DialogContent>
-      </DialogRoot>
+      </Dialog>
 
       {/* Enhanced Edit Call Modal */}
-      <DialogRoot open={showEditModal} onOpenChange={setShowEditModal}>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-slate-200/50 max-w-md">
           <DialogHeader className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/50 pb-4">
             <div className="flex items-center space-x-3">
@@ -1328,7 +1328,7 @@ const Calls: React.FC = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </DialogRoot>
+      </Dialog>
     </div>
   );
 };
