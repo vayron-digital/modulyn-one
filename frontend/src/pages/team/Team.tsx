@@ -19,6 +19,7 @@ import FullScreenLoader from '../../components/common/FullScreenLoader';
 import PageHeader from '../../components/ui/PageHeader';
 import DataTable from '../../components/ui/DataTable';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLayout } from '../../components/layout/DashboardLayout';
 
 interface TeamMember {
   id: string;
@@ -41,33 +42,31 @@ interface TeamMember {
 
 const Team = () => {
   const { user } = useAuth();
+  const { setHeader } = useLayout();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // State management
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({
-    role: '',
-    department: '',
-    status: ''
-  });
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [sortColumn, setSortColumn] = useState('full_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
-  const [activeTab, setActiveTab] = useState('members');
+  const [filters, setFilters] = useState({
+    role: '',
+    department: '',
+    status: ''
+  });
 
-  // Stats
+  // Stats state
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -75,60 +74,35 @@ const Team = () => {
     newThisMonth: 0
   });
 
-  // Filter options
-  const filterOptions = [
-    {
-      key: 'role',
-      label: 'Role',
-      type: 'select' as const,
-      options: [
-        { value: '', label: 'All Roles' },
-        { value: 'admin', label: 'Admin' },
-        { value: 'manager', label: 'Manager' },
-        { value: 'agent', label: 'Agent' },
-        { value: 'support', label: 'Support' }
+  // Set up header
+  useEffect(() => {
+    setHeader({
+      title: 'Team Management',
+      breadcrumbs: [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Team' }
+      ],
+      tabs: [
+        { label: 'All Members', href: '/team', active: true },
+        { label: 'Hierarchy', href: '/team/hierarchy' },
+        { label: 'Analytics', href: '/team/analytics' }
       ]
-    },
-    {
-      key: 'department',
-      label: 'Department',
-      type: 'select' as const,
-      options: [
-        { value: '', label: 'All Departments' },
-        { value: 'sales', label: 'Sales' },
-        { value: 'marketing', label: 'Marketing' },
-        { value: 'support', label: 'Support' },
-        { value: 'operations', label: 'Operations' }
-      ]
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select' as const,
-      options: [
-        { value: '', label: 'All Statuses' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-        { value: 'pending', label: 'Pending' }
-      ]
-    }
-  ];
+    });
+  }, [setHeader]);
 
-  // Table columns
+  // Table columns configuration
   const columns = [
     {
       key: 'full_name',
-      label: 'Team Member',
+      label: 'Name',
       render: (value: string, row: TeamMember) => (
         <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-100 text-blue-600">
-              {row.full_name.charAt(0)}
-            </AvatarFallback>
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{value.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium text-slate-900">{row.full_name}</div>
-            <div className="text-sm text-slate-500">{row.email}</div>
+            <div className="font-medium">{value}</div>
+            <div className="text-sm text-gray-500">{row.email}</div>
           </div>
         </div>
       )
@@ -136,67 +110,38 @@ const Team = () => {
     {
       key: 'role',
       label: 'Role',
-      render: (value: string) => {
-        const roleConfig = {
-          admin: { label: 'Admin', variant: 'destructive' as const, icon: Crown },
-          manager: { label: 'Manager', variant: 'default' as const, icon: Shield },
-          agent: { label: 'Agent', variant: 'secondary' as const, icon: Users },
-          support: { label: 'Support', variant: 'outline' as const, icon: Activity }
-        };
-        
-        const config = roleConfig[value as keyof typeof roleConfig] || roleConfig.agent;
-        const Icon = config.icon;
-        
-        return (
-          <Badge variant={config.variant} className="flex items-center space-x-1">
-            <Icon className="h-3 w-3" />
-            <span>{config.label}</span>
-          </Badge>
-        );
-      }
-    },
-    {
-      key: 'department',
-      label: 'Department',
       render: (value: string) => (
-        <Badge variant="outline" className="capitalize">
+        <Badge variant={value === 'manager' ? 'default' : 'secondary'}>
           {value}
         </Badge>
       )
     },
     {
-      key: 'status',
-      label: 'Status',
-      render: (value: string) => {
-        const statusConfig = {
-          active: { label: 'Active', variant: 'success' as const },
-          inactive: { label: 'Inactive', variant: 'secondary' as const },
-          pending: { label: 'Pending', variant: 'warning' as const }
-        };
-        
-        const config = statusConfig[value as keyof typeof statusConfig] || statusConfig.inactive;
-        
-        return (
-          <Badge variant={config.variant}>
-            {config.label}
-          </Badge>
-        );
-      }
+      key: 'department',
+      label: 'Department',
+      render: (value: string) => <span className="text-sm">{value || '—'}</span>
     },
     {
-      key: 'reports_to',
-      label: 'Reports To',
-      render: (value: string, row: TeamMember) => (
-        <div className="text-sm text-slate-600">
-          {row.manager?.full_name || 'No Manager'}
-        </div>
+      key: 'status',
+      label: 'Status',
+      render: (value: string) => (
+        <Badge variant={value === 'active' ? 'default' : 'destructive'}>
+          {value}
+        </Badge>
+      )
+    },
+    {
+      key: 'manager',
+      label: 'Manager',
+      render: (value: any) => (
+        <span className="text-sm">{value?.full_name || '—'}</span>
       )
     },
     {
       key: 'joined_date',
       label: 'Joined',
       render: (value: string) => (
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-gray-600">
           {new Date(value).toLocaleDateString()}
         </div>
       )
@@ -272,7 +217,7 @@ const Team = () => {
         setStats({ total, active, managers, newThisMonth });
       }
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching team members:', err);
       setError(err.message);
     } finally {
@@ -291,34 +236,19 @@ const Team = () => {
     setCurrentPage(1);
   };
 
-  // Handle sort changes
-  const handleSort = (key: string, direction: 'asc' | 'desc') => {
-    setSortColumn(key);
-    setSortDirection(direction);
-  };
-
-  // Handle member actions
-  const handleViewMember = (member: TeamMember) => {
-    navigate(`/team/${member.id}`);
-  };
-
-  const handleEditMember = (member: TeamMember) => {
-    navigate(`/team/edit/${member.id}`);
-  };
-
   const handleDeleteMember = (member: TeamMember) => {
-    setMemberToDelete(member);
-    setShowDeleteModal(true);
+    setSelectedMember(member);
+    // Handle delete logic here
   };
 
   const confirmDeleteMember = async () => {
-    if (!memberToDelete) return;
+    if (!selectedMember) return;
 
     try {
       const { error } = await supabase
         .from('profiles')
         .delete()
-        .eq('id', memberToDelete.id);
+        .eq('id', selectedMember.id);
 
       if (error) throw error;
 
@@ -328,44 +258,57 @@ const Team = () => {
       });
 
       fetchTeamMembers();
-      setShowDeleteModal(false);
-      setMemberToDelete(null);
+      setSelectedMember(null);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting team member:', err);
       toast({
         title: "Error",
-        description: "Failed to delete team member",
+        description: err.message || "Failed to delete team member",
         variant: "destructive"
       });
     }
   };
 
+  const handleEditMember = (member: TeamMember) => {
+    setSelectedMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleViewMember = (member: TeamMember) => {
+    navigate(`/team/${member.id}`);
+  };
+
+  const handleSort = (column: string, direction: 'asc' | 'desc') => {
+    setSortColumn(column);
+    setSortDirection(direction);
+  };
+
   // Handle bulk actions
   const handleBulkDelete = async () => {
-    if (selectedMembers.length === 0) return;
+    if (!selectedMember) return;
 
     try {
       const { error } = await supabase
         .from('profiles')
         .delete()
-        .in('id', selectedMembers);
+        .eq('id', selectedMember.id);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `${selectedMembers.length} team members deleted successfully`
+        description: "Team member deleted successfully"
       });
 
-      setSelectedMembers([]);
+      setSelectedMember(null);
       fetchTeamMembers();
 
-    } catch (err) {
-      console.error('Error deleting team members:', err);
+    } catch (err: any) {
+      console.error('Error deleting team member:', err);
       toast({
         title: "Error",
-        description: "Failed to delete team members",
+        description: err.message || "Failed to delete team member",
         variant: "destructive"
       });
     }
@@ -379,250 +322,260 @@ const Team = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <Users className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 mb-2">Error Loading Team</h3>
-          <p className="text-slate-600">{error}</p>
+          <div className="text-red-500 mb-4">Error loading team members</div>
+          <Button onClick={fetchTeamMembers}>Retry</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Page Header */}
-      <PageHeader
-        title="Team Management"
-        subtitle="Manage your team members and hierarchy"
-        icon={<Users className="h-6 w-6 text-blue-600" />}
-        stats={[
-          {
-            label: 'Total Members',
-            value: stats.total,
-            change: 3,
-            trend: 'up'
-          },
-          {
-            label: 'Active Members',
-            value: stats.active,
-            change: 2,
-            trend: 'up'
-          },
-          {
-            label: 'Managers',
-            value: stats.managers,
-            change: 1,
-            trend: 'up'
-          },
-          {
-            label: 'New This Month',
-            value: stats.newThisMonth,
-            change: 5,
-            trend: 'up'
-          }
-        ]}
-        actions={[
-          {
-            label: 'Add Member',
-            icon: <UserPlus className="h-4 w-4" />,
-            onClick: () => navigate('/team/add'),
-            variant: 'default'
-          },
-          {
-            label: 'Invite',
-            icon: <Mail className="h-4 w-4" />,
-            onClick: () => toast({ title: "Coming Soon", description: "Invite feature will be available soon" }),
-            variant: 'outline'
-          }
-        ]}
-        search={{
-          placeholder: "Search team members...",
-          value: search,
-          onChange: setSearch
-        }}
-        filters={
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-            >
-              Table
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              Grid
-            </Button>
-            {selectedMembers.length > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                Delete ({selectedMembers.length})
-              </Button>
-            )}
-          </div>
-        }
-      />
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">
+              All team members
+            </p>
+          </CardContent>
+        </Card>
 
-      {/* Team Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="members">Team Members</TabsTrigger>
-          <TabsTrigger value="hierarchy">Hierarchy</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-        </TabsList>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Members</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+            <p className="text-xs text-muted-foreground">
+              Currently active
+            </p>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="members" className="space-y-6">
-          {viewMode === 'table' ? (
-            <DataTable
-              data={teamMembers}
-              columns={columns}
-              loading={loading}
-              emptyMessage="No team members found"
-              onRowClick={handleViewMember}
-              onEdit={handleEditMember}
-              onDelete={handleDeleteMember}
-              selectable={true}
-              selectedRows={selectedMembers}
-              onSelectionChange={setSelectedMembers}
-              sortable={true}
-              onSort={handleSort}
-              sortColumn={sortColumn}
-              sortDirection={sortDirection}
-              pagination={{
-                currentPage,
-                totalPages,
-                pageSize: 10,
-                totalItems,
-                onPageChange: setCurrentPage
-              }}
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <AnimatePresence>
-                {teamMembers.map((member, index) => (
-                  <motion.div
-                    key={member.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2, delay: index * 0.05 }}
-                  >
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                      <CardContent className="p-6">
-                        <div className="text-center space-y-4">
-                          <Avatar className="h-16 w-16 mx-auto">
-                            <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
-                              {member.full_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{member.full_name}</h3>
-                            <p className="text-sm text-slate-500">{member.email}</p>
-                          </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Managers</CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.managers}</div>
+            <p className="text-xs text-muted-foreground">
+              Leadership team
+            </p>
+          </CardContent>
+        </Card>
 
-                          <div className="space-y-2">
-                            <Badge variant="outline" className="capitalize">
-                              {member.role}
-                            </Badge>
-                            <Badge variant="secondary" className="capitalize">
-                              {member.department}
-                            </Badge>
-                          </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">New This Month</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.newThisMonth}</div>
+            <p className="text-xs text-muted-foreground">
+              Recent additions
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-                          <div className="flex items-center justify-center space-x-2 text-sm text-slate-600">
-                            <Phone className="h-4 w-4" />
-                            <span>{member.phone || 'No phone'}</span>
-                          </div>
-
-                          <div className="flex items-center justify-center space-x-2 text-sm text-slate-600">
-                            <Calendar className="h-4 w-4" />
-                            <span>Joined {new Date(member.joined_date).toLocaleDateString()}</span>
-                          </div>
-
-                          <div className="flex items-center justify-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewMember(member);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditMember(member);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+      {/* Main Content */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Team Members</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Manage your team members and their roles
+              </p>
             </div>
-          )}
-        </TabsContent>
+            <Button onClick={() => setShowAddModal(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Member
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={teamMembers}
+            columns={columns}
+            search={search}
+            onSearchChange={setSearch}
+            pagination={{
+              currentPage,
+              totalPages,
+              totalItems,
+              pageSize: 10,
+              onPageChange: setCurrentPage
+            }}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onEdit={handleEditMember}
+            onDelete={handleDeleteMember}
+            selectable={true}
+            selectedRows={selectedMember ? [selectedMember.id] : []}
+            onSelectionChange={(ids) => {
+              const member = teamMembers.find(m => m.id === ids[0]);
+              setSelectedMember(member || null);
+            }}
+            sortable={true}
+            onSort={handleSort}
+            loading={loading}
+          />
+        </CardContent>
+      </Card>
 
-        <TabsContent value="hierarchy" className="space-y-6">
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle>Team Hierarchy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Building className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">Hierarchy View</h3>
-                <p className="text-slate-600">Team hierarchy visualization will be available soon.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-6">
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle>Team Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Target className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">Performance Metrics</h3>
-                <p className="text-slate-600">Performance tracking and analytics will be available soon.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Delete Confirmation Modal */}
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent>
+      {/* Add Member Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Delete Team Member</DialogTitle>
+            <DialogTitle>Add Team Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{memberToDelete?.full_name}"? This action cannot be undone.
+              Add a new member to your team. They will receive an invitation email.
             </DialogDescription>
           </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                placeholder="Full name"
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="email@example.com"
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role
+              </Label>
+              <Select>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="agent">Agent</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="department" className="text-right">
+                Department
+              </Label>
+              <Select>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sales">Sales</SelectItem>
+                  <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="operations">Operations</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+            <Button variant="outline" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDeleteMember}>
-              Delete
+            <Button onClick={() => setShowAddModal(false)}>
+              Add Member
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Member Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Team Member</DialogTitle>
+            <DialogDescription>
+              Update team member information and permissions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="edit-name"
+                defaultValue={selectedMember?.full_name}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="edit-email"
+                type="email"
+                defaultValue={selectedMember?.email}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-role" className="text-right">
+                Role
+              </Label>
+              <Select defaultValue={selectedMember?.role}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="agent">Agent</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-status" className="text-right">
+                Status
+              </Label>
+              <Select defaultValue={selectedMember?.status}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setShowEditModal(false)}>
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
