@@ -29,6 +29,9 @@ const BottomNav: React.FC = () => {
   const right = navGroups.slice(2, 4);
   const more = navGroups.slice(4);
 
+  // Ensure theme values are strings
+  const primaryColor = typeof DESIGN.colors.primary === 'string' ? DESIGN.colors.primary : '#ff0141';
+
   return (
     <nav style={{
       position: 'fixed',
@@ -36,7 +39,7 @@ const BottomNav: React.FC = () => {
       left: 0,
       width: '100vw',
       height: 64,
-      background: DESIGN.colors.primary,
+      background: primaryColor,
       borderTop: '1px solid #eee',
       display: 'flex',
       justifyContent: 'space-around',

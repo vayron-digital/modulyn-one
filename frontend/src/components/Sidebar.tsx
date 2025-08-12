@@ -50,7 +50,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     features.dashboard !== false && { path: '/', label: 'Dashboard', icon: HomeIcon },
     features.leads !== false && { path: '/leads', label: 'Leads', icon: UsersIcon },
     features.properties !== false && { path: '/properties', label: 'Properties', icon: BuildingOfficeIcon },
-    features.calls && { path: '/calls', label: 'Calls', icon: PhoneIcon },
+    features.contacts && { path: '/contacts', label: 'Contacts Management', icon: PhoneIcon },
     features.tasks !== false && { path: '/tasks', label: 'Tasks', icon: ClipboardDocumentCheckIcon },
     features.team && { path: '/team', label: 'Team', icon: UserGroupIcon },
     features.reports && { path: '/reports', label: 'Reports', icon: ChartBarIcon },
@@ -75,12 +75,15 @@ export default function Sidebar({ isOpen }: SidebarProps) {
 
   const showContent = isOpen || isHovered
 
+  // Ensure theme values are strings
+  const primaryColor = typeof DESIGN.colors.primary === 'string' ? DESIGN.colors.primary : '#ff0141';
+
   return (
     <>
       {isLoggingOut && <FullScreenLoader />}
       <div 
         className={`flex flex-col transition-all duration-300 ease-in-out`}
-        style={{ width: isOpen || isHovered ? DESIGN.sidebarWidth : 80, background: DESIGN.colors.primary, color: '#fff' }}
+        style={{ width: isOpen || isHovered ? DESIGN.sidebarWidth : 80, background: primaryColor, color: '#fff' }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
