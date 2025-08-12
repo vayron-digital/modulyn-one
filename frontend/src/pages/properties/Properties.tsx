@@ -369,7 +369,7 @@ const Properties = () => {
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden relative">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl animate-pulse"></div>
@@ -664,8 +664,8 @@ const Properties = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </TooltipProvider>
-    </div>
   );
 };
 
