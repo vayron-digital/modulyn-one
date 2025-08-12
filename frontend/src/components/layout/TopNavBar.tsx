@@ -75,10 +75,10 @@ const TopNavBar: React.FC = () => {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '1.2rem 2rem',
-      fontFamily: 'Inter, SF Pro, Arial, Helvetica, sans-serif',
-      background: 'rgba(255, 255, 255, 0.95)',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-      border: 'none',
+      fontFamily: 'var(--font-sans)',
+      background: 'color-mix(in oklab, var(--surface-primary) 95%, transparent)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+      borderBottom: '1px solid hsl(var(--fields-border-hsl))',
       position: 'sticky',
       top: 0,
       left: 0,
@@ -87,8 +87,8 @@ const TopNavBar: React.FC = () => {
       overflowX: 'hidden',
       flexWrap: 'nowrap',
       zIndex: 100,
-      backdropFilter: 'blur(0.5rem)',
-      WebkitBackdropFilter: 'blur(0.5rem)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       transition: 'background 0.2s',
     }}>
       {/* Logo */}
@@ -104,14 +104,14 @@ const TopNavBar: React.FC = () => {
         />
       </div>
       {/* Breadcrumb or Current Page */}
-      <div style={{ 
-        flex: 1, 
-        textAlign: 'center',
-        fontSize: '1.1rem',
-        fontWeight: 600,
-        color: '#23262F',
-        textTransform: 'capitalize'
-      }}>
+        <div style={{ 
+          flex: 1, 
+          textAlign: 'center',
+          fontSize: '1.1rem',
+          fontWeight: 600,
+          color: 'var(--text-heading)',
+          textTransform: 'capitalize'
+        }}>
         {location.pathname === '/' ? 'Dashboard' : 
          location.pathname.split('/')[1]?.replace('-', ' ') || 'Dashboard'}
       </div>
@@ -131,7 +131,7 @@ const TopNavBar: React.FC = () => {
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
           onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <svg width="1.38em" height="1.38em" fill="none" stroke="#23262F" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <svg width="1.38em" height="1.38em" fill="none" stroke="currentColor" style={{ color: 'var(--text-heading)' }} strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
         </button>
         <button 
           onClick={handleNotifications}
@@ -147,7 +147,7 @@ const TopNavBar: React.FC = () => {
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
           onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <svg width="1.38em" height="1.38em" fill="none" stroke="#23262F" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+          <svg width="1.38em" height="1.38em" fill="none" stroke="currentColor" style={{ color: 'var(--text-heading)' }} strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
         </button>
         <button 
           onClick={handleHelp}
@@ -163,7 +163,7 @@ const TopNavBar: React.FC = () => {
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
           onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <svg width="1.38em" height="1.38em" fill="none" stroke="#23262F" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 115.82 0c0 1.657-1.343 3-3 3v2" /><circle cx="12" cy="17" r="1" /></svg>
+          <svg width="1.38em" height="1.38em" fill="none" stroke="currentColor" style={{ color: 'var(--text-heading)' }} strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 115.82 0c0 1.657-1.343 3-3 3v2" /><circle cx="12" cy="17" r="1" /></svg>
         </button>
         <div style={{ position: 'relative' }} ref={profileRef}>
           <button
@@ -200,10 +200,10 @@ const TopNavBar: React.FC = () => {
               top: '100%',
               right: 0,
               marginTop: '0.5em',
-              background: 'white',
+              background: 'var(--surface-primary)',
               borderRadius: '0.5em',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              border: '1px solid #e5e7eb',
+              border: '1px solid hsl(var(--fields-border-hsl))',
               minWidth: '200px',
               zIndex: 1000,
             }}>
@@ -211,7 +211,7 @@ const TopNavBar: React.FC = () => {
                 <div style={{ fontWeight: 600, marginBottom: '0.5em' }}>
                   {user?.email || 'User'}
                 </div>
-                <div style={{ fontSize: '0.875em', color: '#6b7280', marginBottom: '1em' }}>
+                <div style={{ fontSize: '0.875em', color: 'hsl(215 20% 65%)', marginBottom: '1em' }}>
                   {user?.email || 'user@example.com'}
                 </div>
                 <button
@@ -226,7 +226,7 @@ const TopNavBar: React.FC = () => {
                     borderRadius: '0.25em',
                     fontSize: '0.875em'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'hsl(var(--surface-secondary-hsl))'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Profile Settings
@@ -244,7 +244,7 @@ const TopNavBar: React.FC = () => {
                     fontSize: '0.875em',
                     color: '#ef4444'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in oklab, var(--states-error) 15%, transparent)'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Sign Out

@@ -116,6 +116,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../../components/ui/alert-dialog';
+import { mockLeads } from '../../mocks/leads';
 
 interface PropertyRequirements {
   type: string | null;
@@ -354,10 +355,7 @@ const Leads = () => {
   useEffect(() => {
     setHeader({
       title: '',
-      breadcrumbs: [
-        { label: 'Home', href: '/' },
-        { label: 'Lead Management' }
-      ],
+      breadcrumbs: [],
       tabs: [],
     });
   }, [setHeader]);
@@ -462,6 +460,16 @@ const Leads = () => {
       setError(null);
       
       if (!user) return;
+
+      const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+
+      if (isDevelopment) {
+        setLeads(mockLeads);
+        setTotalLeads(mockLeads.length);
+        setTotalPages(1);
+        setLoading(false);
+        return;
+      }
 
       // Fetch all leads for kanban view (no pagination)
       let allLeadsQuery = supabase

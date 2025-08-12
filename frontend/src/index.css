@@ -1,115 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties for Modulyn Theme */
-:root {
-  /* Personalized Colors */
-  --modulyn-flame: #ff0141;
-  --snowfield: #ffffff;
-  --obsidian-veil: #0e0e11;
-  --mist-grey: #f4f4f6;
-  --charcoal-tint: #1a1a20;
-  --lumen-pink: #ff80a0;
-  --skyline-blue: #3a86ff;
-  --inferno-red: #e63946;
-  --amber-pulse: #ffb703;
-  --emerald-rise: #06d6a0;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
 
-  /* Functional Colors */
-  --surface-primary: #ffffff;
-  --surface-secondary: #f4f4f6;
-  --on-surface-strong: #0e0e11;
-  --on-surface-soft: #4a4a4f;
-  --primary-default: #ff0141;
-  --primary-on-primary: #ffffff;
-  --secondary-default: #1a1a20;
-  --secondary-on-secondary: #ffffff;
-  --interactive-default: #ff3366;
-  --interactive-hover: #e6003c;
-  --interactive-disabled: #d1d1d6;
-  --critical-default: #e63946;
-  --critical-on-critical: #ffffff;
-  --warning-default: #ffb703;
-  --warning-on-warning: #0e0e11;
-  --success-default: #06d6a0;
-  --success-on-success: #0e0e11;
-  --highlight-default: #ff80a0;
-  --decorative-default: #3a86ff;
+    /* Design system HSL variables (enterprise palette)
+       We expose both raw HSL tuples (-hsl) and computed color vars for CSS usage */
+    /* Surfaces */
+    --surface-primary-hsl: 0 0% 100%; /* #ffffff */
+    --surface-secondary-hsl: 240 6% 96%; /* #f4f4f6 approx */
+    --surface-primary: hsl(var(--surface-primary-hsl));
+    --surface-secondary: hsl(var(--surface-secondary-hsl));
 
-  /* Semantic Colors */
-  --text-heading: #0e0e11;
-  --text-body: #4a4a4f;
-  --text-link: #ff0141;
-  --text-link-hover: #e6003c;
-  --text-disabled: #d1d1d6;
-  --text-on-dark: #ffffff;
-  --fields-background: #ffffff;
-  --fields-border: #d1d1d6;
-  --fields-placeholder: #4a4a4f;
-  --fields-text: #0e0e11;
-  --fields-focus-border: #ff0141;
-  --states-error: #e63946;
-  --states-warning: #ffb703;
-  --states-success: #06d6a0;
-  --states-info: #3a86ff;
+    /* Text */
+    --text-heading-hsl: 240 7% 6%; /* #0e0e11 approx */
+    --text-body-hsl: 240 4% 30%; /* #4a4a4f approx */
+    --text-on-dark-hsl: 0 0% 100%;
+    --text-heading: hsl(var(--text-heading-hsl));
+    --text-body: hsl(var(--text-body-hsl));
+    --text-on-dark: hsl(var(--text-on-dark-hsl));
 
-  /* Typography */
-  --font-family-heading: 'Inter', 'Mona Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-family-body: 'Inter', 'Mona Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', Monaco, Cascadia Code, monospace;
-  
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-base: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 30px;
-  --font-size-4xl: 36px;
-  
-  --font-weight-light: 300;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-  
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
+    /* Brand + interactive */
+    --primary-default-hsl: 345 100% 50%; /* #ff0141 approx */
+    --primary-on-primary-hsl: 0 0% 100%;
+    --primary-tint-hsl: 345 100% 60%;
+    --primary-shade-hsl: 345 100% 40%;
+    --interactive-default-hsl: 345 100% 60%; /* #ff3366 approx */
+    --interactive-hover-hsl: 345 100% 45%; /* #e6003c approx */
+    --primary-default: hsl(var(--primary-default-hsl));
+    --primary-on-primary: hsl(var(--primary-on-primary-hsl));
+    --primary-tint: hsl(var(--primary-tint-hsl));
+    --primary-shade: hsl(var(--primary-shade-hsl));
+    --interactive-default: hsl(var(--interactive-default-hsl));
+    --interactive-hover: hsl(var(--interactive-hover-hsl));
 
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
-  --spacing-3xl: 64px;
+    /* Accents */
+    --decorative-default-hsl: 219 100% 61%; /* #3a86ff */
+    --decorative-tint-hsl: 219 100% 70%;
+    --decorative-shade-hsl: 219 100% 50%;
+    --highlight-default-hsl: 340 100% 75%; /* #ff80a0 approx */
+    --decorative-default: hsl(var(--decorative-default-hsl));
+    --decorative-tint: hsl(var(--decorative-tint-hsl));
+    --decorative-shade: hsl(var(--decorative-shade-hsl));
+    --highlight-default: hsl(var(--highlight-default-hsl));
 
-  /* Shadows */
-  --shadow-none: none;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    /* States */
+    --states-error-hsl: 355 77% 57%; /* #e63946 */
+    --states-warning-hsl: 43 100% 50%; /* #ffb703 */
+    --states-success-hsl: 162 95% 43%; /* #06d6a0 */
+    --states-error: hsl(var(--states-error-hsl));
+    --states-warning: hsl(var(--states-warning-hsl));
+    --states-success: hsl(var(--states-success-hsl));
+
+    /* Borders */
+    --fields-border-hsl: 240 6% 84%; /* #d1d1d6 approx */
+    --fields-border: hsl(var(--fields-border-hsl));
+
+    /* Dark surfaces */
+    --obsidian-veil-hsl: 240 7% 6%; /* #0e0e11 approx */
+    --charcoal-tint-hsl: 240 7% 12%; /* #1a1a20 approx */
+    --obsidian-veil: hsl(var(--obsidian-veil-hsl));
+    --charcoal-tint: hsl(var(--charcoal-tint-hsl));
+
+    /* Fonts */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Dark theme overrides for design system variables */
+    --surface-primary: var(--charcoal-tint);
+    --surface-secondary: 217 19% 15%;
+    --text-heading: 210 40% 98%;
+    --text-body: 215 20% 65%;
+    --text-on-dark: 0 0% 100%;
+    --primary-on-primary: 210 40% 98%;
+    --fields-border: 217 16% 32%;
+  }
 }
 
-/* Dark mode overrides */
-.dark {
-  --surface-primary: #0e0e11;
-  --surface-secondary: #1a1a20;
-  --on-surface-strong: #ffffff;
-  --on-surface-soft: #ffffff;
-  --text-heading: #ffffff;
-  --text-body: #ffffff;
-  --fields-background: #1a1a20;
-  --fields-border: #4a4a4f;
-  --fields-text: #ffffff;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 /* Base Typography System with Inter Font */

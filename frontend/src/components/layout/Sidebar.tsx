@@ -13,10 +13,7 @@ import {
   FileText, 
   Calendar,
   ChevronRight,
-  ChevronDown,
-  Zap,
-  Bell,
-  Search
+  Bell
 } from 'lucide-react';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 
@@ -139,26 +136,6 @@ const Sidebar: React.FC = () => {
     );
   };
 
-  const getColorClasses = (color: string, isActive: boolean = false) => {
-    const colors: Record<string, { bg: string; text: string; activeBg: string; activeText: string }> = {
-      blue: { bg: 'bg-blue-100', text: 'text-blue-600', activeBg: 'bg-blue-600', activeText: 'text-white' },
-      emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', activeBg: 'bg-emerald-600', activeText: 'text-white' },
-      purple: { bg: 'bg-purple-100', text: 'text-purple-600', activeBg: 'bg-purple-600', activeText: 'text-white' },
-      orange: { bg: 'bg-orange-100', text: 'text-orange-600', activeBg: 'bg-orange-600', activeText: 'text-white' },
-      indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', activeBg: 'bg-indigo-600', activeText: 'text-white' },
-      pink: { bg: 'bg-pink-100', text: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white' },
-      teal: { bg: 'bg-teal-100', text: 'text-teal-600', activeBg: 'bg-teal-600', activeText: 'text-white' },
-      rose: { bg: 'bg-rose-100', text: 'text-rose-600', activeBg: 'bg-rose-600', activeText: 'text-white' },
-      yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', activeBg: 'bg-yellow-600', activeText: 'text-white' },
-      gray: { bg: 'bg-slate-100', text: 'text-slate-600', activeBg: 'bg-slate-600', activeText: 'text-white' }
-    };
-    
-    const colorClass = colors[color] || colors.blue;
-    return isActive 
-      ? `${colorClass.activeBg} ${colorClass.activeText}` 
-      : `hover:${colorClass.bg} ${colorClass.text}`;
-  };
-
   return (
     <ComponentErrorBoundary componentName="Sidebar" showRetry={false}>
       <motion.aside
@@ -208,8 +185,12 @@ const Sidebar: React.FC = () => {
                 <div key={item.id}>
                   <motion.button
                     onClick={() => {
-                      if (hasChildren) {
-                        toggleSection(item.id);
+                      if (isExpanded) {
+                        if (hasChildren) {
+                          toggleSection(item.id);
+                        } else {
+                          navigate(item.path);
+                        }
                       } else {
                         navigate(item.path);
                       }

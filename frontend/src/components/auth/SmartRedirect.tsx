@@ -13,6 +13,14 @@ export default function SmartRedirect({ defaultRoute = '/dashboard' }: SmartRedi
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+
+    if (isDevelopment) {
+      setRedirectTo(defaultRoute);
+      setLoading(false);
+      return;
+    }
+
     const determineRedirect = async () => {
       if (!user?.id) {
         setRedirectTo('/login');

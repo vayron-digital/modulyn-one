@@ -162,11 +162,8 @@ const Contacts: React.FC = () => {
 
   useEffect(() => {
     setHeader({
-      title: 'Contacts Management',
-      breadcrumbs: [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Contacts' }
-      ],
+      title: '',
+      breadcrumbs: [],
       tabs: []
     });
   }, [setHeader]);
@@ -242,7 +239,6 @@ const Contacts: React.FC = () => {
         <div className="relative px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-6">
-              <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Contacts Management</h1>
             </div>
             
             <div className="flex items-center space-x-3">

@@ -138,24 +138,24 @@ const AppRoutes: React.FC = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Public routes */}
-        <Route path="/" element={user ? <SmartRedirect /> : <Suspense fallback={<PageLoader />}><LandingPage /></Suspense>} />
-        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <SmartRedirect />} />
+        <Route path="/" element={user ? <SmartRedirect defaultRoute="/dashboard" /> : <Suspense fallback={<PageLoader />}><LandingPage /></Suspense>} />
+        <Route path="/login" element={!user ? <Suspense fallback={<PageLoader />}><Login /></Suspense> : <SmartRedirect defaultRoute="/dashboard" />} />
         <Route path="/signup" element={!user ? (
           <Suspense fallback={<PageLoader />}>
             <SignupStepper>
               <SignupForm />
             </SignupStepper>
           </Suspense>
-        ) : <SmartRedirect />} />
+        ) : <SmartRedirect defaultRoute="/dashboard" />} />
         <Route path="/account-creation" element={<Suspense fallback={<PageLoader />}><AccountCreation /></Suspense>} />
-        <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <SmartRedirect />} />
+        <Route path="/account-creation-success" element={!user ? <Suspense fallback={<PageLoader />}><AccountCreationSuccess /></Suspense> : <SmartRedirect defaultRoute="/dashboard" />} />
         <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallback /></Suspense>} />
         <Route path="/payment/callback" element={<Suspense fallback={<PageLoader />}><PaymentCallback /></Suspense>} />
         <Route path="/plan-limit-reached" element={<Suspense fallback={<PageLoader />}><PlanLimitReached /></Suspense>} />
         <Route path="/preview" element={<Suspense fallback={<PageLoader />}><PreviewSpace /></Suspense>} />
         <Route path="/preview/settings" element={<Suspense fallback={<PageLoader />}><PreviewSettings /></Suspense>} />
-        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <SmartRedirect />} />
-        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <SmartRedirect />} />
+        <Route path="/forgot-password" element={!user ? <Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense> : <SmartRedirect defaultRoute="/dashboard" />} />
+        <Route path="/reset-password" element={!user ? <Suspense fallback={<PageLoader />}><ResetPassword /></Suspense> : <SmartRedirect defaultRoute="/dashboard" />} />
         
         {/* Protected routes with layout */}
         <Route element={<DashboardLayout />}>

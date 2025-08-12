@@ -15,6 +15,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSecondaryCurrencies = useCurrencyStore(state => state.setSecondaryCurrencies);
 
   useEffect(() => {
+    const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+
+    if (isDevelopment) {
+      const mockUser = {
+        id: 'dev-user',
+        full_name: 'Dev User',
+        email: 'dev@example.com',
+        is_admin: true,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        role: 'admin',
+      };
+      setUser(mockUser);
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
     let authSubscription: any = null;
 
@@ -233,6 +251,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user?.id) return;
+
+    const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+    if (isDevelopment) {
+      setCurrency('AED');
+      setSecondaryCurrencies(['USD', 'GBP', 'EUR']);
+      return;
+    }
 
     let mounted = true;
 

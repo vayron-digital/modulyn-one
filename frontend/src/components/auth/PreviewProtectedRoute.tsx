@@ -15,6 +15,14 @@ export default function PreviewProtectedRoute({ children, requirePaid = true }: 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+
+    if (isDevelopment) {
+      setHasAccess(true);
+      setLoading(false);
+      return;
+    }
+
     const checkAccess = async () => {
       if (!user) {
         setHasAccess(false);

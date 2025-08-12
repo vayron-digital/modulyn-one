@@ -178,12 +178,11 @@ const Developers: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6 flex items-center justify-between">
-        Developers
+      <div className="flex items-center justify-between mb-6">
         {user?.is_admin && (
           <Button onClick={() => setShowAddModal(true)} className="ml-4">+ Add Developer</Button>
         )}
-      </h1>
+      </div>
       {/* Add Developer Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">

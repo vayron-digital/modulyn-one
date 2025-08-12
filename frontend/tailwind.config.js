@@ -1,204 +1,102 @@
-/** @type {import('tailwindcss').Config} */
-import theme from './src/lib/theme.js'
+const { fontFamily } = require("tailwindcss/defaultTheme")
 
-export default {
-  darkMode: 'class',
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
+  prefix: "",
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       colors: {
-        // Use centralized theme colors
-        'modulyn-flame': theme.personalized.modulynFlame,
-        'snowfield': theme.personalized.snowfield,
-        'obsidian-veil': theme.personalized.obsidianVeil,
-        'mist-grey': theme.personalized.mistGrey,
-        'charcoal-tint': theme.personalized.charcoalTint,
-        'lumen-pink': theme.personalized.lumenPink,
-        'skyline-blue': theme.personalized.skylineBlue,
-        'inferno-red': theme.personalized.infernoRed,
-        'amber-pulse': theme.personalized.amberPulse,
-        'emerald-rise': theme.personalized.emeraldRise,
-        
-        // Functional colors
-        'surface': {
-          'primary': theme.functional.surface.primary,
-          'secondary': theme.functional.surface.secondary,
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        /* Design system colors mapped to HSL CSS vars so we can use opacity utilities */
+        "surface-primary": "hsl(var(--surface-primary-hsl) / <alpha-value>)",
+        "surface-secondary": "hsl(var(--surface-secondary-hsl) / <alpha-value>)",
+        "text-heading": "hsl(var(--text-heading-hsl) / <alpha-value>)",
+        "text-secondary": "hsl(var(--text-body-hsl) / <alpha-value>)",
+        "text-on-dark": "hsl(var(--text-on-dark-hsl) / <alpha-value>)",
+        "primary-default": "hsl(var(--primary-default-hsl) / <alpha-value>)",
+        "primary-on-primary": "hsl(var(--primary-on-primary-hsl) / <alpha-value>)",
+        "primary-tint": "hsl(var(--primary-tint-hsl) / <alpha-value>)",
+        "primary-shade": "hsl(var(--primary-shade-hsl) / <alpha-value>)",
+        "decorative-default": "hsl(var(--decorative-default-hsl) / <alpha-value>)",
+        "decorative-tint": "hsl(var(--decorative-tint-hsl) / <alpha-value>)",
+        "decorative-shade": "hsl(var(--decorative-shade-hsl) / <alpha-value>)",
+        "highlight-default": "hsl(var(--highlight-default-hsl) / <alpha-value>)",
+        "states-error": "hsl(var(--states-error-hsl) / <alpha-value>)",
+        "states-warning": "hsl(var(--states-warning-hsl) / <alpha-value>)",
+        "states-success": "hsl(var(--states-success-hsl) / <alpha-value>)",
+        "fields-border": "hsl(var(--fields-border-hsl) / <alpha-value>)",
+        "obsidian-veil": "hsl(var(--obsidian-veil-hsl) / <alpha-value>)",
+        "charcoal-tint": "hsl(var(--charcoal-tint-hsl) / <alpha-value>)",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
-        'on-surface': {
-          'strong': theme.functional.onSurface.strong,
-          'soft': theme.functional.onSurface.soft,
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
-        'primary': {
-          'default': theme.functional.primary.default,
-          'on-primary': theme.functional.primary.onPrimary,
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-        'secondary': {
-          'default': theme.functional.secondary.default,
-          'on-secondary': theme.functional.secondary.onSecondary,
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
-        'interactive': {
-          'default': theme.functional.interactive.default,
-          'hover': theme.functional.interactive.hover,
-          'disabled': theme.functional.interactive.disabled,
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
-        'critical': {
-          'default': theme.functional.critical.default,
-          'on-critical': theme.functional.critical.onCritical,
-        },
-        'warning': {
-          'default': theme.functional.warning.default,
-          'on-warning': theme.functional.warning.onWarning,
-        },
-        'success': {
-          'default': theme.functional.success.default,
-          'on-success': theme.functional.success.onSuccess,
-        },
-        'highlight': {
-          'default': theme.functional.highlight.default,
-        },
-        'decorative': {
-          'default': theme.functional.decorative.default,
-        },
-        
-        // Semantic colors
-        'text': {
-          'heading': theme.semantic.text.heading,
-          'body': theme.semantic.text.body,
-          'link': theme.semantic.text.link,
-          'link-hover': theme.semantic.text.linkHover,
-          'disabled': theme.semantic.text.disabled,
-          'on-dark': theme.semantic.text.onDark,
-        },
-        'fields': {
-          'background': theme.semantic.fields.background,
-          'border': theme.semantic.fields.border,
-          'placeholder': theme.semantic.fields.placeholder,
-          'text': theme.semantic.fields.text,
-          'focus-border': theme.semantic.fields.focusBorder,
-        },
-        'states': {
-          'error': theme.semantic.states.error,
-          'warning': theme.semantic.states.warning,
-          'success': theme.semantic.states.success,
-          'info': theme.semantic.states.info,
-        },
-        
-        // Legacy support - map old colors to new theme
-        background: {
-          DEFAULT: theme.functional.surface.primary,
-          dark: theme.personalized.obsidianVeil,
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: theme.functional.surface.primary,
-          dark: theme.personalized.charcoalTint,
-        },
-        surface: {
-          DEFAULT: theme.functional.surface.secondary,
-          dark: theme.personalized.charcoalTint,
-        },
-        primary: theme.functional.primary.default,
-        accent: theme.functional.secondary.default,
-        text: {
-          DEFAULT: theme.functional.onSurface.strong,
-          dark: theme.semantic.text.onDark,
-          secondary: theme.functional.onSurface.soft,
-          secondaryDark: theme.semantic.text.onDark,
-          disabled: theme.semantic.text.disabled,
-          disabledDark: theme.semantic.text.disabled,
-        },
-        divider: {
-          DEFAULT: theme.semantic.fields.border,
-          dark: theme.semantic.fields.border,
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
-      
-      // Typography tokens
-      fontFamily: {
-        'heading': theme.typography.fontFamily.heading,
-        'body': theme.typography.fontFamily.body,
-        'mono': theme.typography.fontFamily.mono,
-        'sans': theme.typography.fontFamily.body,
-      },
-      fontSize: {
-        'xs': theme.typography.fontSize.xs,
-        'sm': theme.typography.fontSize.sm,
-        'base': theme.typography.fontSize.base,
-        'lg': theme.typography.fontSize.lg,
-        'xl': theme.typography.fontSize.xl,
-        '2xl': theme.typography.fontSize['2xl'],
-        '3xl': theme.typography.fontSize['3xl'],
-        '4xl': theme.typography.fontSize['4xl'],
-      },
-      fontWeight: {
-        'light': theme.typography.fontWeight.light,
-        'normal': theme.typography.fontWeight.regular,
-        'medium': theme.typography.fontWeight.medium,
-        'semibold': theme.typography.fontWeight.semibold,
-        'bold': theme.typography.fontWeight.bold,
-        'extrabold': theme.typography.fontWeight.extrabold,
-      },
-      lineHeight: {
-        'tight': theme.typography.lineHeight.tight,
-        'normal': theme.typography.lineHeight.normal,
-        'relaxed': theme.typography.lineHeight.relaxed,
-      },
-      
-      // Spacing tokens
-      spacing: {
-        'xs': theme.spacing.xs,
-        'sm': theme.spacing.sm,
-        'md': theme.spacing.md,
-        'lg': theme.spacing.lg,
-        'xl': theme.spacing.xl,
-        '2xl': theme.spacing['2xl'],
-        '3xl': theme.spacing['3xl'],
-      },
-      
-      // Shadow tokens
-      boxShadow: {
-        'none': theme.shadows.none,
-        'sm': theme.shadows.sm,
-        'md': theme.shadows.md,
-        'lg': theme.shadows.lg,
-        'xl': theme.shadows.xl,
-        '2xl': theme.shadows['2xl'],
-        'inner': theme.shadows.inner,
-      },
-      
-      // Border radius
       borderRadius: {
-        none: '0px',
-        sm: '4px',
-        md: '8px',
-        lg: '12px',
-        xl: '16px',
-        '2xl': '24px',
-        full: '9999px',
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
-      
-      // Transitions
-      transitionDuration: {
-        fast: '150ms',
-        normal: '250ms',
-        slow: '350ms',
+      fontFamily: {
+        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
-      
-      // Keyframes
       keyframes: {
-        'slide-up': {
-          '0%': { transform: 'translateY(100%)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
-        'slide-up': 'slide-up 0.3s ease-out',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
 } 

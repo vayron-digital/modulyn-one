@@ -1,22 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLayout } from '../../components/layout/DashboardLayout';
-import styles from '../../components/layout/DashboardLayout.module.css';
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { useAuthLoading } from '../../hooks/useAuthLoading';
 import LoadingState from '../../components/common/LoadingState';
-import api from '../../lib/api';
-import ColdCallsWidget from '../../widgets/ColdCallsWidget';
-import NewLeadsWidget from '../../widgets/NewLeadsWidget';
-import TotalLeadsWidget from '../../widgets/TotalLeadsWidget';
-import ActiveTasksWidget from '../../widgets/ActiveTasksWidget';
-import OverdueTasksWidget from '../../widgets/OverdueTasksWidget';
-import { dashboardApi } from '../../lib/api';
-import RecentActivityWidget from '../../widgets/RecentActivityWidget';
-import { journeysApi } from '../../lib/api';
-import { journeyColumnsApi } from '../../lib/api';
-import { Plus, TrendingUp, TrendingDown, Users, DollarSign, Target, Clock, Calendar, Bell, Settings, BarChart3, Activity, Zap, Brain, ArrowRight, Eye, EyeOff, RefreshCw, Maximize2, Minimize2, Phone, CheckCircle } from 'lucide-react';
-import Widget from '../../components/ui/widget';
-import theme from '../../lib/theme.js';
+import { dashboardApi, journeysApi, journeyColumnsApi } from '../../lib/api';
+import { Plus, TrendingUp, TrendingDown, Users, DollarSign, Target, Clock, Calendar, Bell, Settings, BarChart3, Activity, Brain, ArrowRight, RefreshCw, Phone, CheckCircle } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 
 
@@ -47,56 +35,10 @@ interface JourneyStage {
   cards: JourneyCard[];
 }
 
-const statusColors = {
-  green: theme.semantic.states.success,
-  blue: theme.semantic.states.info,
-  red: theme.semantic.states.error,
-  yellow: theme.semantic.states.warning
-};
-
-const fadeInKeyframes = `@keyframes fadeInCard { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }`;
-
-const DragHandle = () => (
-  <span 
-    style={{ 
-      cursor: 'grab', 
-      marginRight: theme.spacing.sm, 
-      fontSize: theme.typography.fontSize.xl, 
-      color: theme.functional.onSurface.soft, 
-      userSelect: 'none', 
-      display: 'flex', 
-      alignItems: 'center',
-      fontFamily: theme.typography.fontFamily.body
-    }} 
-    title="Drag"
-  >
-    <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="5" cy="5" r="1.5"/><circle cx="5" cy="9" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="13" cy="5" r="1.5"/><circle cx="13" cy="9" r="1.5"/><circle cx="13" cy="13" r="1.5"/></svg>
-  </span>
-);
-
-// Add Journey (Board) type
-interface Journey {
-  id: string;
-  name: string;
-  description?: string;
-  created_by?: string;
-  created_at: string;
-  updated_at: string;
-  tenant_id: string;
-}
-
-// Add JourneyColumn type
-interface JourneyColumn {
-  id: string;
-  journey_id: string;
-  name: string;
-  position: number;
-  created_at: string;
-}
-
 const Dashboard = () => {
   const { setHeader } = useLayout();
   const { user, loading: authLoading, error: authError } = useAuthLoading();
+  const { theme } = useTheme();
   
   const [journeyStages, setJourneyStages] = useState<JourneyStage[]>([]);
   const [modalCard, setModalCard] = useState<JourneyCard | null>(null);
@@ -185,15 +127,15 @@ const Dashboard = () => {
     { title: 'Approved', stage: 'retention' as const, cards: [] }
   ];
 
-  const [journeys, setJourneys] = useState<Journey[]>([]);
-  const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
+  const [journeys, setJourneys] = useState<any[]>([]);
+  const [selectedJourney, setSelectedJourney] = useState<any | null>(null);
   const [journeyLoading, setJourneyLoading] = useState(true);
   const [showCreateJourney, setShowCreateJourney] = useState(false);
   const [newJourneyName, setNewJourneyName] = useState('');
   const [newJourneyDesc, setNewJourneyDesc] = useState('');
 
   // Dynamic columns state
-  const [columns, setColumns] = useState<JourneyColumn[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
   const [columnsLoading, setColumnsLoading] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
   const [editedColumnName, setEditedColumnName] = useState('');
@@ -272,7 +214,7 @@ const Dashboard = () => {
     
     try {
       const stage = journeyStages[addCardCol].stage;
-      const response = await api.post('/dashboard/journey-cards', {
+      const response = await dashboardApi.createJourneyCard({
         title: newCardTitle,
         stage,
         status: 'blue'
@@ -296,7 +238,7 @@ const Dashboard = () => {
     if (!editCard) return;
     
     try {
-      const response = await api.put(`/dashboard/journey-cards/${editCard.card.id}`, {
+      const response = await dashboardApi.updateJourneyCard(editCard.card.id, {
         title: editCard.card.title,
         status: editCard.card.status
       });
@@ -318,7 +260,7 @@ const Dashboard = () => {
     if (!deleteCard) return;
     
     try {
-      const response = await api.delete(`/dashboard/journey-cards/${deleteCard.card.id}`);
+      const response = await dashboardApi.deleteJourneyCard(deleteCard.card.id);
       
       if (response.data.success) {
         await fetchJourneyCards(); // Refresh the data
@@ -333,7 +275,7 @@ const Dashboard = () => {
   }, [deleteCard, fetchJourneyCards]);
 
   // Optimistic drag-and-drop
-  const onDragEnd = useCallback(async (result: DropResult) => {
+  const onDragEnd = useCallback(async (result: any) => {
     if (!result.destination) return;
 
     const sourceStageIndex = parseInt(result.source.droppableId);
@@ -358,7 +300,7 @@ const Dashboard = () => {
 
     // Background API update
     try {
-      const response = await api.post('/dashboard/journey-cards/reorder', {
+      const response = await dashboardApi.reorderJourneyCards({
         sourceStage: journeyStages[sourceStageIndex].stage,
         destinationStage: journeyStages[destStageIndex].stage,
         sourceIndex: result.source.index,
@@ -447,7 +389,7 @@ const Dashboard = () => {
     // Call backend
     try {
       const stage = journeyStages[colIdx].stage;
-      const response = await api.post('/dashboard/journey-cards', {
+      const response = await dashboardApi.createJourneyCard({
         title,
         stage,
         status: 'blue'
@@ -518,6 +460,23 @@ const Dashboard = () => {
       try {
         setKpisLoading(true);
         setKpisError(null);
+
+        const isDevelopment = window.location.hostname === '192.168.1.249' || window.location.hostname === 'localhost';
+        if (isDevelopment) {
+          setKpis({
+            totalLeads: { value: 1247, trend: 12.5, sparkline: [12, 19, 15, 22, 18, 24, 20] },
+            newLeadsToday: { value: 28, trend: 18.7, sparkline: [8, 12, 15, 18, 22, 25, 28] },
+            conversionRate: { value: 24.8, trend: 5.2, sparkline: [68, 72, 75, 78, 82, 85, 88] },
+            avgLeadValue: { value: 4500, trend: 8.3, sparkline: [2500, 2800, 3200, 3500, 3800, 4200, 4500] },
+            activeTasks: { value: 65, trend: 5.2, sparkline: [45, 52, 48, 55, 62, 58, 65] },
+            overdueTasks: { value: 9, trend: -2.7, sparkline: [12, 8, 15, 10, 7, 13, 9] },
+            totalRevenue: { value: 88200, trend: 15.8, sparkline: [45000, 52000, 48000, 55000, 62000, 58000, 65000] },
+            pipelineValue: { value: 210000, trend: 22.1, sparkline: [120000, 135000, 150000, 165000, 180000, 195000, 210000] }
+          });
+          setKpisLoading(false);
+          return;
+        }
+
         const response = await dashboardApi.getKPIs();
         if (mounted && response.data && response.data.success) {
           setKpis(response.data.data);
@@ -580,11 +539,8 @@ const Dashboard = () => {
       fetchJourneyCards();
     }
     setHeader({
-      title: 'Overview',
-      breadcrumbs: [
-        { label: 'Home', href: '/' },
-        { label: 'Overview' }
-      ],
+      title: '',
+      breadcrumbs: [],
       tabs: [],
     });
   }, [user?.id, setHeader, fetchJourneyCards]);
@@ -679,7 +635,7 @@ const Dashboard = () => {
   };
 
   // Reorder columns (drag & drop)
-  const onColumnDragEnd = async (result: DropResult) => {
+  const onColumnDragEnd = async (result: any) => {
     if (!result.destination) return;
     const newOrder = Array.from(columnOrder);
     const [removed] = newOrder.splice(result.source.index, 1);
@@ -843,10 +799,37 @@ const Dashboard = () => {
                           </div>
   );
 
+  const statusColors = {
+    green: '#10B981',
+    blue: '#3B82F6',
+    red: '#EF4444',
+    yellow: '#F59E0B'
+  };
+
+  const fadeInKeyframes = `@keyframes fadeInCard { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }`;
+
+  const DragHandle = () => (
+    <span 
+      style={{ 
+        cursor: 'grab', 
+        marginRight: '8px', 
+        fontSize: '20px', 
+        color: '#94A3B8', 
+        userSelect: 'none', 
+        display: 'flex', 
+        alignItems: 'center',
+        fontFamily: 'sans-serif'
+      }} 
+      title="Drag"
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="5" cy="5" r="1.5"/><circle cx="5" cy="9" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="13" cy="5" r="1.5"/><circle cx="13" cy="9" r="1.5"/><circle cx="13" cy="13" r="1.5"/></svg>
+    </span>
+  );
+
   return (
     <LoadingState
       loading={authLoading}
-      error={authError}
+      error={authError ? String(authError) : null}
       type="page"
       message="Loading dashboard..."
     >

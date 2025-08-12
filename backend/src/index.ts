@@ -34,6 +34,7 @@ const allowedOrigins = [
   'https://crm-platform-ialv4reps-fortune-legacy.vercel.app/',
   'http://localhost:3000',
   'http://localhost:5173', // <-- Add this for Vite dev server
+  'http://192.168.1.249:5173',
   'https://fortune4-crm-54067a45e825.herokuapp.com',
 ];
 
@@ -142,6 +143,4 @@ NotificationService.getInstance();
 
 // --- Start server with Socket.IO ---
 server.listen(PORT, () => {
-  console.log(`Server (with Socket.IO) is running on port ${PORT}`);
-  console.log(`Connected to Supabase at ${process.env.SUPABASE_URL}`);
-}); 
+  console.log(`

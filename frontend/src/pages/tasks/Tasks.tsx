@@ -123,16 +123,9 @@ const Tasks = () => {
   // Set up header
   useEffect(() => {
     setHeader({
-      title: 'Task Management',
-      breadcrumbs: [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Tasks' }
-      ],
-      tabs: [
-        { label: 'All Tasks', href: '/tasks', active: true },
-        { label: 'My Tasks', href: '/tasks/my' },
-        { label: 'Completed', href: '/tasks/completed' }
-      ]
+      title: '',
+      breadcrumbs: [],
+      tabs: []
     });
   }, [setHeader]);
 
@@ -460,7 +453,6 @@ const Tasks = () => {
         <div className="relative px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-6">
-              <h1 className="text-4xl text-text-on-dark font-bold tracking-tighter">Task Management</h1>
             </div>
             
             <div className="flex items-center space-x-3">
