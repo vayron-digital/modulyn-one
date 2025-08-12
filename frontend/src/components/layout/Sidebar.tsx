@@ -74,15 +74,15 @@ const Sidebar: React.FC = () => {
       ]
     },
     {
-      id: 'calls',
-      label: 'Calls',
+      id: 'contacts',
+      label: 'Contacts Management',
       icon: <Phone className="h-5 w-5" />,
-      path: '/calls',
+      path: '/contacts',
       color: 'indigo',
-      description: 'Call management',
+      description: 'Contact management',
       children: [
-        { label: 'All Calls', path: '/calls', icon: <Phone className="h-4 w-4" /> },
-        { label: 'Cold Calls', path: '/cold-calls', icon: <Phone className="h-4 w-4" /> }
+        { label: 'All Contacts', path: '/contacts', icon: <Phone className="h-4 w-4" /> },
+        { label: 'Add Contact', path: '/contacts/add', icon: <Phone className="h-4 w-4" /> }
       ]
     },
     {
